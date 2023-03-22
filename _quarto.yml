@@ -7,7 +7,7 @@ project:
     - "*.pptx"
 
 website:
-  title: "iHEA 2023: Health Economics Modeling Workshop"
+  title: "SMDM Europe 2023: Health Economics Modeling Workshop"
   margin-footer: |
     ![](CHEMlogo_white.png)
   sidebar:
@@ -16,8 +16,16 @@ website:
     collapse-level: 1
     contents:
       - index.qmd
+      - text: "Workshop Blog"
+        href: blog/index.qmd
       - section: "Slides"
         contents:
+          - lectures/lec_welcome.qmd
+          - lectures/lec_structure.qmd
+          - text: Group Exercise - Populating a Markov Model
+            href: lectures/exercise_structure.qmd
+          - text: Group Exercise Answer - Populating a Markov Model
+            href: lectures/exercise_ANS_structure.qmd
       - section: "Case Studies"
       - section: "Tools and Applications"
         contents:

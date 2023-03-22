@@ -1,0 +1,155 @@
+---
+title: "Structuring the Markov Model: Group Exercise"
+format: revealjs
+editor: visual
+---
+
+## Model Diagram
+
+::: column-page
+```{dot}
+//| fig-width: 10
+strict digraph {
+    H [label="Asympomatic (A)"]
+    H -> H
+    H -> S
+    S [label="Progressive Disease (P)"]
+    S -> S
+    H -> Db
+    Db [label="Death from other causes (Db)"]
+    S -> Db
+    Db -> Db
+    S -> Dd
+    Dd [label="Death from disease (Dd)"]
+    Dd -> Dd
+}
+```
+:::
+
+## Natural History Parameters
+
+-   Progressive disease incidence rate (`r_AP`): 0.4 over 10 years
+-   Background mortality rate (`r_Db`): 0.006 per year
+-   Hazard rate of death from progressive disease relative to background mortality (`HR_PDd`): 3.0
+
+## Strategy A: Preventive Measure
+
+-   Relative risk of developing progressive disease (`RR_AP`): 0.75
+
+## Strategy B: Disease Treatment
+
+-   Odds-ratio of death from progressive disease (`OR_PDd`): 0.80
+-   Baseline annual probability of death in underlying clinical trial (`p0_OR_PDd`): 0.03
+
+## Strategy C: Cure
+
+-   10-year disease remission rate (i.e., return to asymptomatic state; `r_PA_trtC`): 0.50
+
+## Parameter Table
+
+::: {style="font-size: 0.8em"}
+| Parameter   | Description                                                                    | Value |
+|------------|-------------------------------------------------|------------|
+| `r_AP`      | 10-year progressive disease incidence rate                                     | 0.40  |
+| `r_Db`      | Background mortality rate                                                      | 0.006 |
+| `HR_PDd`    | Hazard rate of death from progressive disease relative to background mortality | 3.0   |
+| `RR_AP`     | Relative risk of developing progressive disease (**Strategy A**)               | 0.75  |
+| `OR_PDd`    | Odds-ratio of death from progressive disease (**Strategy B**)                  | 0.80  |
+| `p0_OR_PDd` | Baseline probability of death in underlying clinical trial (**Strategy B**)    | 0.03  |
+| `r_PA_trtC` | 10-year disease remission rate (**Strategy C**)                                | 0.50  |
+:::
+
+```{r}
+library(tidyverse)
+library(Matrix)
+r_AP <- 0.40
+r_Db <- 0.006
+HR_PDd <- 3.0
+RR_AP <- 0.75
+OR_PDd <- 0.80
+p0_OR_PDd <- 0.03
+r_PA_trtC <- 0.50
+
+m_R0 <- m_RA <- m_RB <- m_RC <-   
+  matrix(0, nrow=4, ncol = 4, dimnames=list(c("Asymptomatic","Progressive Disease","Disease Mortality", "Background Mortality"),
+                                               c("Asymptomatic","Progressive Disease","Disease Mortality", "Background Mortality")))
+
+# Step 1: Natural History  (i.e., m_R0 and m_P0)
+
+m_R0["Asymptomatic","Asymptomatic"] <- -(r_AP/10+r_Db)
+m_R0["Asymptomatic","Progressive Disease"] <- r_AP/10
+m_R0["Asymptomatic","Background Mortality"] <- r_Db
+
+m_R0["Progressive Disease","Progressive Disease"] <- -(HR_PDd * r_Db + r_Db)
+m_R0["Progressive Disease","Disease Mortality"] <- HR_PDd * r_Db
+m_R0["Progressive Disease","Background Mortality"] <- r_Db
+
+m_P0 <- expm(m_R0)
+m_P0[is.na(m_P0)] <- 0
+
+# Strategy A
+
+m_PA <- m_P0 
+m_PA["Asymptomatic","Progressive Disease"] <- RR_AP * m_P0["Asymptomatic","Progressive Disease"] 
+m_PA["Asymptomatic","Asymptomatic"] <- 1 - m_PA["Asymptomatic","Progressive Disease"]  - m_PA["Asymptomatic","Disease Mortality"] - m_PA["Asymptomatic","Background Mortality"]
+
+# Strategy B
+m_PB <- m_P0 
+m_PB["Progressive Disease","Disease Mortality"] <- (OR_PDd / (1 - p0_OR_PDd + (p0_OR_PDd *OR_PDd  ))) * m_PB["Progressive Disease","Disease Mortality"]
+m_PB["Progressive Disease","Progressive Disease"] <- 1 - m_PB["Progressive Disease","Asymptomatic"] - m_PB["Progressive Disease","Disease Mortality"] - m_PB["Progressive Disease","Background Mortality"]
+
+# Strategy C
+
+m_RC <- m_R0 
+m_RC["Progressive Disease","Asymptomatic"]  <- (r_PA_trtC/10)
+m_RC["Progressive Disease","Progressive Disease"] <- -(m_RC["Progressive Disease","Asymptomatic"] + m_RC["Progressive Disease","Disease Mortality"] + m_RC["Progressive Disease","Background Mortality"])
+m_PC <- expm(m_RC)
+
+```
+
+## Key
+
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+
+```{r}
+
+color_lut <- 
+  c("rate" = "#ff498c",
+    "hazard_ratio" = "#fcb08a",
+    "probability" = "#ffc922",
+    "relative_risk" = "#cdea24", 
+    "odds_ratio" = "#9dd8da", 
+    "constructed" = "#ab59cf")
+
+```
+
+## Goal: Natural History Transition Probability Matrix
+
+**m_P0** =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                         | Progressive Disease                                                  | Disease Mortality                                                    | Background Mortality                                                 |
+|---------------|---------------|---------------|---------------|---------------|
+| Asymptomatic         | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Progressive Disease  | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Background Mortality | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"} |
+:::
+
+::: {style="font-size: 0.6em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::

@@ -1,0 +1,184 @@
+---
+title: "Answer Key: Structuring the Markov Model Group Exercise"
+format: revealjs
+editor: visual
+---
+
+
+## Answer: Natural History
+
+**m_R0** =
+
+::: {style="font-size: 0.6em"}
+|                      | Asymptomatic                                               | Progressive Disease                                           | Disease Mortality                                                                        | Background Mortality                                             |
+|--------------|--------------|--------------|-----------------|--------------|
+| Asymptomatic         | </span>[-(r_AP/10+r_Db)]{style="background:#ab59cf"}       | </span>[r_AP/10]{style="background:#ff498c"}                  | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                               | </span>[r_Db]{style="background:#ff498c"}                        |
+| Progressive Disease  | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"} | </span>[-(HR_PDd \* r_Db + r_Db)]{style="background:#ab59cf"} | </span>[HR_PDd]{style="background:#fcb08a"} \* </span>[r_Db]{style="background:#ff498c"} | </span>[r_Db]{style="background:#ff498c"}                        |
+| Disease Mortality    | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"} | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}    | </span>[0 $\quad \quad \quad \quad$]{style="background:#ab59cf"}                         | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}       |
+| Background Mortality | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"} | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}    | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                               | </span>[0 $\quad \quad \quad \quad$]{style="background:#ab59cf"} |
+:::
+
+::: {style="font-size: 0.5em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Natural History
+
+**m_P0** = exp(**m_R0**) =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                           | Progressive Disease                                                   | Disease Mortality                                                         | Background Mortality                                                      |
+|---------------|---------------|---------------|---------------|---------------|
+| Asymptomatic         | </span>[1-p_AP-p_ADb]{style="background:#ab59cf"}                      | </span>[p_AP $\quad \quad \quad$]{style="background:#ffc922"}         | </span>[0 $\quad \quad \quad \quad$]{style="background:#ffc922"}          | </span>[p_ADb $\quad \quad \quad$]{style="background:#ffc922"}            |
+| Progressive Disease  | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1-p_PDd-p_PDb]{style="background:#ab59cf"}                    | </span>[p_PDd$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[p_PDb$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"}    |
+| Background Mortality | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}     | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   |
+:::
+
+::: {style="font-size: 0.5em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Strategy A
+
+Basis is **m_P0**
+
+**m_P\_A** =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                           | Progressive Disease                                                                          | Disease Mortality                                                         | Background Mortality                                                      |
+|--------------|--------------|----------------|--------------|--------------|
+| Asymptomatic         | </span>[1-RR_AP \* p_AP-p_ADb]{style="background:#ab59cf"}             | </span>[RR_AP]{style="background:#cdea24"} </span>[p_AP $\quad$]{style="background:#ffc922"} | </span>[0 $\quad \quad \quad \quad$]{style="background:#ffc922"}          | </span>[p_ADb $\quad \quad \quad$]{style="background:#ffc922"}            |
+| Progressive Disease  | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1-p_PDd-p_PDb]{style="background:#ab59cf"}                                           | </span>[p_PDd$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[p_PDb$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                        | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"}    |
+| Background Mortality | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                        | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}     | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   |
+:::
+
+::: {style="font-size: 0.5em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Strategy B
+
+Basis is **m_P0**
+
+**m_P\_B** =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                           | Progressive Disease                                                                                         | Disease Mortality                                                                                                                       | Background Mortality                                                      |
+|-------------|-------------|--------------|-------------------|-------------|
+| Asymptomatic         | </span>[1-p_AP-p_ADb]{style="background:#ab59cf"}                      | </span>[p_AP $\quad \quad \quad$]{style="background:#ffc922"}                                               | </span>[0 $\quad \quad \quad \quad$]{style="background:#ffc922"}                                                                        | </span>[p_ADb $\quad \quad \quad$]{style="background:#ffc922"}            |
+| Progressive Disease  | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1-((OR_PDd / (1 - p0_OR_PDd + (p0_OR_PDd \* OR_PDd ))) \* p_PDd)-p_PDb]{style="background:#ab59cf"} | </span>[(OR_PDd / (1 - p0_OR_PDd + (p0_OR_PDd \* OR_PDd )))]{style="background:#9dd8da"} </span> \* [p_PDd]{style="background:#ffc922"} | </span>[p_PDb$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                                       | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}                                                                 | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"}    |
+| Background Mortality | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                                       | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                                                                   | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   |
+:::
+
+::: {style="font-size: 0.3em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Strategy B
+
+Note that because `p0_OR_PDd` is fairly low (i.e., 0.03), you could just use the odds ratio as a relative risk.
+
+Basis is **m_P0**
+
+**m_P\_B** =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                           | Progressive Disease                                                   | Disease Mortality                                                                          | Background Mortality                                                      |
+|--------------|--------------|--------------|----------------|--------------|
+| Asymptomatic         | </span>[1-p_AP-p_ADb]{style="background:#ab59cf"}                      | </span>[p_AP $\quad \quad \quad$]{style="background:#ffc922"}         | </span>[0 $\quad \quad \quad \quad$]{style="background:#ffc922"}                           | </span>[p_ADb $\quad \quad \quad$]{style="background:#ffc922"}            |
+| Progressive Disease  | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1- OR_PDd \* p_PDd)-p_PDb]{style="background:#ab59cf"}        | </span>[OR_PDd]{style="background:#9dd8da"} </span> \* [p_PDd]{style="background:#ffc922"} | </span>[p_PDb$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}                    | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"}    |
+| Background Mortality | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}  | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}                      | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   |
+:::
+
+::: {style="font-size: 0.3em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Strategy C
+
+Basis is **m_R0**
+
+**m_R\_C** =
+
+::: {style="font-size: 0.6em"}
+|                      | Asymptomatic                                               | Progressive Disease                                                          | Disease Mortality                                                                        | Background Mortality                                             |
+|--------------|--------------|--------------|----------------|--------------|
+| Asymptomatic         | </span>[-(r_AP/10+r_Db)]{style="background:#ab59cf"}       | </span>[r_AP/10]{style="background:#ff498c"}                                 | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                               | </span>[r_Db]{style="background:#ff498c"}                        |
+| Progressive Disease  | </span>[r_PA_trtC/10]{style="background:#ff498c"}          | </span>[-(r_PA_trtC/10 + HR_PDd \* r_Db + r_Db)]{style="background:#ab59cf"} | </span>[HR_PDd]{style="background:#fcb08a"} \* </span>[r_Db]{style="background:#ff498c"} | </span>[r_Db]{style="background:#ff498c"}                        |
+| Disease Mortality    | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"} | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                   | </span>[0 $\quad \quad \quad \quad$]{style="background:#ab59cf"}                         | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}       |
+| Background Mortality | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"} | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                   | </span>[0 $\quad \quad \quad$]{style="background:#ff498c"}                               | </span>[0 $\quad \quad \quad \quad$]{style="background:#ab59cf"} |
+:::
+
+::: {style="font-size: 0.3em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::
+
+## Answer: Strategy C
+
+**m_P\_C** = exp(**m_R\_C**) =
+
+::: {style="font-size: 0.5em"}
+|                      | Asymptomatic                                                          | Progressive Disease                                                   | Disease Mortality                                                         | Background Mortality                                                      |
+|---------------|---------------|---------------|---------------|---------------|
+| Asymptomatic         | </span>[1-p_AP-p_ADb]{style="background:#ab59cf"}                     | </span>[p_AP $\quad \quad \quad$]{style="background:#ffc922"}         | </span>[0 $\quad \quad \quad \quad$]{style="background:#ffc922"}          | </span>[p_ADb $\quad \quad \quad$]{style="background:#ffc922"}            |
+| Progressive Disease  | </span>[p_PA $\quad \quad \quad \quad$]{style="background:#ffc922"}   | </span>[1-p_PDd-p_PDb]{style="background:#ab59cf"}                    | </span>[p_PDd$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[p_PDb$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} |
+| Disease Mortality    | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   | </span>[0 $\quad \quad \quad \quad \quad$]{style="background:#ffc922"}    |
+| Background Mortality | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"} | </span>[0$\quad \quad \quad \quad \quad$]{style="background:#ffc922"}     | </span>[1.0$\quad \quad \quad \quad \quad$]{style="background:#ab59cf"}   |
+:::
+
+::: {style="font-size: 0.4em"}
+|                                                                   |
+|-------------------------------------------------------------------|
+| </span>[Rate adjusted for timestep]{style="background:#ff498c"}   |
+| </span>[Hazard Ratio]{style="background:#fcb08a"}                 |
+| </span>[Probability]{style="background:#ffc922"}                  |
+| </span>[Relative Risk]{style="background:#cdea24"}                |
+| </span>[Odds Ratio]{style="background:#9dd8da"}                   |
+| </span>[Constructed from other cells]{style="background:#ab59cf"} |
+:::

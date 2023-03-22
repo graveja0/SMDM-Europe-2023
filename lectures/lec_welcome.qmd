@@ -1,0 +1,75 @@
+---
+title: "Welcome and Introductions"
+format:
+  revealjs:
+    theme: slides.scss
+    transition: fade
+    background-transition: fade
+    highlight-style: ayu-mirage
+    footer: |
+      [Back to Website](../index.html)
+---
+
+# Welcome to Bangkok!
+
+## Course Website
+
+::: {style="font-size: 2.0em"}
+https://vchem-vital-workshop-2022.netlify.app
+:::
+
+::: incremental
+-   All course materials (slides, case studies, capstone exercises) are posted here.
+-   Our (likely evolving) schedule will also be posted here, and updated regularly. 
+::: 
+
+## Course Website
+
+-   All materials can be translated using the Google Translate Chrome extension!
+
+    ![](images/paste-DF59E3FF.png)
+
+## Introductions
+
+-   Please introduce yourself!
+
+## Workshop Format
+
+1.  We're *flexible* -- if there is a topic that is unclear to you, or that you would like expanded upon, please let us know!
+2.  Mixed content
+
+-   Lectures
+-   Small group case studies
+-   Large group case studies and "hands-on" Excel exercises
+-   Capstone projects (small group or individual)
+
+3.  Built from "ground up" for this workshop!
+
+## Workshop Content
+
+1.  Basics of decision analysis
+
+-   Concepts and theories (Day 1)
+-   Markov modeling (Day 2)
+-   Summarizing and presenting results and sensitivity analysis (Days 3-4)
+-   Advanced modeling techniques
+
+## Workshop Content
+
+2.  Case studies
+
+-   Cumulative: each will build on the last
+-   Answer keys (.xls and video) will be made available, and we will cover each as a group as well.
+-   Designed in Excel, but structured in our (developing) "Pan-Decision-Analysis" (PAN-DA) framework.
+
+## Worskthop Content
+
+What does Pan-DA Mean?
+
+::: incremental
+- Our model structure template can be used for both Excel, and also extends into a (developing) R framework.
+- This means you can parameterize & develop your model in Excel, but ultimately run the model in R. 
+- Note that this is a developing framework---you are a very early "Alpha" tester!
+:::
+
+# Let's get started!

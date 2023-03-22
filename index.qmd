@@ -1,5 +1,15 @@
 ---
-title: "SMDM-Europe-2023"
+title: "Health Economics Modeling Workshop"
+subtitle: "Berlin, Germany May 2023"
+format: 
+  html:
+    link-external-newwindow: true
+editor_options: 
+  chunk_output_type: console
+filters:
+   - lightbox
+lightbox: auto
+bibliography: lectures/references.bib
 ---
 
 This is a Quarto website.
