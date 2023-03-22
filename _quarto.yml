@@ -1,0 +1,51 @@
+project:
+  type: website
+  resources:
+    - "*.xlsx"
+    - "*.xlsm"
+    - "*.xls"
+    - "*.pptx"
+
+website:
+  title: "iHEA 2023: Health Economics Modeling Workshop"
+  margin-footer: |
+    ![](CHEMlogo_white.png)
+  sidebar:
+    style: "floating"
+    search: false
+    collapse-level: 1
+    contents:
+      - index.qmd
+      - section: "Slides"
+        contents:
+      - section: "Case Studies"
+      - section: "Tools and Applications"
+        contents:
+          - text: Workshop CEA Shiny Application
+            href: https://mhorta.shinyapps.io/shinycea3/
+          - text: Gompertz Mortality Parameters Fit to UN Life Table Data
+            href: https://mhorta.shinyapps.io/gomp/
+          - text: Decision Tree Drawing Tool
+            href: https://dare.shinyapps.io/tree/
+          - text: Mermaid Live Editor (Facilitates easy model diagram drawing)
+            href: https://mermaid.live/
+          - text: Graphviz Visual Editor
+            href: http://magjac.com/graphviz-visual-editor//
+          - text: Markov Modeling in R (YouTube Video Series)
+            href: https://www.youtube.com/playlist?list=PLIT7NqYN7YT0TypPdKdN4qTomBp2aqt_C
+          - text: Markov Modeling in R
+            href: https://darth-git.github.io/darthpack/articles/darthpack.html
+      - text: Instructors 
+        href: roster.qmd
+
+execute:
+  freeze: auto  # re-render only when source changes
+
+format:
+  html:
+    theme: flatly
+    css: styles.css
+    toc: true
+
+editor: visual
+
