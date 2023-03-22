@@ -1,0 +1,288 @@
+---
+title: "Parameters for Distributions"
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+[Source](https://www.johndcook.com/quantiles_parameters.pdf) [Another source](https://forum.effectivealtruism.org/posts/tvTqRtMLnJiiuAep5/how-to-determine-distribution-parameters-from-quantiles) [Excel Functions](https://docs.google.com/spreadsheets/d/1noozmyQvdqVXB8lH1JP1P7e6g-0FSV-9Q1EZS3Gh220/edit#gid=0)
+
+```{r setup}
+
+library(tidyverse)
+```
+
+# Normal Distribution
+
+$$
+\sigma = \frac{x_2 - x_1}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$ {#eq-norm.sigma}
+
+$$
+\mu = \frac{x_1\Phi^{-1}(p_2)-x_2\Phi^{-1}(p_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$
+
+```{r}
+x1 <- qnorm(0.1,1.3,.2)
+p1 <- 0.1
+
+x2 <- qnorm(0.9,1.3,.2)
+p2 <- 0.9
+
+param_normal <- function(x1,x2,p1,p2) {
+    sigma = (x2 - x1) / (qnorm(p2,0,1)-qnorm(p1,0,1)); sigma
+    mu <- (x1*qnorm(p2,0,1)-x2*qnorm(p1,0,1))/(qnorm(p2,0,1)-qnorm(p1,0,1)); mu
+    
+    c("mu" = mu, "sigma" = sigma)
+}
+
+
+```
+
+# Gamma
+
+```{r}
+x1 <- 0.6
+x2 <- 0.8
+p1 <- 0.1
+p2 <- 0.9
+
+gamma_fn <- function(alpha) {
+    x1*qgamma(p2,shape = alpha, scale =1) - x2 * qgamma(p1, shape = alpha, scale = 1)
+}
+
+calc_beta <- function(x1,p1,alpha) {
+    x1 / qgamma(p1,alpha,1)
+}
+
+curve(gamma_fn, xlim = c(1,100), col = "blue", lwd = 1.5, lty=2)
+abline(a=0,b=0)
+
+alpha_ <- uniroot(gamma_fn,c(70,85))$root; alpha_
+beta_ <- calc_beta(x1 = x1,  p1 = p1, alpha = alpha_); beta_
+
+# Check the answer
+qgamma(0.1,shape = alpha_, scale = beta_)
+qgamma(0.9,shape = alpha_, scale = beta_)
+
+param_gamma <- function(x1,x2,p1,p2,range) {
+    alpha_ <- uniroot(gamma_fn,range)$root; alpha_
+    beta_ <- calc_beta(x1 = x1,  p1 = p1, alpha = alpha_); beta_
+    
+    c("alpha" = alpha_, "beta" = beta_)
+}
+param_gamma(x1= x1, x2 = x2, p1 = p1, p2 = p2, range = c(60,100))
+
+```
+
+# Beta Distribution
+
+```{r}
+# Source: https://stats.stackexchange.com/questions/112614/determining-beta-distribution-parameters-alpha-and-beta-from-two-arbitrary
+
+x1 <- 0.6
+x2 <- 0.8
+p1 <- 0.1
+p2 <- 0.9
+
+# Logistic transformation of the Beta CDF.
+f.beta <- function(alpha, beta, x, lower=0, upper=1) {
+  p <- pbeta((x-lower)/(upper-lower), alpha, beta)
+  log(p/(1-p))
+}
+
+# Sums of squares.
+delta <- function(fit, actual) sum((fit-actual)^2)
+
+# The objective function handles the transformed parameters `theta` and
+# uses `f.beta` and `delta` to fit the values and measure their discrepancies.
+objective <- function(theta, x, prob, ...) {
+  ab <- exp(theta) # Parameters are the *logs* of alpha and beta
+  fit <- f.beta(ab[1], ab[2], x, ...)
+  return (delta(fit, prob))
+}
+
+x.p <- (function(p) log(p/(1-p)))(c(p1, p2))
+start <- log(c(1e1, 1e1))
+sol <- nlm(objective, start, x=c(x1,x2), prob=x.p, lower=0, upper=1, typsize=c(1,1), fscale=1e-12, gradtol=1e-12)
+params <- exp(sol$estimate); params
+qbeta(p = c(p1, p2), params[1], params[2])
+
+```
+
+```{r, eval = FALSE}
+
+# Step 1: Define the parameters and uncertainty distributions.
+
+w1 = 2
+w1.low = 1.75
+w1.hi = 2.25
+p1.low = 0.1
+p1.hi = 0.9
+
+c1 = 1
+c1.low = 1
+c1.hi = 1
+p1.low = 0.1
+p1.hi = 0.9
+
+w2 = 1
+w2.low = 1
+w2.hi = 1
+
+c2 = 0.85
+c2.low = 0.75
+c2.hi = 0.95
+p2.low = 0.1
+p2.hi = 0.9
+
+x1 = c2.low
+x2 = c2.hi
+p1 = p2.low
+p2 = p2.hi
+dist = "unif"
+
+get_dist_params <- function(x1, x2, p1, p2, dist = "unif", range = NULL) {
+    
+    if (dist=="unif") {
+        get_min_unif <- function(x1, x2, p1, p2) {
+            (p2*x1-p1*x2) / (p2 - p1) 
+        }
+        get_max_unif <- function(x1, x2, p1 , p2) {
+            ((1-p1)*x2-(1-p2)*x1)/(p2-p1)
+        }
+        get_avg_unif <- function(x1, x2, p1, p2) {
+            mean(c(get_min_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2),
+                   get_max_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2)))
+        }
+        
+        params <- c(mean = get_avg_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2), 
+                    median = get_avg_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2),
+                    min = get_min_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2),
+                    max = get_max_unif(x1 = x1, x2 = x2, p1 = p1, p2 = p2))
+        attr(params,"dist") = "uniform"
+    }
+    
+    if (dist == "norm") {
+        param_norm <- function(x1,x2,p1,p2) {
+            sigma = (x2 - x1) / (qnorm(p2,0,1)-qnorm(p1,0,1)); sigma
+            mu <- (x1*qnorm(p2,0,1)-x2*qnorm(p1,0,1))/(qnorm(p2,0,1)-qnorm(p1,0,1)); mu
+            
+            c("mean" = mu, "sd" = sigma)
+        }
+        
+        params = param_norm(x1 = x1, x2 = x2, p1 = p1, p2 = p2)
+        attr(params,"dist") = "normal"
+    }
+    
+    if (dist == "lognorm") {
+        get_mean_of_log <- function(x1, x2, p1, p2) {
+            (qnorm(p2,0,1)*log(x1)-qnorm(p1,0,1)*log(x2)) / (qnorm(p2,0,1)-qnorm(p1,0,1))
+        }
+        mean_of_log <- get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)
+        
+        get_sd_of_log <- function(x1, x2, p1 , p2) {
+            (log(x2) - log(x1)) / (qnorm(p2,0,1) - qnorm(p1,0,1))
+        }
+        sd_of_log <- get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)
+        
+        # params <- c("mean" = exp(get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2) + 0.5 * get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2),
+        #   "median" = exp(get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)),
+        #   "sd" = sqrt((exp(get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2)-1) * exp(2 * get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2) + 
+        #                                                                                      get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2)))
+        
+        params <- c("mean_log" = get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2), 
+                    "sd_log" = get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2))
+        attr(params,"dist") = "lognormal"
+
+    }
+    
+    if (dist == "gamma") {
+        gamma_fn <- function(alpha) {
+            x1*qgamma(p2,shape = alpha, scale =1) - x2 * qgamma(p1, shape = alpha, scale = 1)
+        }
+        
+        calc_beta <- function(x1,p1,alpha) {
+            x1 / qgamma(p1,alpha,1)
+        }
+        
+        #curve(gamma_fn, xlim = c(1,100), col = "blue", lwd = 1.5, lty=2)
+        #abline(a=0,b=0)
+        
+        alpha_ <- uniroot(gamma_fn,c(1,100))$root; alpha_
+        beta_ <- calc_beta(x1 = x1,  p1 = p1, alpha = alpha_); beta_
+    }
+    return(params)
+    
+}
+
+
+get_dist_params(x1 = w1.low, x2 = w1.hi, p1 = p1.low, p2 = p1.hi, dist = "lognorm" )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+disc_power <- function(fit) {
+    beta.hat <- fit["W",]
+    accept <- 1-as.integer(dplyr::between(0,beta.hat[,2],beta.hat[,3]))
+    return(accept)
+}
+
+X_W(n_=1000, p_treat=0.5, tau=60) %>% 
+    est() %>% 
+    disc_power()
+
+
+val.stat.life = 9600000
+
+surv.1 <- 0.987
+surv.0 <- 0.97
+
+val.stat.life*(surv.1-surv.0)
+
+
+w.eitc <- 1
+c.eitc <- rgamma(1e3,rate = 89,shape=1); mean(c.eitc)
+
+https://www.johndcook.com/quantiles_parameters.pdf
+
+
+qnorm(0.1, mean = 1, sd = 1)
+
+x1 <- qnorm(0.1,1.3,.2)
+p1 <- 0.1
+
+x2 <- qnorm(0.9,1.3,.2)
+p2 <- 0.9
+
+param_normal <- function(x1,x2,p1,p2) {
+    sigma = (x2 - x1) / (qnorm(p2,0,1)-qnorm(p1,0,1)); sigma
+    mu <- (x1*qnorm(p2,0,1)-x2*qnorm(p1,0,1))/(qnorm(p2,0,1)-qnorm(p1,0,1)); mu
+    
+    c("mu" = mu, "sigma" = sigma)
+}
+
+param_normal(x1 = 3, p1 = .1, x2 = 5, p2 = .9)
+
+```
