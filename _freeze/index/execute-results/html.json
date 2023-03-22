@@ -1,7 +1,7 @@
 {
-  "hash": "a74ffac432baecb2775991dad4a0a446",
+  "hash": "d638a1753b3d7ce037082e4524505f32",
   "result": {
-    "markdown": "---\ntitle: \"SMDM-Europe-2023\"\n---\n\n\nThis is a Quarto website.\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 2\n```\n:::\n:::\n",
+    "markdown": "---\ntitle: \"Health Economics Modeling Workshop\"\nsubtitle: \"Berlin, Germany May 2023\"\nformat: \n  html:\n    link-external-newwindow: true\neditor_options: \n  chunk_output_type: console\nfilters:\n   - lightbox\nlightbox: auto\nbibliography: lectures/references.bib\n---\n\n\nThis is a Quarto website.\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 2\n```\n:::\n:::\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"
