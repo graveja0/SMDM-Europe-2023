@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.272">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>SMDM Europe 2023: Health Economics Modeling Workshop - Cause-Deleted Life Tables</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script src="../../../site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="../../../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">SMDM Europe 2023: Health Economics Modeling Workshop</li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../../">SMDM Europe 2023: Health Economics Modeling Workshop</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">What They Didn’t Teach You About Decision Modeling</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../blog/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workshop Blog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
+ <span class="menu-text">Slides</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../lectures/lec_welcome.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome and Introductions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../lectures/lec_structure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">5. Structuring the Markov Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../lectures/exercise_structure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Group Exercise - Populating a Markov Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../lectures/exercise_ANS_structure.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Group Exercise Answer - Populating a Markov Model</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Case Studies</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false">
+ <span class="menu-text">Tools and Applications</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://mhorta.shinyapps.io/shinycea3/" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workshop CEA Shiny Application</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://mhorta.shinyapps.io/gomp/" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gompertz Mortality Parameters Fit to UN Life Table Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://dare.shinyapps.io/tree/" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Tree Drawing Tool</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://mermaid.live/" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Mermaid Live Editor (Facilitates easy model diagram drawing)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="http://magjac.com/graphviz-visual-editor//" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Graphviz Visual Editor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://www.youtube.com/playlist?list=PLIT7NqYN7YT0TypPdKdN4qTomBp2aqt_C" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Markov Modeling in R (YouTube Video Series)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://darth-git.github.io/darthpack/articles/darthpack.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Markov Modeling in R</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../roster.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Instructors</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#construct-a-life-table" id="toc-construct-a-life-table" class="nav-link" data-scroll-target="#construct-a-life-table">Construct a Life Table</a></li>
+  <li><a href="#construct-a-cause-deleted-life-table" id="toc-construct-a-cause-deleted-life-table" class="nav-link" data-scroll-target="#construct-a-cause-deleted-life-table">Construct a Cause-Deleted Life Table</a>
+  <ul class="collapse">
+  <li><a href="#cause-deleted-life-tables-approach-1" id="toc-cause-deleted-life-tables-approach-1" class="nav-link" data-scroll-target="#cause-deleted-life-tables-approach-1">Cause-Deleted Life Tables: Approach 1</a></li>
+  <li><a href="#cause-deleted-life-tables-approach-2" id="toc-cause-deleted-life-tables-approach-2" class="nav-link" data-scroll-target="#cause-deleted-life-tables-approach-2">Cause-Deleted Life Tables: Approach 2</a></li>
+  <li><a href="#final-cause-deleted-life-table" id="toc-final-cause-deleted-life-table" class="nav-link" data-scroll-target="#final-cause-deleted-life-table">Final Cause-Deleted Life Table</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    <div class="quarto-margin-footer"><div class="margin-footer-item">
+<p><img src="CHEMlogo_white.png" class="img-fluid"></p>
+</div></div></div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Cause-Deleted Life Tables</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p><a href="https://grodri.github.io/demography/neoplasms">Code inspiration</a> <a href="http://www.ub.edu/rfa/R/life_tables.html">Additional code</a></p>
+</section>
+<section id="construct-a-life-table" class="level1">
+<h1>Construct a Life Table</h1>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source URL: https://grodri.github.io/demography/periodlt</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://grodri.github.io/datasets/preston31.dat"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>b31 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(url, <span class="at">header=</span><span class="cn">FALSE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(b31) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"age"</span>,<span class="st">"N"</span>,<span class="st">"D"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>b31 <span class="ot">&lt;-</span> b31_ <span class="ot">&lt;-</span> </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    b31 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(haven<span class="sc">::</span><span class="fu">read_dta</span>(<span class="st">"https://grodri.github.io/datasets/kfnax.dta"</span>), kfnax, <span class="at">by=</span><span class="st">"age"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">n =</span> <span class="fu">c</span>(<span class="fu">diff</span>(age),<span class="dv">0</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">m =</span> D <span class="sc">/</span> N) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">a =</span> nax) </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>cond <span class="ot">&lt;-</span> <span class="fu">rep</span>(b31[<span class="dv">1</span>,<span class="st">"m"</span>] <span class="sc">&gt;=</span> <span class="fl">0.107</span>, <span class="dv">2</span>) <span class="co"># condition must be a vector here</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>b31[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"a"</span>] <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(cond, <span class="fu">c</span>(<span class="fl">0.330</span>, <span class="fl">1.352</span>) ,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  b31[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="st">"a"</span>] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.045</span>, <span class="fl">1.651</span>) <span class="sc">+</span> <span class="fu">c</span>(<span class="fl">2.684</span>, <span class="sc">-</span><span class="fl">2.816</span>)<span class="sc">*</span> b31[<span class="dv">1</span>,<span class="st">"m"</span>])</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>last <span class="ot">&lt;-</span> <span class="fu">nrow</span>(b31)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>b31[last,<span class="st">"a"</span>] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span> b31[last,<span class="st">"m"</span>]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>b31 <span class="ot">&lt;-</span> b31 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">q =</span> n <span class="sc">*</span> m<span class="sc">/</span>(<span class="dv">1</span> <span class="sc">+</span> (n <span class="sc">-</span> a) <span class="sc">*</span> m), <span class="at">p =</span> <span class="dv">1</span> <span class="sc">-</span> q)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>b31[last, <span class="fu">c</span>(<span class="st">"q"</span>,<span class="st">"p"</span>)] <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>b31 <span class="ot">&lt;-</span> </span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    b31 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">lx =</span> <span class="dv">100000</span> <span class="sc">*</span> <span class="fu">cumprod</span>( <span class="fu">c</span>(<span class="dv">1</span>, p[<span class="sc">-</span>last])),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>           <span class="at">d =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fu">diff</span>(lx), lx[last]),</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>           <span class="at">L =</span>  (lx <span class="sc">-</span> d) <span class="sc">*</span> n <span class="sc">+</span>  d <span class="sc">*</span> a) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">T =</span> <span class="fu">sum</span>(L) <span class="sc">-</span> <span class="fu">cumsum</span>(L) <span class="sc">+</span> L,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>           <span class="at">e =</span> T<span class="sc">/</span>lx)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>b31 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="tbl-life-table" class="anchored">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table&nbsp;1: Life Table</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">N</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">a</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">m</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">q</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">lx</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">d</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">L</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">T</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">e</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">47925</td>
+<td style="text-align: right;">419</td>
+<td style="text-align: right;">0.06847</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.00874</td>
+<td style="text-align: right;">0.00867</td>
+<td style="text-align: right;">0.99133</td>
+<td style="text-align: right;">100000</td>
+<td style="text-align: right;">867.220</td>
+<td style="text-align: right;">99192</td>
+<td style="text-align: right;">7288901</td>
+<td style="text-align: right;">72.8890</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">189127</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">1.62638</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.00037</td>
+<td style="text-align: right;">0.00148</td>
+<td style="text-align: right;">0.99852</td>
+<td style="text-align: right;">99133</td>
+<td style="text-align: right;">146.636</td>
+<td style="text-align: right;">396183</td>
+<td style="text-align: right;">7189709</td>
+<td style="text-align: right;">72.5260</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">234793</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">2.50000</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">0.00077</td>
+<td style="text-align: right;">0.99923</td>
+<td style="text-align: right;">98986</td>
+<td style="text-align: right;">75.857</td>
+<td style="text-align: right;">494741</td>
+<td style="text-align: right;">6793526</td>
+<td style="text-align: right;">68.6311</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">238790</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">3.14300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00019</td>
+<td style="text-align: right;">0.00096</td>
+<td style="text-align: right;">0.99904</td>
+<td style="text-align: right;">98910</td>
+<td style="text-align: right;">95.235</td>
+<td style="text-align: right;">494375</td>
+<td style="text-align: right;">6298785</td>
+<td style="text-align: right;">63.6818</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">254996</td>
+<td style="text-align: right;">249</td>
+<td style="text-align: right;">2.72400</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00098</td>
+<td style="text-align: right;">0.00487</td>
+<td style="text-align: right;">0.99513</td>
+<td style="text-align: right;">98815</td>
+<td style="text-align: right;">481.388</td>
+<td style="text-align: right;">492980</td>
+<td style="text-align: right;">5804410</td>
+<td style="text-align: right;">58.7401</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">326831</td>
+<td style="text-align: right;">420</td>
+<td style="text-align: right;">2.52000</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00129</td>
+<td style="text-align: right;">0.00640</td>
+<td style="text-align: right;">0.99360</td>
+<td style="text-align: right;">98334</td>
+<td style="text-align: right;">629.820</td>
+<td style="text-align: right;">490106</td>
+<td style="text-align: right;">5311431</td>
+<td style="text-align: right;">54.0144</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">355086</td>
+<td style="text-align: right;">403</td>
+<td style="text-align: right;">2.48100</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00113</td>
+<td style="text-align: right;">0.00566</td>
+<td style="text-align: right;">0.99434</td>
+<td style="text-align: right;">97704</td>
+<td style="text-align: right;">552.858</td>
+<td style="text-align: right;">487127</td>
+<td style="text-align: right;">4821324</td>
+<td style="text-align: right;">49.3463</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">324222</td>
+<td style="text-align: right;">441</td>
+<td style="text-align: right;">2.60100</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00136</td>
+<td style="text-align: right;">0.00678</td>
+<td style="text-align: right;">0.99322</td>
+<td style="text-align: right;">97151</td>
+<td style="text-align: right;">658.565</td>
+<td style="text-align: right;">484175</td>
+<td style="text-align: right;">4334198</td>
+<td style="text-align: right;">44.6130</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">269963</td>
+<td style="text-align: right;">508</td>
+<td style="text-align: right;">2.70100</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00188</td>
+<td style="text-align: right;">0.00937</td>
+<td style="text-align: right;">0.99063</td>
+<td style="text-align: right;">96492</td>
+<td style="text-align: right;">903.957</td>
+<td style="text-align: right;">480384</td>
+<td style="text-align: right;">3850023</td>
+<td style="text-align: right;">39.8997</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">261971</td>
+<td style="text-align: right;">769</td>
+<td style="text-align: right;">2.66300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00294</td>
+<td style="text-align: right;">0.01458</td>
+<td style="text-align: right;">0.98542</td>
+<td style="text-align: right;">95588</td>
+<td style="text-align: right;">1393.412</td>
+<td style="text-align: right;">474686</td>
+<td style="text-align: right;">3369639</td>
+<td style="text-align: right;">35.2515</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">238011</td>
+<td style="text-align: right;">1154</td>
+<td style="text-align: right;">2.69800</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00485</td>
+<td style="text-align: right;">0.02397</td>
+<td style="text-align: right;">0.97603</td>
+<td style="text-align: right;">94195</td>
+<td style="text-align: right;">2258.325</td>
+<td style="text-align: right;">465777</td>
+<td style="text-align: right;">2894953</td>
+<td style="text-align: right;">30.7336</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">261612</td>
+<td style="text-align: right;">1866</td>
+<td style="text-align: right;">2.67600</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00713</td>
+<td style="text-align: right;">0.03508</td>
+<td style="text-align: right;">0.96492</td>
+<td style="text-align: right;">91937</td>
+<td style="text-align: right;">3225.321</td>
+<td style="text-align: right;">452188</td>
+<td style="text-align: right;">2429176</td>
+<td style="text-align: right;">26.4223</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">181385</td>
+<td style="text-align: right;">2043</td>
+<td style="text-align: right;">2.64500</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01126</td>
+<td style="text-align: right;">0.05486</td>
+<td style="text-align: right;">0.94514</td>
+<td style="text-align: right;">88711</td>
+<td style="text-align: right;">4866.838</td>
+<td style="text-align: right;">432096</td>
+<td style="text-align: right;">1976988</td>
+<td style="text-align: right;">22.2856</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">187962</td>
+<td style="text-align: right;">3496</td>
+<td style="text-align: right;">2.62400</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01860</td>
+<td style="text-align: right;">0.08906</td>
+<td style="text-align: right;">0.91094</td>
+<td style="text-align: right;">83845</td>
+<td style="text-align: right;">7467.337</td>
+<td style="text-align: right;">401480</td>
+<td style="text-align: right;">1544893</td>
+<td style="text-align: right;">18.4257</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">153832</td>
+<td style="text-align: right;">4366</td>
+<td style="text-align: right;">2.61900</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.02838</td>
+<td style="text-align: right;">0.13293</td>
+<td style="text-align: right;">0.86707</td>
+<td style="text-align: right;">76377</td>
+<td style="text-align: right;">10152.475</td>
+<td style="text-align: right;">357713</td>
+<td style="text-align: right;">1143412</td>
+<td style="text-align: right;">14.9706</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">105169</td>
+<td style="text-align: right;">4337</td>
+<td style="text-align: right;">2.59300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.04124</td>
+<td style="text-align: right;">0.18757</td>
+<td style="text-align: right;">0.81243</td>
+<td style="text-align: right;">66225</td>
+<td style="text-align: right;">12421.994</td>
+<td style="text-align: right;">301224</td>
+<td style="text-align: right;">785699</td>
+<td style="text-align: right;">11.8641</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">73694</td>
+<td style="text-align: right;">5279</td>
+<td style="text-align: right;">2.51800</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.07163</td>
+<td style="text-align: right;">0.30410</td>
+<td style="text-align: right;">0.69590</td>
+<td style="text-align: right;">53803</td>
+<td style="text-align: right;">16361.539</td>
+<td style="text-align: right;">228404</td>
+<td style="text-align: right;">484475</td>
+<td style="text-align: right;">9.0046</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">57512</td>
+<td style="text-align: right;">6460</td>
+<td style="text-align: right;">2.42300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.11232</td>
+<td style="text-align: right;">0.43555</td>
+<td style="text-align: right;">0.56445</td>
+<td style="text-align: right;">37441</td>
+<td style="text-align: right;">16307.457</td>
+<td style="text-align: right;">145182</td>
+<td style="text-align: right;">256070</td>
+<td style="text-align: right;">6.8393</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">32248</td>
+<td style="text-align: right;">6146</td>
+<td style="text-align: right;">5.24699</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.19059</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">21134</td>
+<td style="text-align: right;">21133.767</td>
+<td style="text-align: right;">110889</td>
+<td style="text-align: right;">110889</td>
+<td style="text-align: right;">5.2470</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+</div>
+</div>
+</section>
+<section id="construct-a-cause-deleted-life-table" class="level1">
+<h1>Construct a Cause-Deleted Life Table</h1>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">=</span> <span class="st">"https://grodri.github.io/datasets/preston41.dat"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>b41 <span class="ot">&lt;-</span> <span class="fu">read.table</span>(url, <span class="at">header=</span><span class="cn">FALSE</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(b41) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"age"</span>,<span class="st">"D"</span>,<span class="st">"Di"</span>,<span class="st">"lx"</span>,<span class="st">"a"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># age = age</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># D = number of deaths</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Di = number of neoplasm deaths</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># lx = number of individuals alive</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># a = {a}_n_{x} Nax is the average number of years lived in the x to x + n age interval by those dying </span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#      in the interval. It is calculated as follows: Nax = 1/n * (Lx + Lx+1 + ... + Lx+n) where Lx </span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#      is the number of people surviving to age x, and n is the interval of the age group.</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#      Nax is an important measure of mortality, as it indicates how many years people are expected </span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#      to live after reaching a certain age.</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># qx = death rate at age x</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># mux = force of mortality at age x</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    b41 <span class="sc">%&gt;%</span> </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">q =</span> <span class="fu">edit.na</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">lead</span>(lx) <span class="sc">/</span> lx, <span class="dv">1</span>),   <span class="co"># this causes the last value to be one</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>           <span class="at">qi =</span> q <span class="sc">*</span> Di <span class="sc">/</span> D, <span class="co"># The conditional probability of dying of a given cause given survival to the age group </span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># is easy to obtain, we just multiply the overall probability by the ratio of deaths of </span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># a given cause to all deaths</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>           <span class="at">d =</span> lx <span class="sc">*</span> q,      <span class="co"># The unconditional counts of deaths of any cause and of a given cause are calculated</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># multiplying by the number surviving to the start of each age group, which is lx.</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>                            <span class="co"># Recall that to die of cause i in the interval [x, x+n) one must survive all causes up to age x.</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>           <span class="at">di =</span> lx <span class="sc">*</span> qi) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>( <span class="co"># Calculate survival function assuming constant hazard within age groups.</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">n =</span> <span class="fu">c</span>(<span class="fu">diff</span>(age),<span class="cn">NA</span>), </span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        <span class="at">m =</span> <span class="fu">edit.na</span>(q <span class="sc">/</span> (n <span class="sc">-</span> q <span class="sc">*</span> (n <span class="sc">-</span> a)), <span class="dv">1</span> <span class="sc">/</span> <span class="fu">tail</span>(a,<span class="dv">1</span>)) <span class="co"># m[last] = 1/a[last]</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>( <span class="co"># Compute cumulative hazard and survival </span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        <span class="at">H =</span> <span class="fu">cumsum</span>(n <span class="sc">*</span> m), </span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">S =</span> <span class="fu">edit.na</span>(<span class="fu">exp</span>(<span class="sc">-</span><span class="fu">lag</span>(H)),<span class="dv">1</span>) <span class="co"># S[1]= 1</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">P =</span> <span class="fu">edit.na</span>((S <span class="sc">-</span> <span class="fu">lead</span>(S))<span class="sc">/</span>m, <span class="fu">tail</span>(S<span class="sc">/</span>m,<span class="dv">1</span>)))</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">19</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="tbl-data-head" class="anchored">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table&nbsp;2: Deaths for all causes and from neoplasms for U.S. females in 1991</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Di</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">lx</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">a</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">q</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">qi</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">d</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">di</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">m</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">H</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">S</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">P</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">15758</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">100000</td>
+<td style="text-align: right;">0.152</td>
+<td style="text-align: right;">0.00783</td>
+<td style="text-align: right;">0.00003</td>
+<td style="text-align: right;">783</td>
+<td style="text-align: right;">3.1304</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.00788</td>
+<td style="text-align: right;">0.00788</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.99607</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3169</td>
+<td style="text-align: right;">275</td>
+<td style="text-align: right;">99217</td>
+<td style="text-align: right;">1.605</td>
+<td style="text-align: right;">0.00168</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">167</td>
+<td style="text-align: right;">14.4919</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.00042</td>
+<td style="text-align: right;">0.00957</td>
+<td style="text-align: right;">0.99215</td>
+<td style="text-align: right;">3.96525</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1634</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">99050</td>
+<td style="text-align: right;">2.275</td>
+<td style="text-align: right;">0.00092</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">14.9253</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00018</td>
+<td style="text-align: right;">0.01049</td>
+<td style="text-align: right;">0.99048</td>
+<td style="text-align: right;">4.95012</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">1573</td>
+<td style="text-align: right;">217</td>
+<td style="text-align: right;">98959</td>
+<td style="text-align: right;">2.843</td>
+<td style="text-align: right;">0.00090</td>
+<td style="text-align: right;">0.00012</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">12.2778</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00018</td>
+<td style="text-align: right;">0.01139</td>
+<td style="text-align: right;">0.98957</td>
+<td style="text-align: right;">4.94562</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">3955</td>
+<td style="text-align: right;">318</td>
+<td style="text-align: right;">98870</td>
+<td style="text-align: right;">2.657</td>
+<td style="text-align: right;">0.00236</td>
+<td style="text-align: right;">0.00019</td>
+<td style="text-align: right;">233</td>
+<td style="text-align: right;">18.7343</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00047</td>
+<td style="text-align: right;">0.01375</td>
+<td style="text-align: right;">0.98868</td>
+<td style="text-align: right;">4.93757</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">4948</td>
+<td style="text-align: right;">467</td>
+<td style="text-align: right;">98637</td>
+<td style="text-align: right;">2.547</td>
+<td style="text-align: right;">0.00262</td>
+<td style="text-align: right;">0.00025</td>
+<td style="text-align: right;">258</td>
+<td style="text-align: right;">24.3504</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00052</td>
+<td style="text-align: right;">0.01636</td>
+<td style="text-align: right;">0.98635</td>
+<td style="text-align: right;">4.92529</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">6491</td>
+<td style="text-align: right;">856</td>
+<td style="text-align: right;">98379</td>
+<td style="text-align: right;">2.550</td>
+<td style="text-align: right;">0.00314</td>
+<td style="text-align: right;">0.00041</td>
+<td style="text-align: right;">309</td>
+<td style="text-align: right;">40.7493</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00063</td>
+<td style="text-align: right;">0.01951</td>
+<td style="text-align: right;">0.98377</td>
+<td style="text-align: right;">4.91112</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">9428</td>
+<td style="text-align: right;">1924</td>
+<td style="text-align: right;">98070</td>
+<td style="text-align: right;">2.616</td>
+<td style="text-align: right;">0.00425</td>
+<td style="text-align: right;">0.00087</td>
+<td style="text-align: right;">417</td>
+<td style="text-align: right;">85.0984</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00085</td>
+<td style="text-align: right;">0.02377</td>
+<td style="text-align: right;">0.98068</td>
+<td style="text-align: right;">4.89296</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">12027</td>
+<td style="text-align: right;">3532</td>
+<td style="text-align: right;">97653</td>
+<td style="text-align: right;">2.677</td>
+<td style="text-align: right;">0.00584</td>
+<td style="text-align: right;">0.00171</td>
+<td style="text-align: right;">570</td>
+<td style="text-align: right;">167.3934</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00117</td>
+<td style="text-align: right;">0.02962</td>
+<td style="text-align: right;">0.97651</td>
+<td style="text-align: right;">4.86829</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">15543</td>
+<td style="text-align: right;">5958</td>
+<td style="text-align: right;">97083</td>
+<td style="text-align: right;">2.685</td>
+<td style="text-align: right;">0.00818</td>
+<td style="text-align: right;">0.00314</td>
+<td style="text-align: right;">794</td>
+<td style="text-align: right;">304.3590</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00164</td>
+<td style="text-align: right;">0.03783</td>
+<td style="text-align: right;">0.97081</td>
+<td style="text-align: right;">4.83418</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">19264</td>
+<td style="text-align: right;">8434</td>
+<td style="text-align: right;">96289</td>
+<td style="text-align: right;">2.681</td>
+<td style="text-align: right;">0.01330</td>
+<td style="text-align: right;">0.00582</td>
+<td style="text-align: right;">1281</td>
+<td style="text-align: right;">560.8365</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00268</td>
+<td style="text-align: right;">0.05122</td>
+<td style="text-align: right;">0.96287</td>
+<td style="text-align: right;">4.78229</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">25384</td>
+<td style="text-align: right;">11673</td>
+<td style="text-align: right;">95008</td>
+<td style="text-align: right;">2.655</td>
+<td style="text-align: right;">0.02095</td>
+<td style="text-align: right;">0.00963</td>
+<td style="text-align: right;">1990</td>
+<td style="text-align: right;">915.1146</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00423</td>
+<td style="text-align: right;">0.07237</td>
+<td style="text-align: right;">0.95007</td>
+<td style="text-align: right;">4.70046</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">37211</td>
+<td style="text-align: right;">17078</td>
+<td style="text-align: right;">93018</td>
+<td style="text-align: right;">2.647</td>
+<td style="text-align: right;">0.03371</td>
+<td style="text-align: right;">0.01547</td>
+<td style="text-align: right;">3136</td>
+<td style="text-align: right;">1439.2682</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00685</td>
+<td style="text-align: right;">0.10663</td>
+<td style="text-align: right;">0.93018</td>
+<td style="text-align: right;">4.57216</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">59431</td>
+<td style="text-align: right;">25263</td>
+<td style="text-align: right;">89882</td>
+<td style="text-align: right;">2.646</td>
+<td style="text-align: right;">0.05155</td>
+<td style="text-align: right;">0.02191</td>
+<td style="text-align: right;">4633</td>
+<td style="text-align: right;">1969.4011</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01057</td>
+<td style="text-align: right;">0.15946</td>
+<td style="text-align: right;">0.89886</td>
+<td style="text-align: right;">4.37764</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">88087</td>
+<td style="text-align: right;">33534</td>
+<td style="text-align: right;">85249</td>
+<td style="text-align: right;">2.631</td>
+<td style="text-align: right;">0.07669</td>
+<td style="text-align: right;">0.02920</td>
+<td style="text-align: right;">6538</td>
+<td style="text-align: right;">2488.9631</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01592</td>
+<td style="text-align: right;">0.23904</td>
+<td style="text-align: right;">0.85261</td>
+<td style="text-align: right;">4.09781</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">114693</td>
+<td style="text-align: right;">36695</td>
+<td style="text-align: right;">78711</td>
+<td style="text-align: right;">2.628</td>
+<td style="text-align: right;">0.11552</td>
+<td style="text-align: right;">0.03696</td>
+<td style="text-align: right;">9093</td>
+<td style="text-align: right;">2909.2241</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.02444</td>
+<td style="text-align: right;">0.36126</td>
+<td style="text-align: right;">0.78738</td>
+<td style="text-align: right;">3.70583</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">143554</td>
+<td style="text-align: right;">36571</td>
+<td style="text-align: right;">69618</td>
+<td style="text-align: right;">2.618</td>
+<td style="text-align: right;">0.17427</td>
+<td style="text-align: right;">0.04439</td>
+<td style="text-align: right;">12132</td>
+<td style="text-align: right;">3090.6793</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.03801</td>
+<td style="text-align: right;">0.55131</td>
+<td style="text-align: right;">0.69679</td>
+<td style="text-align: right;">3.17293</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">164986</td>
+<td style="text-align: right;">30220</td>
+<td style="text-align: right;">57486</td>
+<td style="text-align: right;">2.570</td>
+<td style="text-align: right;">0.27363</td>
+<td style="text-align: right;">0.05012</td>
+<td style="text-align: right;">15730</td>
+<td style="text-align: right;">2881.2178</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.06312</td>
+<td style="text-align: right;">0.86691</td>
+<td style="text-align: right;">0.57620</td>
+<td style="text-align: right;">2.47064</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">320578</td>
+<td style="text-align: right;">32739</td>
+<td style="text-align: right;">41756</td>
+<td style="text-align: right;">6.539</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.10212</td>
+<td style="text-align: right;">41756</td>
+<td style="text-align: right;">4264.3278</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">0.15293</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">0.42025</td>
+<td style="text-align: right;">2.74800</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+</div>
+</div>
+<p>We obtain <code>21205</code> deaths due to neoplasms and a life-expectancy of <code>78.85</code> years.</p>
+<section id="cause-deleted-life-tables-approach-1" class="level2">
+<h2 class="anchored" data-anchor-id="cause-deleted-life-tables-approach-1">Cause-Deleted Life Tables: Approach 1</h2>
+<p>What would things look like if deaths due to neoplasms could be avoided?</p>
+<div class="cell">
+<details>
+<summary>Calculate life expectancy without deaths due to neoplasms.</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df_ <span class="ot">&lt;-</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    df <span class="sc">%&gt;%</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Rd =</span> (D <span class="sc">-</span> Di) <span class="sc">/</span> D, </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">md =</span> m <span class="sc">*</span> Rd) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>( <span class="co"># now construct a survival function, but treating </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>            <span class="co"># the hazard md as if its the only one operating</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">Hd =</span> <span class="fu">cumsum</span>(n <span class="sc">*</span> md), </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">Sd =</span> <span class="fu">edit.na</span>(<span class="fu">exp</span>(<span class="sc">-</span><span class="fu">lag</span>(Hd)),<span class="dv">1</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Pd =</span> <span class="fu">edit.na</span>((Sd <span class="sc">-</span> <span class="fu">lead</span>(Sd))<span class="sc">/</span>md, <span class="fu">tail</span>(Sd<span class="sc">/</span>md,<span class="dv">1</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This changes life-expectancy to <code>82.39</code> years. Note that this is under a (strong) assumption of independence among the competing causes.</p>
+</section>
+<section id="cause-deleted-life-tables-approach-2" class="level2">
+<h2 class="anchored" data-anchor-id="cause-deleted-life-tables-approach-2">Cause-Deleted Life Tables: Approach 2</h2>
+<p>This is based on Chiang’s method. This method assumps proportionality of cause-specific hazards within an age group (which as the textbook notes, is weaker than the constant risk assumption used above).</p>
+<div class="cell">
+<details>
+<summary>Calculate life expectancy without deaths due to neoplasms.</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df2_ <span class="ot">&lt;-</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    df_ <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pd =</span> (<span class="dv">1</span> <span class="sc">-</span> q) <span class="sc">^</span> Rd,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">ld =</span> <span class="dv">100000</span> <span class="sc">*</span> <span class="fu">cumprod</span>(<span class="fu">c</span>(<span class="dv">1</span>, pd[<span class="sc">-</span><span class="fu">length</span>(pd)]))) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">dd =</span> <span class="fu">edit.na</span>(ld <span class="sc">-</span> <span class="fu">lead</span>(ld), <span class="fu">tail</span>(ld, <span class="dv">1</span>)),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">qd =</span> dd <span class="sc">/</span> ld,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">ad =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            age <span class="sc">&lt;</span> <span class="dv">10</span> <span class="sc">|</span> age <span class="sc">==</span> <span class="dv">80</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>            n <span class="sc">+</span> Rd <span class="sc">*</span> (q <span class="sc">/</span> qd) <span class="sc">*</span> (a <span class="sc">-</span> n),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ifelse</span>(age <span class="sc">&gt;=</span> <span class="dv">10</span> <span class="sc">&amp;</span> age <span class="sc">&lt;=</span> <span class="dv">75</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                   ((<span class="sc">-</span><span class="dv">5</span> <span class="sc">/</span> <span class="dv">24</span>) <span class="sc">*</span> <span class="fu">lag</span>(dd) <span class="sc">+</span> <span class="fl">2.5</span> <span class="sc">*</span> dd <span class="sc">+</span> (<span class="dv">5</span> <span class="sc">/</span> <span class="dv">24</span>) <span class="sc">*</span> <span class="fu">lead</span>(dd)) <span class="sc">/</span> dd,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                   a <span class="sc">/</span> Rd)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">Ld =</span> <span class="fu">edit.na</span>(dd <span class="sc">*</span> ad <span class="sc">+</span> (ld <span class="sc">-</span> dd) <span class="sc">*</span> n,  <span class="fu">tail</span>(ld <span class="sc">*</span> ad, <span class="dv">1</span>))</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This method yields a life expectancy of <code>82.46</code> years.</p>
+</section>
+<section id="final-cause-deleted-life-table" class="level2">
+<h2 class="anchored" data-anchor-id="final-cause-deleted-life-table">Final Cause-Deleted Life Table</h2>
+<div class="cell">
+<details>
+<summary>Create Final Cause-Deleted Life Table.</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lt <span class="ot">&lt;-</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    df2_ <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">Td =</span> <span class="fu">sum</span>(Ld) <span class="sc">-</span> <span class="fu">cumsum</span>(Ld) <span class="sc">+</span> Ld, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">ed =</span> Td <span class="sc">/</span> ld</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="co">#%&gt;% </span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#select(age,Rd,lx,a,ld,ad,ed)</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>lt <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">19</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="tbl-final" class="anchored">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Table&nbsp;3: Cause-Deleted Life Table After Removing Deaths From Neoplasms (1991 US Females)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Di</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">lx</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">a</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">q</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">qi</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">d</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">di</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">m</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">H</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">S</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">P</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Rd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">md</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Hd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Sd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Pd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">pd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ld</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">dd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">qd</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ad</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Ld</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Td</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">15758</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">100000</td>
+<td style="text-align: right;">0.152</td>
+<td style="text-align: right;">0.00783</td>
+<td style="text-align: right;">0.00003</td>
+<td style="text-align: right;">783</td>
+<td style="text-align: right;">3.1304</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.00788</td>
+<td style="text-align: right;">0.00788</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.99607</td>
+<td style="text-align: right;">0.99600</td>
+<td style="text-align: right;">0.00785</td>
+<td style="text-align: right;">0.00785</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.99608</td>
+<td style="text-align: right;">0.99220</td>
+<td style="text-align: right;">100000</td>
+<td style="text-align: right;">779.882</td>
+<td style="text-align: right;">0.00780</td>
+<td style="text-align: right;">0.15201</td>
+<td style="text-align: right;">99339</td>
+<td style="text-align: right;">8245748</td>
+<td style="text-align: right;">82.4575</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3169</td>
+<td style="text-align: right;">275</td>
+<td style="text-align: right;">99217</td>
+<td style="text-align: right;">1.605</td>
+<td style="text-align: right;">0.00168</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">167</td>
+<td style="text-align: right;">14.4919</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.00042</td>
+<td style="text-align: right;">0.00957</td>
+<td style="text-align: right;">0.99215</td>
+<td style="text-align: right;">3.96525</td>
+<td style="text-align: right;">0.91322</td>
+<td style="text-align: right;">0.00038</td>
+<td style="text-align: right;">0.00939</td>
+<td style="text-align: right;">0.99218</td>
+<td style="text-align: right;">3.96567</td>
+<td style="text-align: right;">0.99846</td>
+<td style="text-align: right;">99220</td>
+<td style="text-align: right;">152.524</td>
+<td style="text-align: right;">0.00154</td>
+<td style="text-align: right;">1.60518</td>
+<td style="text-align: right;">396515</td>
+<td style="text-align: right;">8146410</td>
+<td style="text-align: right;">82.1044</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1634</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">99050</td>
+<td style="text-align: right;">2.275</td>
+<td style="text-align: right;">0.00092</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">14.9253</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00018</td>
+<td style="text-align: right;">0.01049</td>
+<td style="text-align: right;">0.99048</td>
+<td style="text-align: right;">4.95012</td>
+<td style="text-align: right;">0.83599</td>
+<td style="text-align: right;">0.00015</td>
+<td style="text-align: right;">0.01016</td>
+<td style="text-align: right;">0.99065</td>
+<td style="text-align: right;">4.95137</td>
+<td style="text-align: right;">0.99923</td>
+<td style="text-align: right;">99068</td>
+<td style="text-align: right;">76.094</td>
+<td style="text-align: right;">0.00077</td>
+<td style="text-align: right;">2.27521</td>
+<td style="text-align: right;">495131</td>
+<td style="text-align: right;">7749894</td>
+<td style="text-align: right;">78.2284</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">1573</td>
+<td style="text-align: right;">217</td>
+<td style="text-align: right;">98959</td>
+<td style="text-align: right;">2.843</td>
+<td style="text-align: right;">0.00090</td>
+<td style="text-align: right;">0.00012</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">12.2778</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00018</td>
+<td style="text-align: right;">0.01139</td>
+<td style="text-align: right;">0.98957</td>
+<td style="text-align: right;">4.94562</td>
+<td style="text-align: right;">0.86205</td>
+<td style="text-align: right;">0.00016</td>
+<td style="text-align: right;">0.01093</td>
+<td style="text-align: right;">0.98989</td>
+<td style="text-align: right;">4.94755</td>
+<td style="text-align: right;">0.99922</td>
+<td style="text-align: right;">98992</td>
+<td style="text-align: right;">76.752</td>
+<td style="text-align: right;">0.00078</td>
+<td style="text-align: right;">2.87537</td>
+<td style="text-align: right;">494794</td>
+<td style="text-align: right;">7254764</td>
+<td style="text-align: right;">73.2867</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">3955</td>
+<td style="text-align: right;">318</td>
+<td style="text-align: right;">98870</td>
+<td style="text-align: right;">2.657</td>
+<td style="text-align: right;">0.00236</td>
+<td style="text-align: right;">0.00019</td>
+<td style="text-align: right;">233</td>
+<td style="text-align: right;">18.7343</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00047</td>
+<td style="text-align: right;">0.01375</td>
+<td style="text-align: right;">0.98868</td>
+<td style="text-align: right;">4.93757</td>
+<td style="text-align: right;">0.91960</td>
+<td style="text-align: right;">0.00043</td>
+<td style="text-align: right;">0.01310</td>
+<td style="text-align: right;">0.98913</td>
+<td style="text-align: right;">4.94027</td>
+<td style="text-align: right;">0.99783</td>
+<td style="text-align: right;">98915</td>
+<td style="text-align: right;">214.383</td>
+<td style="text-align: right;">0.00217</td>
+<td style="text-align: right;">2.65264</td>
+<td style="text-align: right;">494071</td>
+<td style="text-align: right;">6759969</td>
+<td style="text-align: right;">68.3414</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">4948</td>
+<td style="text-align: right;">467</td>
+<td style="text-align: right;">98637</td>
+<td style="text-align: right;">2.547</td>
+<td style="text-align: right;">0.00262</td>
+<td style="text-align: right;">0.00025</td>
+<td style="text-align: right;">258</td>
+<td style="text-align: right;">24.3504</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00052</td>
+<td style="text-align: right;">0.01636</td>
+<td style="text-align: right;">0.98635</td>
+<td style="text-align: right;">4.92529</td>
+<td style="text-align: right;">0.90562</td>
+<td style="text-align: right;">0.00047</td>
+<td style="text-align: right;">0.01547</td>
+<td style="text-align: right;">0.98698</td>
+<td style="text-align: right;">4.92906</td>
+<td style="text-align: right;">0.99763</td>
+<td style="text-align: right;">98700</td>
+<td style="text-align: right;">233.829</td>
+<td style="text-align: right;">0.00237</td>
+<td style="text-align: right;">2.54826</td>
+<td style="text-align: right;">492929</td>
+<td style="text-align: right;">6265899</td>
+<td style="text-align: right;">63.4841</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">6491</td>
+<td style="text-align: right;">856</td>
+<td style="text-align: right;">98379</td>
+<td style="text-align: right;">2.550</td>
+<td style="text-align: right;">0.00314</td>
+<td style="text-align: right;">0.00041</td>
+<td style="text-align: right;">309</td>
+<td style="text-align: right;">40.7493</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00063</td>
+<td style="text-align: right;">0.01951</td>
+<td style="text-align: right;">0.98377</td>
+<td style="text-align: right;">4.91112</td>
+<td style="text-align: right;">0.86813</td>
+<td style="text-align: right;">0.00055</td>
+<td style="text-align: right;">0.01821</td>
+<td style="text-align: right;">0.98464</td>
+<td style="text-align: right;">4.91650</td>
+<td style="text-align: right;">0.99727</td>
+<td style="text-align: right;">98467</td>
+<td style="text-align: right;">268.545</td>
+<td style="text-align: right;">0.00273</td>
+<td style="text-align: right;">2.57653</td>
+<td style="text-align: right;">491682</td>
+<td style="text-align: right;">5772970</td>
+<td style="text-align: right;">58.6287</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">9428</td>
+<td style="text-align: right;">1924</td>
+<td style="text-align: right;">98070</td>
+<td style="text-align: right;">2.616</td>
+<td style="text-align: right;">0.00425</td>
+<td style="text-align: right;">0.00087</td>
+<td style="text-align: right;">417</td>
+<td style="text-align: right;">85.0984</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00085</td>
+<td style="text-align: right;">0.02377</td>
+<td style="text-align: right;">0.98068</td>
+<td style="text-align: right;">4.89296</td>
+<td style="text-align: right;">0.79593</td>
+<td style="text-align: right;">0.00068</td>
+<td style="text-align: right;">0.02160</td>
+<td style="text-align: right;">0.98196</td>
+<td style="text-align: right;">4.90148</td>
+<td style="text-align: right;">0.99661</td>
+<td style="text-align: right;">98198</td>
+<td style="text-align: right;">332.479</td>
+<td style="text-align: right;">0.00339</td>
+<td style="text-align: right;">2.58477</td>
+<td style="text-align: right;">490187</td>
+<td style="text-align: right;">5281288</td>
+<td style="text-align: right;">53.7820</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">12027</td>
+<td style="text-align: right;">3532</td>
+<td style="text-align: right;">97653</td>
+<td style="text-align: right;">2.677</td>
+<td style="text-align: right;">0.00584</td>
+<td style="text-align: right;">0.00171</td>
+<td style="text-align: right;">570</td>
+<td style="text-align: right;">167.3934</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00117</td>
+<td style="text-align: right;">0.02962</td>
+<td style="text-align: right;">0.97651</td>
+<td style="text-align: right;">4.86829</td>
+<td style="text-align: right;">0.70633</td>
+<td style="text-align: right;">0.00083</td>
+<td style="text-align: right;">0.02573</td>
+<td style="text-align: right;">0.97863</td>
+<td style="text-align: right;">4.88307</td>
+<td style="text-align: right;">0.99587</td>
+<td style="text-align: right;">97866</td>
+<td style="text-align: right;">403.829</td>
+<td style="text-align: right;">0.00413</td>
+<td style="text-align: right;">2.58246</td>
+<td style="text-align: right;">488351</td>
+<td style="text-align: right;">4791101</td>
+<td style="text-align: right;">48.9560</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">15543</td>
+<td style="text-align: right;">5958</td>
+<td style="text-align: right;">97083</td>
+<td style="text-align: right;">2.685</td>
+<td style="text-align: right;">0.00818</td>
+<td style="text-align: right;">0.00314</td>
+<td style="text-align: right;">794</td>
+<td style="text-align: right;">304.3590</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00164</td>
+<td style="text-align: right;">0.03783</td>
+<td style="text-align: right;">0.97081</td>
+<td style="text-align: right;">4.83418</td>
+<td style="text-align: right;">0.61668</td>
+<td style="text-align: right;">0.00101</td>
+<td style="text-align: right;">0.03079</td>
+<td style="text-align: right;">0.97460</td>
+<td style="text-align: right;">4.86067</td>
+<td style="text-align: right;">0.99495</td>
+<td style="text-align: right;">97462</td>
+<td style="text-align: right;">492.324</td>
+<td style="text-align: right;">0.00505</td>
+<td style="text-align: right;">2.63691</td>
+<td style="text-align: right;">486145</td>
+<td style="text-align: right;">4302750</td>
+<td style="text-align: right;">44.1481</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">19264</td>
+<td style="text-align: right;">8434</td>
+<td style="text-align: right;">96289</td>
+<td style="text-align: right;">2.681</td>
+<td style="text-align: right;">0.01330</td>
+<td style="text-align: right;">0.00582</td>
+<td style="text-align: right;">1281</td>
+<td style="text-align: right;">560.8365</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00268</td>
+<td style="text-align: right;">0.05122</td>
+<td style="text-align: right;">0.96287</td>
+<td style="text-align: right;">4.78229</td>
+<td style="text-align: right;">0.56219</td>
+<td style="text-align: right;">0.00151</td>
+<td style="text-align: right;">0.03832</td>
+<td style="text-align: right;">0.96968</td>
+<td style="text-align: right;">4.83018</td>
+<td style="text-align: right;">0.99250</td>
+<td style="text-align: right;">96969</td>
+<td style="text-align: right;">727.378</td>
+<td style="text-align: right;">0.00750</td>
+<td style="text-align: right;">2.67237</td>
+<td style="text-align: right;">483154</td>
+<td style="text-align: right;">3816605</td>
+<td style="text-align: right;">39.3589</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">25384</td>
+<td style="text-align: right;">11673</td>
+<td style="text-align: right;">95008</td>
+<td style="text-align: right;">2.655</td>
+<td style="text-align: right;">0.02095</td>
+<td style="text-align: right;">0.00963</td>
+<td style="text-align: right;">1990</td>
+<td style="text-align: right;">915.1146</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00423</td>
+<td style="text-align: right;">0.07237</td>
+<td style="text-align: right;">0.95007</td>
+<td style="text-align: right;">4.70046</td>
+<td style="text-align: right;">0.54014</td>
+<td style="text-align: right;">0.00229</td>
+<td style="text-align: right;">0.04975</td>
+<td style="text-align: right;">0.96241</td>
+<td style="text-align: right;">4.78464</td>
+<td style="text-align: right;">0.98863</td>
+<td style="text-align: right;">96242</td>
+<td style="text-align: right;">1094.144</td>
+<td style="text-align: right;">0.01137</td>
+<td style="text-align: right;">2.69457</td>
+<td style="text-align: right;">478687</td>
+<td style="text-align: right;">3333451</td>
+<td style="text-align: right;">34.6362</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">37211</td>
+<td style="text-align: right;">17078</td>
+<td style="text-align: right;">93018</td>
+<td style="text-align: right;">2.647</td>
+<td style="text-align: right;">0.03371</td>
+<td style="text-align: right;">0.01547</td>
+<td style="text-align: right;">3136</td>
+<td style="text-align: right;">1439.2682</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.00685</td>
+<td style="text-align: right;">0.10663</td>
+<td style="text-align: right;">0.93018</td>
+<td style="text-align: right;">4.57216</td>
+<td style="text-align: right;">0.54105</td>
+<td style="text-align: right;">0.00371</td>
+<td style="text-align: right;">0.06828</td>
+<td style="text-align: right;">0.95147</td>
+<td style="text-align: right;">4.71354</td>
+<td style="text-align: right;">0.98162</td>
+<td style="text-align: right;">95148</td>
+<td style="text-align: right;">1749.234</td>
+<td style="text-align: right;">0.01838</td>
+<td style="text-align: right;">2.70304</td>
+<td style="text-align: right;">471721</td>
+<td style="text-align: right;">2854764</td>
+<td style="text-align: right;">30.0035</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">59431</td>
+<td style="text-align: right;">25263</td>
+<td style="text-align: right;">89882</td>
+<td style="text-align: right;">2.646</td>
+<td style="text-align: right;">0.05155</td>
+<td style="text-align: right;">0.02191</td>
+<td style="text-align: right;">4633</td>
+<td style="text-align: right;">1969.4011</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01057</td>
+<td style="text-align: right;">0.15946</td>
+<td style="text-align: right;">0.89886</td>
+<td style="text-align: right;">4.37764</td>
+<td style="text-align: right;">0.57492</td>
+<td style="text-align: right;">0.00607</td>
+<td style="text-align: right;">0.09865</td>
+<td style="text-align: right;">0.93400</td>
+<td style="text-align: right;">4.59979</td>
+<td style="text-align: right;">0.97003</td>
+<td style="text-align: right;">93399</td>
+<td style="text-align: right;">2798.900</td>
+<td style="text-align: right;">0.02997</td>
+<td style="text-align: right;">2.69495</td>
+<td style="text-align: right;">460541</td>
+<td style="text-align: right;">2383043</td>
+<td style="text-align: right;">25.5148</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">88087</td>
+<td style="text-align: right;">33534</td>
+<td style="text-align: right;">85249</td>
+<td style="text-align: right;">2.631</td>
+<td style="text-align: right;">0.07669</td>
+<td style="text-align: right;">0.02920</td>
+<td style="text-align: right;">6538</td>
+<td style="text-align: right;">2488.9631</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.01592</td>
+<td style="text-align: right;">0.23904</td>
+<td style="text-align: right;">0.85261</td>
+<td style="text-align: right;">4.09781</td>
+<td style="text-align: right;">0.61931</td>
+<td style="text-align: right;">0.00986</td>
+<td style="text-align: right;">0.14794</td>
+<td style="text-align: right;">0.90606</td>
+<td style="text-align: right;">4.42046</td>
+<td style="text-align: right;">0.95178</td>
+<td style="text-align: right;">90600</td>
+<td style="text-align: right;">4368.320</td>
+<td style="text-align: right;">0.04822</td>
+<td style="text-align: right;">2.69590</td>
+<td style="text-align: right;">442933</td>
+<td style="text-align: right;">1922501</td>
+<td style="text-align: right;">21.2197</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">114693</td>
+<td style="text-align: right;">36695</td>
+<td style="text-align: right;">78711</td>
+<td style="text-align: right;">2.628</td>
+<td style="text-align: right;">0.11552</td>
+<td style="text-align: right;">0.03696</td>
+<td style="text-align: right;">9093</td>
+<td style="text-align: right;">2909.2241</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.02444</td>
+<td style="text-align: right;">0.36126</td>
+<td style="text-align: right;">0.78738</td>
+<td style="text-align: right;">3.70583</td>
+<td style="text-align: right;">0.68006</td>
+<td style="text-align: right;">0.01662</td>
+<td style="text-align: right;">0.23106</td>
+<td style="text-align: right;">0.86248</td>
+<td style="text-align: right;">4.13806</td>
+<td style="text-align: right;">0.91991</td>
+<td style="text-align: right;">86231</td>
+<td style="text-align: right;">6906.623</td>
+<td style="text-align: right;">0.08009</td>
+<td style="text-align: right;">2.68644</td>
+<td style="text-align: right;">415178</td>
+<td style="text-align: right;">1479568</td>
+<td style="text-align: right;">17.1581</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">143554</td>
+<td style="text-align: right;">36571</td>
+<td style="text-align: right;">69618</td>
+<td style="text-align: right;">2.618</td>
+<td style="text-align: right;">0.17427</td>
+<td style="text-align: right;">0.04439</td>
+<td style="text-align: right;">12132</td>
+<td style="text-align: right;">3090.6793</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.03801</td>
+<td style="text-align: right;">0.55131</td>
+<td style="text-align: right;">0.69679</td>
+<td style="text-align: right;">3.17293</td>
+<td style="text-align: right;">0.74525</td>
+<td style="text-align: right;">0.02833</td>
+<td style="text-align: right;">0.37269</td>
+<td style="text-align: right;">0.79369</td>
+<td style="text-align: right;">3.70026</td>
+<td style="text-align: right;">0.86701</td>
+<td style="text-align: right;">79325</td>
+<td style="text-align: right;">10549.135</td>
+<td style="text-align: right;">0.13299</td>
+<td style="text-align: right;">2.67576</td>
+<td style="text-align: right;">372105</td>
+<td style="text-align: right;">1064390</td>
+<td style="text-align: right;">13.4181</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">164986</td>
+<td style="text-align: right;">30220</td>
+<td style="text-align: right;">57486</td>
+<td style="text-align: right;">2.570</td>
+<td style="text-align: right;">0.27363</td>
+<td style="text-align: right;">0.05012</td>
+<td style="text-align: right;">15730</td>
+<td style="text-align: right;">2881.2178</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.06312</td>
+<td style="text-align: right;">0.86691</td>
+<td style="text-align: right;">0.57620</td>
+<td style="text-align: right;">2.47064</td>
+<td style="text-align: right;">0.81683</td>
+<td style="text-align: right;">0.05156</td>
+<td style="text-align: right;">0.63048</td>
+<td style="text-align: right;">0.68888</td>
+<td style="text-align: right;">3.03625</td>
+<td style="text-align: right;">0.77017</td>
+<td style="text-align: right;">68776</td>
+<td style="text-align: right;">15806.494</td>
+<td style="text-align: right;">0.22983</td>
+<td style="text-align: right;">2.63677</td>
+<td style="text-align: right;">306524</td>
+<td style="text-align: right;">692285</td>
+<td style="text-align: right;">10.0658</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">320578</td>
+<td style="text-align: right;">32739</td>
+<td style="text-align: right;">41756</td>
+<td style="text-align: right;">6.539</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">0.10212</td>
+<td style="text-align: right;">41756</td>
+<td style="text-align: right;">4264.3278</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">0.15293</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">0.42025</td>
+<td style="text-align: right;">2.74800</td>
+<td style="text-align: right;">0.89788</td>
+<td style="text-align: right;">0.13731</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">0.53234</td>
+<td style="text-align: right;">3.87687</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">52969</td>
+<td style="text-align: right;">52969.130</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">7.28275</td>
+<td style="text-align: right;">385761</td>
+<td style="text-align: right;">385761</td>
+<td style="text-align: right;">7.2828</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#https://github.com/scpatricio/bell_mortality/blob/main/script/functions.R</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># library(devtools)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># install_github("robjhyndman/demography")</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("HMDHFDplus")</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(demography)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: forecast</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'quantmod':
+  method            from
+  as.zoo.data.frame zoo </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 methods overwritten by 'demography':
+  method      from 
+  print.lca   e1071
+  summary.lca e1071</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>This is demography 2.0.0.9000 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fmsb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'fmsb'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:demography':
+
+    lifetable</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># hmd.usa &lt;- hmd.mx("USA","john.graves@vanderbilt.edu", "&lt;PASSWORD&gt;","USA")</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># write_rds(hmd.usa,file=here("blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"))</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>hmd.usa <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="fu">here</span>(<span class="st">"blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"</span>))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>min_age <span class="ot">&lt;-</span> <span class="dv">18</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>lt <span class="ot">&lt;-</span> demography<span class="sc">::</span><span class="fu">lifetable</span>(hmd.usa,<span class="at">series =</span> <span class="st">"male"</span>, <span class="at">years =</span> <span class="dv">2010</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>df_lt <span class="ot">&lt;-</span>   <span class="fu">tibble</span>(<span class="at">x =</span> lt<span class="sc">$</span>age,<span class="at">qx =</span> lt<span class="sc">$</span>qx[,<span class="st">"2010"</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(x <span class="sc">&gt;=</span> min_age); df_lt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 83 × 2
+       x       qx
+   &lt;int&gt;    &lt;dbl&gt;
+ 1    18 0.000949
+ 2    19 0.00103 
+ 3    20 0.00111 
+ 4    21 0.00127 
+ 5    22 0.00126 
+ 6    23 0.00128 
+ 7    24 0.00136 
+ 8    25 0.00131 
+ 9    26 0.00136 
+10    27 0.00133 
+# ℹ 73 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">fitGM</span>(<span class="at">data =</span> lt<span class="sc">$</span>qx)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>FLAG <span class="ot">&lt;-</span> res[<span class="dv">5</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (FLAG<span class="sc">&gt;</span><span class="dv">0</span>) {</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>   res <span class="ot">&lt;-</span> <span class="fu">fitGM</span>(res[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>], lt<span class="sc">$</span>qx)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>   FLAG <span class="ot">&lt;-</span> res[<span class="dv">5</span>]</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.000019375 0.101511777 0.000869107 0.002996477 0.000000000</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>hatA <span class="ot">&lt;-</span> res[<span class="dv">1</span>]</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>hatB <span class="ot">&lt;-</span> res[<span class="dv">2</span>]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>hatC <span class="ot">&lt;-</span> res[<span class="dv">3</span>]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Makeham</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Gamma-Imcompleta superior</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Source: https://stats.stackexchange.com/questions/544081/gompertz-makeham-model-life-expectancy-using-numerical-integration-and-analytica</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>Gamma_Inc_sup <span class="ot">=</span> <span class="cf">function</span>(s, z){</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">integrate</span>(<span class="cf">function</span>(t){</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    t<span class="sc">^</span>(s<span class="dv">-1</span>)<span class="sc">*</span><span class="fu">exp</span>(<span class="sc">-</span>t)</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  }, z, <span class="cn">Inf</span>)<span class="sc">$</span>value</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>ex_mak <span class="ot">=</span> <span class="cf">function</span>(t, a, b, c){</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  (<span class="fu">exp</span>(a<span class="sc">*</span><span class="fu">exp</span>(b<span class="sc">*</span>t)<span class="sc">/</span>b)<span class="sc">/</span>b)<span class="sc">*</span>((a<span class="sc">*</span><span class="fu">exp</span>(b<span class="sc">*</span>t)<span class="sc">/</span>b)<span class="sc">^</span>(c<span class="sc">/</span>b))<span class="sc">*</span><span class="fu">Gamma_Inc_sup</span>(<span class="sc">-</span>c<span class="sc">/</span>b,a<span class="sc">*</span><span class="fu">exp</span>(b<span class="sc">*</span>t)<span class="sc">/</span>b)</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="fu">life.expectancy</span>(hmd.usa, <span class="at">years =</span> <span class="dv">2010</span>, <span class="at">age =</span> <span class="dv">40</span>,<span class="at">series =</span> <span class="st">"male"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Time Series:
+Start = 2010 
+End = 2010 
+Frequency = 1 
+[1] 38.523</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ex_mak</span>(<span class="dv">40</span>,hatA,hatB,hatC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 38.501</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>life_exp <span class="ot">&lt;-</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq</span>(<span class="dv">40</span>,<span class="dv">90</span>,<span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">map_df</span>(<span class="sc">~</span>{</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    res1 <span class="ot">&lt;-</span> <span class="fu">ex_mak</span>(.x,hatA,hatB,hatC)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    res2 <span class="ot">&lt;-</span> <span class="fu">life.expectancy</span>(hmd.usa, <span class="at">years =</span> <span class="dv">2010</span>, <span class="at">age =</span> .x,<span class="at">series =</span> <span class="st">"male"</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    out <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">lt =</span> res2[<span class="dv">1</span>], <span class="at">gm =</span> res1)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    out</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>life_exp <span class="sc">%&gt;%</span> </span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> lt, <span class="at">y =</span> gm)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">a=</span><span class="dv">0</span>,<span class="at">b=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_abline(a = 0, b = 1): Ignoring unknown parameters: `a` and `b`</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="cause-delented-life-tables_files/figure-html/unnamed-chunk-6-1.png" class="quarto-discovered-preview-image img-fluid" width="672"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

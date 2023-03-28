@@ -1,0 +1,337 @@
+---
+title: "Approaches for Modeling Mortality Using Life-Table Data"
+author: John Graves
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+editor_options: 
+  chunk_output_type: console
+execute:
+  echo: true
+  message: false
+  warning: false  
+  code-fold: true
+  cache: true
+reference-location: margin
+self-contained: true
+---
+
+# Introduction
+
+This document outlines how to model mortality using a gompertz model fit to life table data.
+
+-   The inspiration for much of the modeling code can be found [here](https://github.com/scpatricio/bell_mortality)
+-   In general, Gompertz and Gompertz-Makeham models only work for adults, given the wonkiness of mortality in younger ages.
+    -   [Here](https://link.springer.com/referenceworkentry/10.1007/978-3-319-69892-2_556-1) is a nice primer on mortality modeling using several mixtures.
+    -   [Here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8941647/) is one approach to model under-five mortality.
+-   Fernando has a nice paper noting that clinical trials often estimate a hazard ratio for death for overall all-cause death, not disease specific death. What does that mean for modeling?
+    -   [Source](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7024667/)
+
+```{r setup}
+
+library(tidyverse)
+library(flexsurv)
+library(survival)
+library(demography)
+library(fmsb)
+library(here)
+```
+
+# Fit a Gompertz and Gompertz-Makeham Model to US Adult Life Expectancy Data
+
+## Download the data from the Human Mortality Database
+
+```{r, eval = FALSE}
+hmd.usa <- demography::hmd.mx("USA","<USER NAME (email)>", "<PASSWORD>","USA")
+write_rds(hmd.usa,file=here("blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"))
+```
+
+```{r}
+hmd.usa <- read_rds(here("blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"))
+
+lt <-  # Construct a life-table for 2010 mortality 
+  demography::lifetable(hmd.usa,series = "male", years = 2010) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x*100000)
+
+# Restrict the estimation sample to only 30-99 year olds. 
+lt_a <- lt  %>% filter(x<100) %>% 
+  filter(x>30 & x<100)
+
+```
+
+## Define various functions
+
+```{r, functions}
+
+# SOURCE: https://github.com/scpatricio/bell_mortality
+# Here, however, I'm just using the negative binomial rather than the bell distribution code. 
+
+# Gompertz
+gompertz = function(t, theta){
+    a = theta[1]
+    b = theta[2]
+    
+    return(a*exp(b*t))
+}
+
+
+  
+# Gompertz-Makeham
+makeham = function(t, theta){
+    a = theta[1]
+    b = theta[2]
+    c = theta[3]
+    
+    return(a*exp(b*t)+c)
+}
+
+series = function(j, phi){
+    out = NULL
+    
+    for(i in 1:length(j)){
+        out[i] = sum(log(0:(j[i]-1) + phi))
+    }
+    
+    return(out)
+}
+
+logLike_NB = function(theta, Dx, Ex, mu, t){ # negative binomial
+    theta = abs(theta)
+    phi = theta[1]
+    
+    lamb = Ex*mu(t, theta[-1])
+    
+    log_lik = series(Dx, phi) +Dx*log(lamb)-(Dx+phi)*log(phi+lamb)+phi*log(phi)
+    
+    return(-sum(log_lik, na.rm = T))
+}
+
+# E1 function
+E1 = function(z){
+    integrate(function(t){
+        (exp(-t))/t
+    }, z, Inf)$value
+}
+
+ex_gomp = function(t, a, b){
+    exp(a*exp(b*t)/b)*E1(a*exp(b*t)/b)/b
+}
+
+# Gompertz-Makeham
+Gamma_Inc_sup = function(s, z){
+    integrate(function(t){
+        t^(s-1)*exp(-t)
+    }, z, Inf)$value
+}
+
+ex_mak = function(t, a, b, c){
+    (exp(a*exp(b*t)/b)/b)*((a*exp(b*t)/b)^(c/b))*Gamma_Inc_sup(-c/b,a*exp(b*t)/b)
+}
+```
+
+```{r}
+nb_estim_gompertz = abs(optim(par = c(1, 0.001, 0.2),
+                     fn = logLike_NB,
+                     Ex = lt_a$lx,
+                     Dx = lt_a$dx,
+                     mu = gompertz,
+                     t = lt_a$x-30)$par)
+
+
+nb_estim_makeham = abs(optim(par = c(1, 0.001, 0.1, 0.001),
+                     fn = logLike_NB,
+                       Ex = lt_a$lx,
+                       Dx = lt_a$dx,
+                       mu = makeham,
+                       t = lt_a$x-30)$par)
+
+
+  
+# Predicted Mortality Rates
+
+lt_a$pr_gomp_nb = log(gompertz(lt_a$x-30,nb_estim_gompertz[-1]))
+lt_a$pr_makeham_nb = log(makeham(lt_a$x-30,nb_estim_makeham[-1]))
+
+lt %>% 
+  ggplot(aes(x = x, y = log(qx))) + geom_point() +
+  hrbrthemes::theme_ipsum() + 
+  geom_line(data = lt_a %>% 
+  select(x,starts_with("pr_")) %>% 
+  gather(method,y,-x), aes(x=x,y=y,colour=method)) 
+```
+
+# Old Approach
+
+```{r, eval = FALSE}
+# Expand to full data frame
+deaths.long <- data.frame(Age=rep(lt$x, round(lt$dx)))
+deaths.long$Death <- 1
+head(deaths.male.long)
+
+
+parameters = data.frame(
+  Age = 0:100,
+  shape=rep(NA,101),
+  rate=rep(NA,101)
+)
+
+for(age in 0:100)
+{
+  print(age)
+  surv.data <- with(deaths.long[deaths.long$Age >= age,], Surv(Age, Death, origin=age))
+  surv.model <- flexsurvreg(surv.data ~ 1, dist="gompertz")
+
+  parameters$shape[age+1] <- surv.model$coefficients[1]
+  parameters$rate[age+1] <- exp(surv.model$coefficients[2])
+}
+
+parameters[31,]
+
+a = parameters$shape[31]
+b = parameters$rate[31]
+t = 0
+rate <- (b/a) * (exp(a*t) - exp(a*(t-1)))
+
+gompertz(0,nb_estim_gompertz[-1])
+
+ 
+
+```
+
+# Background
+
+::: callout-note
+Note: the following was generated by chatGPT to discuss various way to model mortality--it's useful but will need to be vetted!
+:::
+
+There are several approaches to modeling adult mortality, including Gompertz models, Gompertz-Makeham models, and Lee-Carter models.
+
+The Gompertz model is a widely used parametric model that assumes that the rate of mortality increases exponentially with age. The formula for the Gompertz model is given by:
+
+$$
+\mu(x)=A \exp (B x)
+$$
+
+where $\mu(x)$ is the mortality rate at age $x$, $A$ and $B$ are constants, and $\exp$ is the exponential function. The Gompertz model is relatively simple and easy to interpret, but it assumes that mortality rates increase indefinitely with age, which is not always true.
+
+The Gompertz-Makeham model is an extension of the Gompertz model that adds a constant term to account for mortality risks not related to age, such as accidents or infections. The formula for the Gompertz-Makeham model is given by:
+
+$$
+\mu(x)=A \exp (B x)+C
+$$
+
+where $\mu(x)$, $A$, $B$, and $\exp$ are the same as in the Gompertz model, and $C$ is a constant. The Gompertz-Makeham model provides a better fit to mortality data than the Gompertz model alone, but it still assumes that mortality rates increase indefinitely with age.
+
+The Lee-Carter model is a non-parametric approach that uses a principal component analysis (PCA) to capture the main trends in mortality data over time. The Lee-Carter model assumes that the logarithm of the mortality rate follows a linear trend plus a time-varying factor that captures the main sources of variability in mortality. The formula for the Lee-Carter model is given by:
+
+$$
+\log (\mu(x, t))=\alpha(x)+\beta(x) k(t)+\epsilon(x, t)
+$$
+
+where $$
+k(t)=\sum_{i=1}^r \phi_i \xi_i(t)
+$$
+
+and $$
+\xi_i(t)=\frac{u_i(t)}{\sqrt{\lambda_i}}
+$$
+
+In the Lee-Carter model, $\mu(x,t)$ is the mortality rate at age $x$ and time $t$, $\alpha(x)$ and $\beta(x)$ are age-specific constants, $k(t)$ is a time-specific factor obtained through PCA, and $\epsilon(x,t)$ is a random error term. The Lee-Carter model allows for changes in mortality rates over time and can capture both age-specific and time-specific effects on mortality.
+
+## Lee-Carter vs. Gompertz / Gompertz-Makeham
+
+The Lee-Carter (LC) model, Gompertz model, and Gompertz-Makeham model are all used for forecasting mortality rates, but they differ in their assumptions and applications.
+
+The Gompertz model assumes that mortality rates increase exponentially with age, and has been widely used for modeling mortality in various contexts. The Gompertz-Makeham model extends the Gompertz model by adding a constant term (the Makeham term) to account for mortality risk factors that are independent of age, such as genetic or environmental factors. The Gompertz and Gompertz-Makeham models are relatively simple and computationally efficient, but they may not capture more complex mortality patterns, such as mortality trends or cohort effects.
+
+The LC model, on the other hand, allows for more flexible and nuanced modeling of age-specific mortality trends over time. It assumes that a common factor, k(t), influences mortality rates at all ages, and estimates age-specific deviations from this factor using historical mortality data. This allows for capturing trends and changes in mortality rates that are not explained by age alone.
+
+In terms of forecasting performance, studies have found that the LC model generally outperforms the Gompertz and Gompertz-Makeham models, particularly for longer forecast horizons and for populations with more complex mortality patterns. However, the choice of model may depend on the specific research question, the data available, and the trade-off between model complexity and forecasting accuracy.
+
+Overall, while the Gompertz and Gompertz-Makeham models are simpler and computationally efficient, the LC model offers more flexibility and accuracy for modeling and forecasting mortality rates, particularly in populations with complex mortality patterns.
+
+In summary, Gompertz models, Gompertz-Makeham models, and Lee-Carter models are all used to model adult mortality, but they differ in their assumptions and complexity. The Gompertz model is the simplest but assumes that mortality rates increase indefinitely with age, while the Gompertz-Makeham model adds a constant term to account for other mortality risks but still assumes infinite mortality rates. The Lee-Carter model is non-parametric and can capture changes in mortality rates over time and age-specific and time-specific effects on mortality.
+
+# Playing Around with the MortalityLaws R Package
+
+
+```{r}
+# devtools::install_github("mpascariu/MortalityLaws")
+library(MortalityLaws)
+# MortalityLaws::availableLaws(law=NULL)
+
+year     <- 2010
+ages     <- 31:99
+deaths   <- lt_a$dx
+exposure <- lt_a$lx
+fit <- MortalityLaw(x   = ages,
+                    Dx  = deaths,   # vector with death counts
+                    Ex  = exposure, # vector containing exposures
+                    law = "makeham",
+                    opt.method = "LF1")
+plot(fit)
+
+```
+
+## Heligman-Pollard model
+
+(Description from ChatGPT) 
+
+The Heligman-Pollard model is a statistical model for mortality modeling that is widely used in actuarial science and demography. The model was first proposed by Nathan Keyfitz in 1977 and later extended by Kenneth Heligman and Edward Pollard in 1980.
+
+The model expresses the relationship between mortality rates and age in a mathematical form, and it can be used to estimate the probability of death for individuals at different ages. The basic assumption of the model is that mortality rates decline at a decreasing rate with increasing age, and that there is a certain amount of randomness in the mortality data.
+
+The Heligman-Pollard model can be expressed in the following form:
+
+$$
+log(m(x)) = a(x) + b(x)*k
+$$
+
+where:
+
+- $m(x)$ is the mortality rate at age x.
+- $a(x)$ and $b(x)$ are age-specific parameters that describe the level and shape of the mortality curve, respectively.
+- $k$ is a constant parameter that controls the rate at which the mortality curve declines with increasing age.
+
+The model can be estimated using regression techniques, and the estimated parameters can be used to calculate the probability of death at different ages.
+
+The Heligman-Pollard model has been widely used in actuarial science and demography for mortality forecasting, life insurance pricing, and pension plan design. It is a flexible and robust model that can be easily applied to different populations and time periods. However, like any statistical model, the Heligman-Pollard model has its limitations and should be used with caution.
+
+
+```{r}
+year     <- 2010
+ages     <- lt$x
+deaths   <- lt$dx
+exposure <- lt$lx
+fit <- MortalityLaw(x   = ages,
+                    Dx  = deaths,   # vector with death counts
+                    Ex  = exposure, # vector containing exposures
+                    law = "HP2",
+                    opt.method = "LF2")
+plot(fit)
+
+get_mort <- function(x,params) {
+  with(as.list(params),{
+    mu1 <-  A^((x + B)^C) + (G * H^x)/(1 + G * H^x)
+    mu2 <-  D * exp(-E * (log(x/F_))^2)
+    ifelse(x == 0, mu1, mu1 + mu2)
+  })
+}
+
+plot(lt$x,log(lt$qx))
+points(lt$x,log(get_mort(lt$x,fit$coefficients)),col="blue")
+
+
+```
+
+```{r}
+get_mort(lt$x,fit$coefficients)
+```
+
