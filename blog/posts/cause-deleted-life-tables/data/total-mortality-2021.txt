@@ -1,0 +1,142 @@
+"Notes"	"Single-Year Ages"	"Single-Year Ages Code"	Deaths	Population	Crude Rate
+	"< 1 year"	"0"	19920	3564493	558.8
+	"1 year"	"1"	1490	3702936	40.2
+	"2 years"	"2"	960	3767428	25.5
+	"3 years"	"3"	737	3856743	19.1
+	"4 years"	"4"	629	3935738	16.0
+	"5 years"	"5"	540	4040153	13.4
+	"6 years"	"6"	517	4076629	12.7
+	"7 years"	"7"	470	4064596	11.6
+	"8 years"	"8"	437	4051555	10.8
+	"9 years"	"9"	442	4058615	10.9
+	"10 years"	"10"	494	4103489	12.0
+	"11 years"	"11"	523	4189406	12.5
+	"12 years"	"12"	603	4279315	14.1
+	"13 years"	"13"	855	4442581	19.2
+	"14 years"	"14"	1094	4432993	24.7
+	"15 years"	"15"	1405	4355926	32.3
+	"16 years"	"16"	1944	4310462	45.1
+	"17 years"	"17"	2594	4333375	59.9
+	"18 years"	"18"	3471	4292780	80.9
+	"19 years"	"19"	3993	4272123	93.5
+	"20 years"	"20"	4263	4346679	98.1
+	"21 years"	"21"	4778	4347378	109.9
+	"22 years"	"22"	5066	4278923	118.4
+	"23 years"	"23"	5212	4271130	122.0
+	"24 years"	"24"	5581	4279887	130.4
+	"25 years"	"25"	6028	4309146	139.9
+	"26 years"	"26"	6477	4387353	147.6
+	"27 years"	"27"	6961	4481186	155.3
+	"28 years"	"28"	7525	4554775	165.2
+	"29 years"	"29"	8204	4660017	176.1
+	"30 years"	"30"	8746	4730811	184.9
+	"31 years"	"31"	9187	4745375	193.6
+	"32 years"	"32"	9477	4612291	205.5
+	"33 years"	"33"	9727	4531756	214.6
+	"34 years"	"34"	9942	4482395	221.8
+	"35 years"	"35"	10459	4492867	232.8
+	"36 years"	"36"	10777	4490254	240.0
+	"37 years"	"37"	10989	4397037	249.9
+	"38 years"	"38"	11785	4463130	264.1
+	"39 years"	"39"	12393	4456030	278.1
+	"40 years"	"40"	12868	4391796	293.0
+	"41 years"	"41"	13430	4372860	307.1
+	"42 years"	"42"	13741	4193750	327.7
+	"43 years"	"43"	14013	4099002	341.9
+	"44 years"	"44"	14484	4047128	357.9
+	"45 years"	"45"	14688	3908305	375.8
+	"46 years"	"46"	16035	3951786	405.8
+	"47 years"	"47"	16611	3875209	428.6
+	"48 years"	"48"	18350	3927492	467.2
+	"49 years"	"49"	20460	4118718	496.8
+	"50 years"	"50"	23482	4366085	537.8
+	"51 years"	"51"	24506	4297812	570.2
+	"52 years"	"52"	25787	4136193	623.4
+	"53 years"	"53"	26940	4046823	665.7
+	"54 years"	"54"	29178	4060013	718.7
+	"55 years"	"55"	32093	4119517	779.0
+	"56 years"	"56"	36286	4280217	847.8
+	"57 years"	"57"	39713	4383354	906.0
+	"58 years"	"58"	43036	4384908	981.5
+	"59 years"	"59"	46480	4399318	1056.5
+	"60 years"	"60"	50028	4391144	1139.3
+	"61 years"	"61"	53114	4312796	1231.5
+	"62 years"	"62"	56107	4228770	1326.8
+	"63 years"	"63"	59156	4190193	1411.8
+	"64 years"	"64"	62158	4112847	1511.3
+	"65 years"	"65"	63017	3928157	1604.2
+	"66 years"	"66"	64542	3834444	1683.2
+	"67 years"	"67"	66260	3695234	1793.1
+	"68 years"	"68"	67828	3537207	1917.6
+	"69 years"	"69"	69337	3399278	2039.8
+	"70 years"	"70"	71438	3229649	2211.9
+	"71 years"	"71"	73244	3076389	2380.8
+	"72 years"	"72"	76986	2988058	2576.5
+	"73 years"	"73"	82282	2917030	2820.7
+	"74 years"	"74"	89332	3060676	2918.7
+	"75 years"	"75"	75408	2157557	3495.1
+	"76 years"	"76"	76850	2060045	3730.5
+	"77 years"	"77"	82078	1992972	4118.4
+	"78 years"	"78"	89267	1997941	4467.9
+	"79 years"	"79"	85264	1696254	5026.6
+	"80 years"	"80"	83293	1507612	5524.8
+	"81 years"	"81"	83194	1366271	6089.1
+	"82 years"	"82"	84204	1254351	6713.0
+	"83 years"	"83"	85763	1156487	7415.8
+	"84 years"	"84"	84332	1016585	8295.6
+	"85 years"	"85"	85402	Not Applicable	Not Applicable
+	"86 years"	"86"	85647	Not Applicable	Not Applicable
+	"87 years"	"87"	82347	Not Applicable	Not Applicable
+	"88 years"	"88"	81399	Not Applicable	Not Applicable
+	"89 years"	"89"	80105	Not Applicable	Not Applicable
+	"90 years"	"90"	78350	Not Applicable	Not Applicable
+	"91 years"	"91"	74304	Not Applicable	Not Applicable
+	"92 years"	"92"	67808	Not Applicable	Not Applicable
+	"93 years"	"93"	61964	Not Applicable	Not Applicable
+	"94 years"	"94"	54499	Not Applicable	Not Applicable
+	"95 years"	"95"	46243	Not Applicable	Not Applicable
+	"96 years"	"96"	38138	Not Applicable	Not Applicable
+	"97 years"	"97"	30531	Not Applicable	Not Applicable
+	"98 years"	"98"	23085	Not Applicable	Not Applicable
+	"99 years"	"99"	17462	Not Applicable	Not Applicable
+	"100+ years"	"100"	33496	Not Applicable	Not Applicable
+	"Not Stated"	"NS"	93	Not Applicable	Not Applicable
+"Total"			3464231	331893745	1043.8
+"---"
+"Dataset: Provisional Mortality Statistics, 2018 through Last Month"
+"Query Parameters:"
+"Year/Month: 2021"
+"Group By: Single-Year Ages"
+"Show Totals: True"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"Calculate Rates Per: 100,000"
+"Rate Options: Default intercensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/mcd-provisional.html for more information."
+"---"
+"Query Date: Mar 31, 2023 2:55:37 PM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. National Vital Statistics"
+"System, Provisional Mortality on CDC WONDER Online Database. Data are from the final Multiple Cause of Death Files, 2018-2021,"
+"and from provisional data for years 2022-2023, as compiled from data provided by the 57 vital statistics jurisdictions through"
+"the Vital Statistics Cooperative Program. Accessed at http://wonder.cdc.gov/mcd-icd10-provisional.html on Mar 31, 2023 2:55:37"
+"PM"
+"---"
+Caveats:
+"1. Population and rates are labeled 'Not Applicable' when they include a subset of ages 85-100+ because populations are not"
+"available for those ages. More information: http://wonder.cdc.gov/wonder/help/mcd-provisional.html#Ages 85-100."
+"2. Deaths of persons with Age ""Not Stated"" are included in ""All"" counts and rates, but are not distributed among age groups,"
+"so are not included in age-specific counts, age-specific rates or in any age-adjusted rates. More information:"
+"http://wonder.cdc.gov/wonder/help/mcd-provisional.html#Not Stated."
+"3. The population figures for years 2021 and later are single-race estimates of the July 1 resident population, from the Vintage"
+"2021 postcensal series based on the April 2020 Census counts, released by the Census Bureau on June 30, 2022. The population"
+"figures for year 2020 are single-race estimates of the July 1 resident population, from the Vintage 2020 postcensal series based"
+"on April 2010 Census, released by the Census Bureau on July 27, 2021. The population figures for year 2019 are single-race"
+"estimates of the July 1 resident population, from the Vintage 2019 postcensal series based on April 2010 Census, released by the"
+"Census Bureau on June 25, 2020. The population figures for year 2018 are single-race estimates of the July 1 resident"
+"population, from the Vintage 2018 postcensal series based on April 2010 Census, released by the Census Bureau on June 20, 2019."
+"4. The population figures used in the calculation of death rates for the age group 'under 1 year' are the estimates of the"
+"resident population that is under one year of age. More information: http://wonder.cdc.gov/wonder/help/mcd-provisional.html#Age"
+"Group."
+"5. Deaths occurring through February 18, 2023 as of March 05, 2023."

@@ -26,7 +26,6 @@ library(kableExtra)
 library(MortalityLaws)
 library(demography)
 library(MASS)
-library(mgcv)
 options("scipen" = 100, "digits" = 5)
 edit.na <- function(x, value) { x[is.na(x)] <- value; x}
 theme_set(hrbrthemes::theme_ipsum())
@@ -35,9 +34,8 @@ select <- dplyr::select
 
 # All-Cause Life Table Data
 
-
 ```{r, eval = FALSE}
-hmd.usa <- demography::hmd.mx("USA","user", "pass","USA")
+hmd.usa <- demography::hmd.mx("USA","john.graves@vanderbilt.edu", "j@G7721JAG#","USA")
 write_rds(hmd.usa,file=here("blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"))
 ```
 
@@ -50,9 +48,15 @@ lt <-  # Construct a life-table for  mortality
   mutate(country = "USA")
 ```
 
-# Cause-Specific Deaths
+# Model All-Cause Mortality
 
-First, we use the [CDC wonder engine](https://wonder.cdc.gov/ucd-icd10.html) to extract death by specific cause. This is extracted and stored in `data/cardiovascular-deaths.txt`.
+```{r}
+
+
+```
+
+
+# Cause-Specific Deaths
 
 ```{r}
 #| echo: false
@@ -60,7 +64,7 @@ First, we use the [CDC wonder engine](https://wonder.cdc.gov/ucd-icd10.html) to 
 #| message: false
  # from cdc wonder
 deaths_cvd <- 
-    read.delim(here("blog/posts/cause-deleted-life-tables/data/cardiovascular-deaths.txt")) %>% 
+    read.delim(here("blog/drafts/scratch/data/cardiovascular-deaths.txt")) %>% 
     janitor::clean_names() %>% 
     select(-notes) %>% 
     filter(!is.na(single_year_ages_code) & single_year_ages_code!="") %>% 
@@ -72,18 +76,13 @@ deaths_cvd <-
     mutate(age = as.numeric(paste0(age))) %>% 
     mutate(pop = as.numeric(paste0(pop)))
 
-```
-
-```{r}
-#| fig-cap: Cardiovascular log(mortality) rates by age
 deaths_cvd %>% 
     select(age,dx_i) %>% na.omit() %>%  
-    ggplot(aes(x = age, y = log(dx_i))) + geom_point() + 
-  scale_x_continuous(limits = c(0,100)) + 
-  scale_y_continuous(limits = c(-2,10))
+    ggplot(aes(x = age, y = log(dx_i))) + geom_point()
+
 ```
 
-Note that the death rate per 100k population is not calculated above age 85 (but general life tables go to 100+), so we need to predict it. Luckily the (log) death rate is fairly linear:
+Note that the death rate per 100k population is not calculated above age 85, so we need to predict it. Luckily the (log) death rate is very linear:
 
 ```{r}
 
@@ -96,11 +95,15 @@ tmp %>%
     ggplot(aes(x = age, y = log(dx_i))) + geom_point()
 ```
 
-Let's just fit a basic generalized additive model (GAM) in age. 
 
 ```{r}
 fit <- 
+    with(tmp,lm(log(dx_i)~age))
+
+library(mgcv)
+fit <- 
     gam(log(dx_i) ~ s(age), data = tmp)
+
 pval <- 
     predict(fit,newdata = tibble(age=min_age:100),type="response") %>% 
     exp(.) 
@@ -111,19 +114,14 @@ deaths_cvd_final <-
     mutate(pdx_i = pval[paste0(age)]) %>% 
     mutate(dx_i = coalesce(dx_i,pdx_i)) %>% 
     rename(x = age)
+
 ```
 
-Let's see how our imputed mortality rate (red) compares and extrapolates:
-
 ```{r}
-#| fig-cap: log mortality rate by age, with imputed values in red
-#| 
 deaths_cvd_final %>% 
     ggplot(aes(x = x, y = log(dx_i))) + geom_point() + 
     geom_point(aes(y = log(pdx_i)), col = "red") 
 ```
-
-Now we can construct cause-deleted life tables (per 100k) with sufficient information to fit a mortality model. 
 
 ```{r}
 lt_cvd <- 
@@ -131,8 +129,8 @@ lt_cvd <-
     left_join(deaths_cvd_final %>% dplyr::select(x,dx_i),"x") %>% 
     mutate(age = x) %>% 
     mutate(a = 0.5, 
-           n = c(diff(age),NA)) %>% 
-    mutate(dx_i = pmin(dx,dx_i))
+           n = c(diff(age),NA)) #%>% 
+    #mutate(dx_i = pmin(dx,dx_i))
 
 lt_cvd <- 
    lt_cvd %>% 
@@ -158,8 +156,6 @@ lt_cvd <-
 ```
 
 
-We now fit the mortalitiy models.
-
 ```{r}
 #| warning: false
 #| message: false
@@ -176,7 +172,7 @@ get_mort <- function(x,params) {
 
 N = 100000
 
-max_age <- 100
+max_age <- 85
 min_age <- 40
 
 ages     <- lt_cvd$x[lt_cvd$x<max_age & lt_cvd$x>min_age]
@@ -191,10 +187,7 @@ fit <- MortalityLaw(x  = ages,
                 law = "HP2",
                 opt.method = "LF2")
 plot(fit)
-```
 
-
-```{r}
 fit_cd <- MortalityLaw(x  = ages,
                 Dx  = deaths_cvd,   # vector with death counts
                 Ex  = exposure_cvd, # vector containing exposures
@@ -202,15 +195,16 @@ fit_cd <- MortalityLaw(x  = ages,
                 opt.method = "LF2")
 plot(fit_cd)
 
+tibble(age = ages, qx = get_mort(ages, fit$coefficients))  %>% 
+    ggplot(aes(x = age, y = log(qx))) + geom_point() + 
+    geom_point(data = tibble(age = ages, qx = get_mort(ages, fit_cd$coefficients)),col = "red")
 ```
 
 # Historical Mortality
 
-Let's compare historical mortality rates in the US to the UK. 
-
 ```{r, eval = FALSE}
-hmd.usa <- demography::hmd.mx("USA","user", "pass","USA")
-hmd.uk <- demography::hmd.mx("GBR_NP","user", "pass","UK")
+hmd.usa <- demography::hmd.mx("USA","john.graves@vanderbilt.edu", "j@G7721JAG#","USA")
+hmd.uk <- demography::hmd.mx("GBR_NP","john.graves@vanderbilt.edu", "j@G7721JAG#","UK")
 
 write_rds(hmd.uk,file=here("blog/posts/cause-deleted-life-tables/data/uk-life-table.rds"))
 ```

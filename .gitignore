@@ -2,9 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
-
+*_freeze*
+*_site*
 /.quarto/
 .DS_Store
 .Rdata
 .httr-oauth
-
+*cache*
+*_files*
