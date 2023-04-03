@@ -40,9 +40,10 @@ library(tidyverse)
 
 ::: incremental
 -   Understand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.
--   Understand rate-to-probability conversion formulas and transition probability embedding.
--   Explain how to embed a transition probability matrix with a defined timestep.
--   Explore age-, time- and country/region-specific adjustments to a Markov model.
+-   Understand rate-to-probability conversion formulas and competing rates.
+-   Embedding a continuous transition rate matrix into a discrete timestep resulting in a transition probability matrix.
+-   Embedding of non-stationary rates as a function of time.
+-   Understand additional non-Markovian components: accumulators, tunnel states.
 :::
 
 # Outline {.smaller}
