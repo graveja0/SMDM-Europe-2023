@@ -113,6 +113,7 @@ library(tidyverse)
 -   Facilitates modeling using alternative techniques:
     -   Continuous time Markov
     -   Discrete event simulation
+    -   Microsimulation
 :::
 
 ## Four-Step Process
@@ -129,8 +130,8 @@ library(tidyverse)
 ## Rates vs. Probabilities
 
 ::: incremental
--   **Rate**: number of occurrences of an event per unit of time.
--   **Probability**: Liklihood that an event will occur for an in individual over a defined time period.
+-   **Rate**: number of occurrences of an event per unit of time. These are additive and subtractive--i.e. simple algebra for manipulation.
+-   **Probability**: Likelihood that an event will occur for an in individual over a defined time period.
 -   Major difference is in denominator: rates take into account **time at risk** while probabilities do not.
 :::
 
@@ -154,66 +155,193 @@ library(tidyverse)
 
 ![](images/paste-62FF1911.png)
 
-## Rates vs. Probabilities: Example[^1]
+<!-- ## Rates vs. Probabilities: Example[^1] -->
 
-[^1]: Source: @gidwaniEstimatingTransitionProbabilities2020
+<!-- [^1]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
 
-::: incremental
--   Suppose a study followed 100 people with congestive heart failure for 4 years.
--   At the end of 4 years, 40 had died.
--   The probability of death over 4 years is $40/100=0.40$.
-:::
+<!-- ::: incremental -->
 
-## Rates vs. Probabilities: Example[^2]
+<!-- -   Suppose a study followed 100 people with congestive heart failure for 4 years. -->
 
-[^2]: Source: @gidwaniEstimatingTransitionProbabilities2020
+<!-- -   At the end of 4 years, 40 had died. -->
 
-::: incremental
--   A rate takes into acccount the time each person was at risk.
--   The 60 who survived were at risk the entire 4 years and contributed $60 \times 4 = 240$ years at risk.
--   Once a person dies, he/she is no longer at risk.
-:::
+<!-- -   The probability of death over 4 years is $40/100=0.40$. -->
 
-## Rates vs. Probabilities: Example[^3]
+<!-- ::: -->
 
-[^3]: Source: @gidwaniEstimatingTransitionProbabilities2020
+<!-- ## Rates vs. Probabilities: Example[^2] -->
 
-::: incremental
--   When a study does not report time at risk, the conventional assumption is that the events were spread evenly over the time period.
--   Using this assumption, the average time at risk for the 40 who died was 2 years, adding 40 × 2 = 80 years at risk.
-:::
+<!-- [^2]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
 
-## Rates vs. Probabilities: Example[^4]
+<!-- ::: incremental -->
 
-[^4]: Source: @gidwaniEstimatingTransitionProbabilities2020
+<!-- -   A rate takes into account the time each person was at risk. -->
 
-::: incremental
--   Total time at risk for the cohort of 100 people is 320 person-years (240+80).
--   Thus, the rate of death from CHF is 40/320 = 0.125 deaths per person-year.
--   Let's now construct a rate matrix with three states: CHF, Death from CHF, and Death from other causes.
-:::
+<!-- -   The 60 who survived were at risk the entire 4 years and contributed $60 \times 4 = 240$ years at risk. -->
 
-## Rates vs. Probabilities: Example
+<!-- -   Once a person dies, he/she is no longer at risk. -->
 
-```{r}
-m_P <- matrix(0,nrow=3,ncol=3,dimnames=list(c("CHF","D_CHF","D_OTH"),c("CHF","D_CHF","D_OTH")))
-#m_P[1,2] <- 0.125
-#m_P[1,3] <- 0.006
-m_P %>% kable()
-```
+<!-- ::: -->
+
+<!-- ## Rates vs. Probabilities: Example[^3] -->
+
+<!-- [^3]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+
+<!-- ::: incremental -->
+
+<!-- -   When a study does not report time at risk, the conventional assumption is that the events were spread evenly over the time period. -->
+
+<!-- -   Using this assumption, the average time at risk for the 40 who died was 2 years, adding 40 × 2 = 80 years at risk. -->
+
+<!-- ::: -->
+
+<!-- ## Rates vs. Probabilities: Example[^4] -->
+
+<!-- [^4]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+
+<!-- ::: incremental -->
+
+<!-- -   Total time at risk for the cohort of 100 people is 320 person-years (240+80). -->
+
+<!-- -   Thus, the rate of death from CHF is 40/320 = 0.125 deaths per person-year. -->
+
+<!-- -   Let's now construct a rate matrix with three states: CHF, Death from CHF, and Death from other causes. -->
+
+<!-- ::: -->
+
+<!-- ## Rates vs. Probabilities: Example -->
+
+<!-- ```{r} -->
+
+<!-- m_P <- matrix(0,nrow=3,ncol=3,dimnames=list(c("CHF","D_CHF","D_OTH"),c("CHF","D_CHF","D_OTH"))) -->
+
+<!-- #m_P[1,2] <- 0.125 -->
+
+<!-- #m_P[1,3] <- 0.006 -->
+
+<!-- m_P %>% kable() -->
+
+<!-- ``` -->
 
 ## Rates vs. Probabilities: Example
 
 ::: incremental
 -   0.125 per person year is the **rate** we'd enter into our rate matrix.
--   We could also think of a separate death rate from background causes (e.g., 0.006 per person-year).[^5]
+-   We could also think of a separate death rate from background causes (e.g., 0.006 per person-year).[^1]
 :::
 
-[^5]: This often comes from separate vital statistics / life-table data sources.
+[^1]: This often comes from separate vital statistics / life-table data sources.
+
+## Common Advice on Conversion
+
+$\pi_{A \rightarrow B} = 1 - e^{-r_{A \rightarrow B} t}$ to convert a rate, $r$ to a probability, $\pi$.
+
+$r_{A \rightarrow B} = -\log(1 - (\pi_{A \rightarrow B} - 1) / t$ to convert a probability, $\pi$, to a rate, $r$.
+
+Which is technically correct for a model with one rate.
+
+![](images/a_to_b.png)
+
+## Competing Rates
+
+When 2 rates compete for a transition these formulas are mathematically wrong.
+
+What is correct is *embedding* the rate matrix, $X$ into a time step, $Y = Y_0 e^{Xt}$.
+
+![](images/a_to_bc.png)
+
+## Resulting Error
+
+![](images/dont_panic.png)
+
+If one has misapplied this in a publication, it's okay.
+
+## Quantified Absolute Error
+
+```{r}
+
+library(expm)
+
+truth <- Vectorize(function(r1, r2, t)
+{
+  # Embed properly
+  x <- matrix(c(-r1-r2, r1, r2, rep(0, 6)), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% expm(x*t))[,2:3]
+})
+
+misspecify <- Vectorize(function(r1, r2, t)
+{
+  # Common Advice
+  # RL Fleurence, Christopher S. Hollenbeak. Rates and Probabilities in Economics, Pharmacoeconomics 2007; 25 (1) 3-6
+  tp1 <- 1-exp(-r1*t)
+  tp2 <- 1-exp(-r2*t)
+ 
+  # THIS CONVERSION CAN RESULT IN IMPOSSIBLE VALUES!
+  if(tp1 + tp2 > 1) return(NA)
+  
+  # Mispecify
+  x <- matrix(c(1-tp1-tp2, tp1, tp2, 0, 1, 0, 0, 0, 1), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% x)[,2:3]
+})
+
+par(mfrow=c(1,1))
+abs.error <- Vectorize(function(r1, r2, t=1)
+{
+  misspecify(r1, r2, t) - truth(r1, r2, t)
+})
+
+x <- seq(0.01, 0.7, by = 0.01)
+y <- x
+z <- outer(x, y, FUN=function(x, y) {abs.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="Misspecified Competing Rates",
+        sub="Absolute Error Contour State B, t=1")
+```
+
+## Quantified Relative Error
+
+```{r}
+rel.error <- Vectorize(function(r1, r2, t=1)
+{
+    x <- truth(r1, r2, t)
+    100*(misspecify(r1, r2, t) - x)/x
+})
+
+par(mfrow=c(1,2))
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State B, t=1")
+
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[2,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State C, t=1")
+par(mfrow=c(1,1))
+title(main="Misspecified Competing Rates")
+```
+
+* For rates < 0.1 of the chosen time step the error is <5%. 
+
+## Comparison
+
+* Common Economic Statistics are relative to a base or reference case.
+  * Net monetary benefit.
+  * Net health benefit.
+  * Incremental cost effectiveness ratio.
+* The bias introduced is generally of the same order of magnitude and cancels. Similar to the "difference in difference" method in statistics.
+* These decision thresholds are *robust* against this misspecification.
+* Absolute values in a single scenario will be biased relative to rates.
+
+## Rate Misspecification Conclusions
+
+* Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect. 
+* Published rates from clinical studies are usually adjusted for competing events.
 
 ## Rates vs. Probabilities: Example
 
 ```{r}
+m_P <- matrix(0,nrow=3,ncol=3,dimnames=list(c("CHF","D_CHF","D_OTH"),c("CHF","D_CHF","D_OTH")))
 m_P[1,2] <- 0.125
 m_P[1,3] <- 0.006
 m_P %>% kable()
@@ -224,7 +352,7 @@ m_P %>% kable()
 ::: columns
 ::: column
 ::: incremental
--   The diagonal elements in a rate matrix are just the negative sum of the off-diagonal elements.
+-   The diagonal elements in a rate matrix are just the negative sum of the off-diagonal elements. (Markovian)
 -   In this example, the diagonal value for the 1st row would be -0.131 = -(0.125+0.006)
 -   We can leave all other rate matrix values at 0 because the rate of progression from death to other states is zero.
 :::
@@ -252,7 +380,7 @@ m_P %>% data.frame() %>%
 
 ::: {style="font-size: 0.6em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|------------------|-------------------|------------------|------------------|
+|------------------|--------------------|------------------|------------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
 :::
@@ -703,10 +831,10 @@ expm(m_P_A) %>% kable(digits=4)
 ::: incremental
 -   Now suppose we wanted to model a second strategy ("B") based on a randomized trial of another drug.
 -   That trial reports an odds ratio (OR) of CHF death of 0.75.
--   The probability of CHF death in the placebo (control) arm in that trial was 0.15.[^6]
+-   The probability of CHF death in the placebo (control) arm in that trial was 0.15.[^2]
 :::
 
-[^6]: Note this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!
+[^2]: Note this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!
 
 ## CHF Example, Continued
 
@@ -738,7 +866,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 
 ::: {style="font-size: 0.5em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|------------------|-------------------|------------------|------------------|
+|-----------------|--------------------|-----------------|-----------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Hazard Ratio     | $\frac{\text{Hazard rate of outcome in exposed}}{\text{Hazard rate of outcome in unexposed}}$           | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
@@ -767,20 +895,20 @@ Let's turn back to our CHF example.
 ::: incremental
 -   We can convert an odds ratio to a relative risk (i.e., ratio of probabilities) if we know the baseline (unexposed) probability of the outcome, $p_0$.
 -   In this case we were able to find $p_0=0.15$ in the underlying clinical trial.
--   If we didn't have this information, we might **assume** its the same (0.1172) as in our underlying natural history probability matrix[^7]
+-   If we didn't have this information, we might **assume** its the same (0.1172) as in our underlying natural history probability matrix[^3]
 :::
 
-[^7]: Though note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!
+[^3]: Though note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!
 
 ## CHF Example, Continued
 
 ::: incremental
--   We can convert an odds ratio to a **relative risk** (RR).[^8]
+-   We can convert an odds ratio to a **relative risk** (RR).[^4]
 -   $RR = \frac{\text{Probability of outcome in exposed}}{\text{Probablity of outcome in unexposed}} = \frac{p_1}{p_0} = \frac{OR}{(1-p_0+(p_0 \times OR))}$
 -   A relative risk is the ratio of the probability of the outcome in the exposed group to the probability of the outcome in the unexposed group.
 :::
 
-[^8]: If the incidence of the outcome is fairly rare ($p_0<0.10$), you will often see people simply use the OR as a RR. Source for conversion formula: @zhangWhatRelativeRisk1998
+[^4]: If the incidence of the outcome is fairly rare ($p_0<0.10$), you will often see people simply use the OR as a RR. Source for conversion formula: @zhangWhatRelativeRisk1998
 
 ## CHF Example, Continued
 
@@ -889,12 +1017,12 @@ parameters <- read.csv(here::here("lectures/media/gompertz-mortality.csv"))
 ## Background Mortality
 
 ::: incremental
--   You can fit a Gompertz survival model to each age's life table data.[^9]
+-   You can fit a Gompertz survival model to each age's life table data.[^5]
 -   The Gompertz model will estimate two parameters: a **shape (a)** and a **rate (b)** parameter.
 -   Gompertz parameters (by gender) are shown in the table.
 :::
 
-[^9]: See the [workshop blog posting](../blog/posts/gompertz-mortality.html) for R code!
+[^5]: See the [workshop blog posting](../blog/posts/gompertz-mortality.html) for R code!
 
 ## Background Mortality
 
