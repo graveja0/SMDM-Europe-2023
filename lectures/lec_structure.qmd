@@ -321,22 +321,22 @@ par(mfrow=c(1,1))
 title(main="Misspecified Competing Rates")
 ```
 
-* For rates < 0.1 of the chosen time step the error is <5%. 
+-   For rates \< 0.1 of the chosen time step the error is \<5%.
 
 ## Comparison
 
-* Common Economic Statistics are relative to a base or reference case.
-  * Net monetary benefit.
-  * Net health benefit.
-  * Incremental cost effectiveness ratio.
-* The bias introduced is generally of the same order of magnitude and cancels. Similar to the "difference in difference" method in statistics.
-* These decision thresholds are *robust* against this misspecification.
-* Absolute values in a single scenario will be biased relative to rates.
+-   Common Economic Statistics are relative to a base or reference case.
+    -   Net monetary benefit.
+    -   Net health benefit.
+    -   Incremental cost effectiveness ratio.
+-   The bias introduced is generally of the same order of magnitude and cancels. Similar to the "difference in difference" method in statistics.
+-   These decision thresholds are *robust* against this misspecification.
+-   Absolute values in a single scenario will be biased relative to rates.
 
 ## Rate Misspecification Conclusions
 
-* Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect. 
-* Published rates from clinical studies are usually adjusted for competing events.
+-   Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect.
+-   Published rates from clinical studies are usually adjusted for competing events.
 
 ## Rates vs. Probabilities: Example
 
@@ -380,7 +380,7 @@ m_P %>% data.frame() %>%
 
 ::: {style="font-size: 0.6em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|------------------|--------------------|------------------|------------------|
+|------------------|-------------------|------------------|------------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
 :::
@@ -866,7 +866,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 
 ::: {style="font-size: 0.5em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|-----------------|--------------------|-----------------|-----------------|
+|------------------|--------------------|------------------|------------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Hazard Ratio     | $\frac{\text{Hazard rate of outcome in exposed}}{\text{Hazard rate of outcome in unexposed}}$           | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
