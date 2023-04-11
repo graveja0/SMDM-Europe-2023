@@ -55,7 +55,6 @@ lt <-  # Construct a life-table for  mortality
 
 ```
 
-
 # Cause-Specific Deaths
 
 ```{r}
@@ -94,7 +93,6 @@ tmp <-
 tmp %>% 
     ggplot(aes(x = age, y = log(dx_i))) + geom_point()
 ```
-
 
 ```{r}
 fit <- 
@@ -154,7 +152,6 @@ lt_cvd <-
     )
 
 ```
-
 
 ```{r}
 #| warning: false
@@ -282,7 +279,6 @@ df_mort.uk <-
 ```
 
 ```{r}
-
 df_mort.usa %>% 
     bind_rows(df_mort.uk) %>% 
     group_by(year, country) %>% 

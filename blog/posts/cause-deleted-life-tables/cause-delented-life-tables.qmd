@@ -35,7 +35,6 @@ select <- dplyr::select
 
 # All-Cause Life Table Data
 
-
 ```{r, eval = FALSE}
 hmd.usa <- demography::hmd.mx("USA","user", "pass","USA")
 write_rds(hmd.usa,file=here("blog/posts/cause-deleted-life-tables/data/usa-life-table.rds"))
@@ -96,7 +95,7 @@ tmp %>%
     ggplot(aes(x = age, y = log(dx_i))) + geom_point()
 ```
 
-Let's just fit a basic generalized additive model (GAM) in age. 
+Let's just fit a basic generalized additive model (GAM) in age.
 
 ```{r}
 fit <- 
@@ -123,7 +122,7 @@ deaths_cvd_final %>%
     geom_point(aes(y = log(pdx_i)), col = "red") 
 ```
 
-Now we can construct cause-deleted life tables (per 100k) with sufficient information to fit a mortality model. 
+Now we can construct cause-deleted life tables (per 100k) with sufficient information to fit a mortality model.
 
 ```{r}
 lt_cvd <- 
@@ -156,7 +155,6 @@ lt_cvd <-
     )
 
 ```
-
 
 We now fit the mortalitiy models.
 
@@ -193,7 +191,6 @@ fit <- MortalityLaw(x  = ages,
 plot(fit)
 ```
 
-
 ```{r}
 fit_cd <- MortalityLaw(x  = ages,
                 Dx  = deaths_cvd,   # vector with death counts
@@ -206,7 +203,7 @@ plot(fit_cd)
 
 # Historical Mortality
 
-Let's compare historical mortality rates in the US to the UK. 
+Let's compare historical mortality rates in the US to the UK.
 
 ```{r, eval = FALSE}
 hmd.usa <- demography::hmd.mx("USA","user", "pass","USA")

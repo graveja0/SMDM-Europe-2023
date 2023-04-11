@@ -1,0 +1,372 @@
+---
+title: "SMDM Europe Worked Examples"
+editor_options: 
+  chunk_output_type: console
+execute:
+  code-fold: true
+  message: false
+  warning: false  
+  cache: true
+reference-location: margin
+self-contained: true
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup}
+#| cache: false
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(survival)
+library(flexsurv)
+library(haven)
+library(dampack)
+library(Matrix)
+library(here)
+library(glue)
+library(demography)
+library(glue)
+library(MortalityLaws)
+library(demography)
+library(MASS)
+
+select <- dplyr::select
+
+theme_set(hrbrthemes::theme_ipsum())
+
+ProbToRate = function(prob, t){
+  -log(1-prob)/t
+}
+
+RateToProb = function(rate, t){
+  1 - exp(-rate*t)
+}
+
+r_gomp <- function(a,b,t) {
+    # A exp[Bx]
+    return(a * exp(b*(t+1)))
+}
+r_martinelle <- function(a,b,c,d,k,t) {
+    #[A exp(Bx) + C] / [1 + D exp(Bx)] + K exp(Bx) 
+}
+r_heligman_bollard <- function(a,b,c,d,e,f,g,h,t) {
+  with(as.list(params),{
+    t_ <- t + 1
+    mu1 <-  a^((t_ + b)^c) + (g * h^x)/(1 + g * h^t_)
+    mu2 <-  d * exp(-e * (log(x/f_))^2)
+    ifelse(t == 0, mu1, mu1 + mu2)
+  })
+}
+
+
+
+```
+
+# 1. Setup the Underlying Model 
+
+## Parameters
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: true
+#| code-fold: false
+params <- list(
+  n_age_init = 55,
+  n_age_max = 65,
+  d_c = 0.03,
+  d_e = 0.03, 
+  n_sim = 1000,
+  r_HS = 0.1,
+  hr_S = 1.9, # hazard ratio on rate
+  # overall death
+  # p_HD is the time-varying background mortality
+  # p_SD is the time-varying background mortality * 1.9(Hazard Ratio)
+  hr_HS_trt = 0.5,
+  u_H = 1,
+  u_S = 0.773,
+  u_D = 0,
+  c_H = 8494, # Non-CVD health care cost
+  c_trt = 840,
+  c_S = 3917 + 8494, # Cost of annual follow-up post ASCVD
+  c_nonfatal_firstYr = 49348,
+  c_fatal_firstYr = 16760,
+  c_D = 0,
+  cycle_length = 1,
+  n_cycles = 10
+)
+
+v_names_states = c("Healthy", "Sick", "Death")
+n_states = length(v_names_states)
+v_names_str = c("quo","trt")
+n_strategies = length(v_names_str)
+```
+
+## Underlying Life-Table Data
+
+```{r, eval = FALSE}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+hmd.usa <- demography::hmd.mx("USA",username = "TK", password = "TK", "USA")
+write_rds(hmd.usa,file=here("_sandbox/mortality/usa-life-table.rds"))
+```
+
+### Mortality Model
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: true
+#| code-fold: false
+#############################################
+# Define Parameters for Life Table Modeling
+#############################################
+mort_year <- 2021
+N = 100000
+max_age <- 99
+min_age <- 0
+n_cycles = 100
+
+###############################
+# Underlying Life-Table Data
+###############################
+
+lt <-  # Read in the U.S. life table data from the human mortality database.
+  read_rds(here("_sandbox/mortality/usa-life-table.rds")) %>% 
+  lifetable(.,series = "total", years = mort_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x*100000) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+############################
+# Fit the mortality model
+############################
+#availableLaws()
+
+gom_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "gompertz",
+                opt.method = "LF2")
+
+hp_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
+
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+#| 
+lt_fit <- 
+    tibble(age = ages) %>% 
+    mutate(mx_gom = gompertz(ages,gom_fit$coefficients)$hx,
+           mx_hp = HP2(ages,hp_fit$coefficients)$hx)
+
+params <- modifyList(params,
+                     list(gompertz = unname(coef(gom_fit)),
+                          heligman_bollard = unname(coef(hp_fit))))
+          
+
+```
+
+
+## Mortality Markov
+
+Can we replicate the life table data?
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: true
+#| code-fold: true
+#| eval: false
+
+starting_age = 40
+
+tr_ <- bind_rows(c("alive" = 1, "dead" = 0)) %>% mutate(t = 0) %>% select(t,alive,dead)
+
+for (.x in 1:n_cycles) {
+    
+    r_death <- HP2(.x + starting_age - 1, params$heligman_bollard)$hx
+    r_death <- gompertz(.x + starting_age - 1,params$gompertz)$hx
+    
+    
+    m_Q <-
+        matrix(
+            c(-(r_death), r_death, 0, 0),
+            byrow = TRUE,
+            ncol = 2,
+            dimnames = list(c("alive", "dead"), c("alive", "dead"))
+        )
+
+    m_P <-
+        expm(m_Q)
+    
+    tmp_ <- c(tr_[.x, "alive"], tr_[.x, "dead"]) %>% unlist()
+    
+    tr_ <-
+        bind_rows(
+            tr_,
+            (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% dplyr::select(t, alive, dead)
+        )
+    
+}
+
+# Cycle adjustment
+cycle <- 
+    c(rep(c(4/3,2/3),n_cycles/2),1/3)
+cycle[1] <- 1/3
+
+# Life-Expectancy via the discrete time Markov
+life_exp <- 
+    t(cycle) %*% tr_$alive ; life_exp
+
+# Life-Expectancy via the life table
+lt %>% filter(age==starting_age) %>% pull(ex)
+
+
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+
+model_ages <- c(0,80) 
+
+healthy_dead <- function(starting_age, mort_model = "hp") {
+    tr_ <-
+        bind_rows(c("alive" = 1, "dead" = 0)) %>% mutate(t = 0) %>% select(t, alive, dead)
+    
+    for (.x in 1:n_cycles) {
+        
+        if (mort_model=="hp") r_death <- HP2(.x + starting_age - 1, params$heligman_bollard)$hx
+        if (mort_model=="gom") r_death <- gompertz(.x + starting_age - 1,params$gompertz)$hx
+        
+        m_Q <-
+            matrix(
+                c(-(r_death), r_death, 0, 0),
+                byrow = TRUE,
+                ncol = 2,
+                dimnames = list(c("alive", "dead"), c("alive", "dead"))
+            )
+        
+        m_P <-
+            expm(m_Q)
+        
+        tmp_ <- c(tr_[.x, "alive"], tr_[.x, "dead"]) %>% unlist()
+        
+        tr_ <-
+            bind_rows(
+                tr_,
+                (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% dplyr::select(t, alive, dead)
+            )
+        
+    }
+    
+    # Cycle adjustment
+    cycle <-
+        c(rep(c(4 / 3, 2 / 3), n_cycles / 2), 1 / 3)
+    cycle[1] <- 1 / 3
+    
+    # Life-Expectancy via the discrete time Markov
+    life_exp <-
+        t(cycle) %*% tr_$alive
+    
+    # Life-Expectancy via the life table
+    life_exp_lt <- lt %>% filter(age == starting_age) %>% pull(ex)
+    
+    out <- data.frame(model = life_exp, lt = life_exp_lt)
+    return(out)
+}
+
+res_compare <- 
+    seq(0,80,2) %>% map_df(~healthy_dead(.x)) %>% 
+    mutate(age = seq(0,80,2)) 
+res_compare_gom <- 
+    seq(0,80,2) %>% map_df(~healthy_dead(.x,mort_model="gom")) %>% 
+    mutate(age = seq(0,80,2)) 
+    
+
+```
+
+```{r}
+#| fig-cap: Life Expectancy by Age  Heligman Bollard vs. Life Table Data
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 10
+df_p <- 
+    res_compare %>% 
+    mutate(x_gom = res_compare_gom$model) %>% 
+    gather(model,value,-lt,-age) %>% 
+    mutate(model = factor(model, levels = c("model","x_gom"), labels = c("Heligman-Bollard","Gompertz")))
+
+df_p %>% 
+    ggplot(aes(x = value, y = lt, colour = model)) + geom_text(data = df_p %>% filter(model=="Heligman-Bollard"), aes(label = age),hjust=1.5,colour = "black") +  geom_point() +
+    geom_abline(aes(slope=1,intercept = 0)) +
+    labs(x = "Heligman-Bollard Mortality Model",
+         y = "Life Table") +
+    ggsci::scale_colour_aaas(name="") +
+    theme(legend.position = "top")
+```
+
+
+# Adapt Living-Dead to Healthy-Sick-Dead
+
+```{r}
+
+starting_age = 40
+
+r_death <- HP2(1 + starting_age - 1, params$heligman_bollard)$hx
+
+# Approach 1: Naive Version
+
+m_Q_ <-
+    matrix(
+        c(-(r_death), r_death, 0, 0),
+        byrow = TRUE,
+        ncol = 2,
+        dimnames = list(c("alive", "dead"), c("alive", "dead"))
+    )
+
+m_P_ <-
+    expm(m_Q_)
+
+# This works because we don't have any competing risks
+p_death <- m_P_["alive","dead"]
+r_death_conv <- -log(1-p_death)
+
+
+
+        
+```
+
+
