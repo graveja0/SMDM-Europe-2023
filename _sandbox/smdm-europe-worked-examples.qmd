@@ -509,15 +509,13 @@ We now need to take our life table data and bin it similarly to the IHME data.
 # Source: https://grodri.github.io/demography/neoplasms
 
 # The time to death wtihin intervals is drawn from the "a" column here. 
-# We really only use it for the 
+# We really only use it for the 0-1 year old age range. 
 # url = "https://grodri.github.io/datasets/preston41.dat"
 # b41 <- read.table(url, header=FALSE)
 # names(b41) <- c("age","D","Di","lx","a")
 
 edit.na <- function(x, value) { x[is.na(x)] <- value; x}
     
-edit.na <- function(x, value) { x[is.na(x)] <- value; x}
-
 lt_ <-
     lt %>% 
     mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
