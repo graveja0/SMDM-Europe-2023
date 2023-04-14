@@ -470,6 +470,8 @@ We no longer approximate the 'natural history' life-expectancy! Uh oh.
 
 Let's get an age-specific cause of death data from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) project. 
 
+These data summarize, by age group, the percentage of overall deaths that are attributable to cardiovascular disease. 
+
 ```{r}
 
 ihme_cvd <- 
