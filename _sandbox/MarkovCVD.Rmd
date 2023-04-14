@@ -76,70 +76,72 @@ n_strategies = length(v_names_str)
 
 Get the gompertz models for pHS and pSD separately from the cause-deleted life table.
 
-```{r life-table-gompertz}
-# mltNonCVD_long = data.frame(Age = rep(NA, ceiling(sum(mlt2020_nonCVD$dx))), Death = rep(1, ceiling(sum(mlt2020_nonCVD$dx))))
-# 
-# start = 1
-# for (age in 0:(nrow(mlt2020_nonCVD)-1)) {
-#   n_row = round(mlt2020_nonCVD[age+1,"dx"])
-#   mltNonCVD_long[seq(start,(n_row + start - 1)),"Age"] = age
-#   start = start + n_row
-# }
-# 
-# mltNonCVD_long = mltNonCVD_long %>% drop_na()
-# 
-# parameters_m = data.frame(
-#   Age = mlt2020_nonCVD$Age,
-#   shape=rep(NA,nrow(mlt2020_nonCVD)),
-#   rate=rep(NA,nrow(mlt2020_nonCVD)))
-# 
-# 
-# for (age in 0:nrow(mlt2020_nonCVD)-1) {
-#   surv.data <- with(mltNonCVD_long[mltNonCVD_long$Age >= age,], Surv(Age, Death, origin=age))
-#   surv.model <- flexsurvreg(surv.data ~ 1, dist="gompertz")
-#   
-#   parameters_m$shape[age+1] <- surv.model$coefficients[1]
-#   parameters_m$rate[age+1] <- exp(surv.model$coefficients[2])
-# }
-# 
-# # start since 45-yr
-# # pgompertz(cycle, parameters_m$shape[46], parameters_m$rate[46])
-# 
-# mlt2020_hr = data.frame(Age = 0:(nrow(mlt2020_nonCVD)-1), qx = sapply(sapply(mlt2020_nonCVD$qx, ProbToRate, t = 1) * params_sc$hr_S, RateToProb, t = 1), lx = rep(0,nrow(mlt2020_nonCVD)), dx = rep(NA,nrow(mlt2020_nonCVD)))
-# 
-# mlt2020_hr[1,"lx"] = 100000
-# 
-# for (i in 1:nrow(mlt2020_hr)) {
-#   if (mlt2020_hr[i, "lx"] > 0) {
-#     mlt2020_hr[i, "dx"] = round(mlt2020_hr[i, "qx"] * mlt2020_hr[i, "lx"])
-#     mlt2020_hr[i+1, "lx"] = mlt2020_hr[i, "lx"] - mlt2020_hr[i, "dx"]
-#   }
-# }
-# mlt2020_hr  = mlt2020_hr %>% filter(!is.na(dx))
-# 
-# mltHr_long = data.frame(Age = rep(NA, 100000), Death = rep(1, 100000))
-# 
-# start = 1
-# for (age in 0:(nrow(mlt2020_hr)-1)) {
-#   n_row = mlt2020_hr[age+1,"dx"]
-#   mltHr_long[seq(start,(n_row + start - 1)),"Age"] = age
-#   start = start + n_row
-# }
-# 
-# parameters_m_hr = data.frame(
-#   Age = mlt2020_hr$Age,
-#   shape=rep(NA,nrow(mlt2020_hr)),
-#   rate=rep(NA,nrow(mlt2020_hr)))
-# 
-# for (age in 0:nrow(mlt2020_hr)-1) {
-#   surv.data <- with(mltHr_long[mltHr_long$Age >= age,], Surv(Age, Death, origin=age))
-#   surv.model <- flexsurvreg(surv.data ~ 1, dist="gompertz")
-#   
-#   parameters_m_hr$shape[age+1] <- surv.model$coefficients[1]
-#   parameters_m_hr$rate[age+1] <- exp(surv.model$coefficients[2])
-# }
-# 
-# save(parameters_m, parameters_m_hr, file = "life table/MarkovCVD_gompertz.RData")
+```{r life-table-gompertz, eval = FALSE}
+mltNonCVD_long = data.frame(Age = rep(NA, ceiling(sum(mlt2020_nonCVD$dx))), Death = rep(1, ceiling(sum(mlt2020_nonCVD$dx))))
+
+start = 1
+for (age in 0:(nrow(mlt2020_nonCVD)-1)) {
+  n_row = round(mlt2020_nonCVD[age+1,"dx"])
+  mltNonCVD_long[seq(start,(n_row + start - 1)),"Age"] = age
+  start = start + n_row
+}
+
+mltNonCVD_long = mltNonCVD_long %>% drop_na()
+
+parameters_m = data.frame(
+  Age = mlt2020_nonCVD$Age,
+  shape=rep(NA,nrow(mlt2020_nonCVD)),
+  rate=rep(NA,nrow(mlt2020_nonCVD)))
+
+
+for (age in 1:nrow(mlt2020_nonCVD)-1) {
+  cat(age)
+  surv.data <- with(mltNonCVD_long[mltNonCVD_long$Age >= age,], Surv(Age, Death, origin=age))
+  surv.model <- flexsurvreg(surv.data ~ 1, dist="gompertz")
+
+  parameters_m$shape[age+1] <- surv.model$coefficients[1]
+  parameters_m$rate[age+1] <- exp(surv.model$coefficients[2])
+  cat("\n")
+}
+
+# start since 45-yr
+# pgompertz(cycle, parameters_m$shape[46], parameters_m$rate[46])
+
+mlt2020_hr = data.frame(Age = 0:(nrow(mlt2020_nonCVD)-1), qx = sapply(sapply(mlt2020_nonCVD$qx, ProbToRate, t = 1) * params_sc$hr_S, RateToProb, t = 1), lx = rep(0,nrow(mlt2020_nonCVD)), dx = rep(NA,nrow(mlt2020_nonCVD)))
+
+mlt2020_hr[1,"lx"] = 100000
+
+for (i in 1:nrow(mlt2020_hr)) {
+  if (mlt2020_hr[i, "lx"] > 0) {
+    mlt2020_hr[i, "dx"] = round(mlt2020_hr[i, "qx"] * mlt2020_hr[i, "lx"])
+    mlt2020_hr[i+1, "lx"] = mlt2020_hr[i, "lx"] - mlt2020_hr[i, "dx"]
+  }
+}
+mlt2020_hr  = mlt2020_hr %>% filter(!is.na(dx))
+
+mltHr_long = data.frame(Age = rep(NA, 100000), Death = rep(1, 100000))
+
+start = 1
+for (age in 0:(nrow(mlt2020_hr)-1)) {
+  n_row = mlt2020_hr[age+1,"dx"]
+  mltHr_long[seq(start,(n_row + start - 1)),"Age"] = age
+  start = start + n_row
+}
+
+parameters_m_hr = data.frame(
+  Age = mlt2020_hr$Age,
+  shape=rep(NA,nrow(mlt2020_hr)),
+  rate=rep(NA,nrow(mlt2020_hr)))
+
+for (age in 0:nrow(mlt2020_hr)-1) {
+  surv.data <- with(mltHr_long[mltHr_long$Age >= age,], Surv(Age, Death, origin=age))
+  surv.model <- flexsurvreg(surv.data ~ 1, dist="gompertz")
+
+  parameters_m_hr$shape[age+1] <- surv.model$coefficients[1]
+  parameters_m_hr$rate[age+1] <- exp(surv.model$coefficients[2])
+}
+
+save(parameters_m, parameters_m_hr, file = "life table/MarkovCVD_gompertz.RData")
 
 load("life table/MarkovCVD_gompertz.RData")
 ```
