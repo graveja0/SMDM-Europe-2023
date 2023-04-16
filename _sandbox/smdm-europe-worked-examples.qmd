@@ -61,6 +61,7 @@ library(glue)
 library(MortalityLaws)
 library(demography)
 library(MASS)
+options("scipen" = 100, "digits" = 5)
 
 select <- dplyr::select
 edit.na <- function(x, value) { x[is.na(x)] <- value; x}
@@ -77,9 +78,11 @@ RateToProb = function(rate, t){
 
 ```
 
-# 1. Setup the Underlying Model 
+# Setup the Underlying Model 
 
 ## Parameters
+
+We begin by specifying a parameter object that will ultimately guide the discrete time model. 
 
 ```{r}
 #| warning: false
@@ -93,7 +96,7 @@ params <- list(
   d_e = 0.03, 
   n_sim = 1000,
   r_HS = 0.1,
-  hr_S = 1.9, # hazard ratio on rate
+  hr_SD = 1.9, # hazard ratio on rate
   # overall death
   # p_HD is the time-varying background mortality
   # p_SD is the time-varying background mortality * 1.9(Hazard Ratio)
@@ -119,6 +122,10 @@ n_strategies = length(v_names_str)
 
 ## Underlying Life-Table Data
 
+Background mortality will be based on a mortality model. This reduces the parameterization from the total number of age bins in the life table data to only a few parameters that can be used to characterize background mortality. 
+
+First we download and store the vital statistics data for the US from the human mortality database:
+
 ```{r, eval = FALSE}
 #| warning: false
 #| message: false
@@ -130,6 +137,8 @@ write_rds(hmd.usa,file=here("_sandbox/mortality/usa-life-table.rds"))
 
 ### Mortality Model
 
+Next we construct a life table from these data. This is done using the `demography` package. 
+
 ```{r}
 #| warning: false
 #| message: false
@@ -138,11 +147,16 @@ write_rds(hmd.usa,file=here("_sandbox/mortality/usa-life-table.rds"))
 #############################################
 # Define Parameters for Life Table Modeling
 #############################################
-mort_year <- 2019
-N = 100000
-max_age <- 99
-min_age <- 0
-n_cycles = 100
+mort_year =  # Year to obtain from Human Mortality Database
+  2019
+N = # Population basis for life table
+  100000
+max_age =  # Max age in life table
+  99
+min_age =  # Min age in life table
+  0
+n_cycles =  # Number of discrete time (annual) cycles in Markov
+  100
 
 ###############################
 # Underlying Life-Table Data
@@ -152,9 +166,56 @@ lt <-  # Read in the U.S. life table data from the human mortality database.
   read_rds(here("_sandbox/mortality/usa-life-table.rds")) %>% 
   lifetable(.,series = "total", years = mort_year) %>% 
   as_tibble() %>% 
-  mutate_at(vars(lx,dx), function(x) x*100000) %>% 
+  mutate_at(vars(lx,dx), function(x) x*N) %>% 
   mutate(country = "USA") %>% 
   mutate(age = x)
+
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(country,age,everything()) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+
+```
+
+The columns here are 
+
+- `age`:	Ages for lifetable
+- `year`: Period years or cohort years
+- `mx`: 	Death rate at age x.
+- `qx`: The probability that an individual of exact age x will die before exact age x+1.
+- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, the number of individuals or the size of a cohort from which the life table is derived).
+- `dx`: The number of deaths between exact ages x and x+1.
+- `Lx`: Number of years lived between exact age x and exact age x+1.
+- `Tx`: Number of years lived after exact age x.
+- `ex`: Remaining life expectancy at exact age x.
+
+Our next step is to fit a mortality model to these data. Generally speaking, we need three inputs:
+
+- `age`
+- `dx`
+- `lx`
+
+```{r}
+foo <- availableLaws()
+foo$table %>% 
+  arrange(TYPE) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+
+
+Because we want to stay general (i.e., model all over the age spectrum), our first attempt  will be a Gompertz model. 
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+
 
 ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
 deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
@@ -172,7 +233,16 @@ gom_fit <- MortalityLaw(
                 law = "gompertz",
                 opt.method = "LF2")
 plot(gom_fit)
+```
 
+Gompertz doesn't fit all age ranges well. This is a well-known fact. Switching to another model. 
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+#| 
 hp_fit <- MortalityLaw(
                 x  = ages,
                 Dx  = deaths,   # vector with death counts
@@ -181,101 +251,196 @@ hp_fit <- MortalityLaw(
                 opt.method = "LF2")
 
 plot(hp_fit)
-
-lt_fit <-
-    tibble(age = ages) %>%
-    mutate(
-        mx_gom = gompertz(ages, gom_fit$coefficients)$hx,
-        mx_hp = HP2(ages, hp_fit$coefficients)$hx
-    )
-
 ```
 
-```{r}
-#| warning: false
-#| message: false
-#| echo: false
-#| code-fold: true
+Let's add the fitted mortality model parameters to our overall parameter list object. 
 
-
-params <- modifyList(params,
-                     list(
-                         gompertz = unname(coef(gom_fit)),
-                         heligman_bollard = unname(coef(hp_fit))
-                     ))
-
-
-```
-
-
-## Mortality Markov
-
-Can we replicate the life table data?
 
 ```{r}
 #| warning: false
 #| message: false
 #| echo: true
+
+params <- modifyList(params,
+                     list(
+                         heligman_bollard = unname(coef(hp_fit)),
+                         gompertz = unname(coef(gom_fit))
+                     ))
+```
+
+
+::: column-page
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
 #| code-fold: true
-#| eval: false
+#| fig-cap: Fitted mortality rate vs. observed rate, by model 
+#| label: fig-comparemodel
+#| fig-align: center
+#| fig-width: 10
+#| fig-height: 10
+
+
+res <- 
+    availableLaws()$table %>% 
+    #filter(row_number() %in% 1:12) %>% 
+    pull(CODE) %>% 
+    
+    map_df(~({
+        ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+        deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+        exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+        fit <- 
+            MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = .x,
+                opt.method = "LF2")
+        
+        df <- 
+            tibble(age = as.numeric(paste0(names(fit$fitted.values))), prmort = fit$fitted.values, model = .x, type =fit$info$model.info$FIT)
+        df
+    })) 
+
+
+res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1) + 
+    facet_wrap(~model) + 
+    geom_point(data = lt, aes(x = age, y = log(mx)),alpha=0.2,size=0.1) + 
+    ggsci::scale_colour_aaas() + 
+    theme(legend.position = "none") + 
+    ggthemes::theme_tufte(base_family = "Arial")
+
+```
+:::
+
+## Mortality Markov
+
+Now we'll answer the question: can we replicate life expectancy based on a life table using a discrete time Markov model? 
+
+To do this, we'll consruct a very simple two-state discrete time Markov model.  We'll then parameterize the model with the coefficients from the mortality models above, and then calculate life expectancy with a QALY "payoff" of 1.0 if alive and no discounting. 
+
+::: column-page
+
+```{r, eval = FALSE}
+#| echo: false
+#| 
+#https://sketchviz.com/new
+# digraph G {
+#     layout = neato;
+#     Alive [pos="0,0!"];
+#     Dead [pos="1,-1!"]
+#     Alive -> Alive ;
+#     Alive -> Dead [label="r_AD(t)"];
+#     Dead -> Dead ;
+#   }
+```
+
+![](media/digraph-alive-dead.png){fig-align="center" height="300px"}
+
+
+:::
+
+Let's start with a cohort of 40 year olds. Based on the life table, we should expect these individuals to live an additional `r  lt %>% filter(age==40) %>% pull(ex) %>% round(.,2)` years
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: true
+#| code-fold: false
 
 starting_age = 40
 
-tr_ <- bind_rows(c("alive" = 1, "dead" = 0)) %>% mutate(t = 0) %>% select(t,alive,dead)
+tr_ <-  tr_alt_ <- # Start the Markov trace
+  bind_rows(c("alive" = 1, "dead" = 0)) %>% mutate(t = 0) %>% select(t,alive,dead)
 
 for (.x in 1:n_cycles) {
+    r_death <- 
+      HP2(.x + starting_age - 1, params$heligman_bollard)$hx
     
-    r_death <- HP2(.x + starting_age - 1, params$heligman_bollard)$hx
-    #r_death <- gompertz(.x + starting_age - 1,params$gompertz)$hx
-    
-    
-    m_Q <-
+    ## Embedded Transition Probability Matrix
+    m_Q <- # construct the transtiion rate matrix (2x2 for alive-dead)
         matrix(
             c(-(r_death), r_death, 0, 0),
             byrow = TRUE,
             ncol = 2,
             dimnames = list(c("alive", "dead"), c("alive", "dead"))
         )
-
-    m_P <-
+    m_P <- # embed the transition probability matrix
         expm(m_Q)
     
-    tmp_ <- c(tr_[.x, "alive"], tr_[.x, "dead"]) %>% unlist()
+    p_death <- 1 - exp(-r_death)
     
-    tr_ <-
+    ## Alternative version using standard rate-to-probability conversion formulas
+    m_P_ <- 
+      matrix(c((1 - p_death),p_death,0,1), byrow=TRUE,
+             ncol=2,
+             dimnames = list(c("alive","dead"),c("alive","dead")))
+    
+    tmp_ <-  # current state occupancy 
+      c(tr_[.x, "alive"], tr_[.x, "dead"]) %>% unlist()
+    
+    tr_ <- # add next row of the Markov trace
         bind_rows(
             tr_,
-            (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% dplyr::select(t, alive, dead)
+            (tmp_ %*% m_P)  %>% 
+              as.matrix() %>% 
+              data.frame() %>% 
+              mutate(t = .x) %>% 
+              dplyr::select(t, alive, dead)
+        )
+    
+    tmp_ <-  # current state occupancy 
+      c(tr_alt_[.x, "alive"], tr_alt_[.x, "dead"]) %>% unlist()
+    
+    tr_alt_ <- # add next row of the Markov trace
+        bind_rows(
+            tr_alt_,
+            (tmp_ %*% m_P_)  %>% 
+              as.matrix() %>% 
+              data.frame() %>% 
+              mutate(t = .x) %>% 
+              dplyr::select(t, alive, dead)
         )
     
 }
 
-foo <- tr_
-
 # Cycle adjustment
-cycle <- 
+cycle_adj <- 
     c(rep(c(4/3,2/3),n_cycles/2),1/3)
-cycle[1] <- 1/3
+cycle_adj[1] <- 1/3
 
 # Life-Expectancy via the discrete time Markov
-ly <- c(1,0)
-living <- as.matrix(tr_[,c("alive","dead")]) %*% ly
+payoff_lifeexp <- c(1,0)
 
-life_exp <- 
-    t(cycle) %*% tr_$alive ; life_exp
+life_exp_markov <- 
+    t(cycle_adj) %*% tr_$alive 
 
+life_exp_markov_alt <- 
+    t(cycle_adj) %*% tr_alt_$alive 
 
 # Life-Expectancy via the life table
-lt %>% filter(age==starting_age) %>% pull(ex)
+life_exp_lifetable <- 
+  lt %>% filter(age==starting_age) %>% pull(ex)
 
-
+tibble(markov = as.vector(life_exp_markov), 
+       markov_alt = as.vector(life_exp_markov_alt),life_table = life_exp_lifetable) %>% 
+  kable(digits = 2) %>% 
+  kable_styling()
 ```
+
+
+We'll now loop through various starting ages to verify that we can replicate life expectancy with a simple discrete time Markov model.
 
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
 #| code-fold: true
+#| fig-cap: Life Expectancy from Life Table vs. Modeled Mortality, by Cohort Starting Age and Model Type
+#| label: fig-comparecohorts
+
 
 model_ages <- c(0,80) 
 
@@ -336,7 +501,8 @@ res_compare_gom <-
 ```
 
 ```{r}
-#| fig-cap: Life Expectancy by Age  Heligman Bollard vs. Life Table Data
+#| fig-cap: Comparison of Modeled Life Expectancy from Mortality Models to Life Expectancy from Life Table
+#| label: fig-comparison
 #| warning: false
 #| message: false
 #| echo: false
@@ -352,28 +518,52 @@ df_p <-
 df_p %>% 
     ggplot(aes(x = value, y = lt, colour = model)) + geom_text(data = df_p %>% filter(model=="Heligman-Bollard"), aes(label = age),hjust=1.5,colour = "black") +  geom_point() +
     geom_abline(aes(slope=1,intercept = 0)) +
-    labs(x = "Heligman-Bollard Mortality Model",
-         y = "Life Table") +
+    labs(x = "Life Expectancy from Mortality Model",
+         y = "Life Expectancy from Life Table") +
     ggsci::scale_colour_aaas(name="") +
     theme(legend.position = "top")
 ```
 
+@fig-comparecohorts Shows that modeled life expectancy based on the Helligman-Bollard approach successfully replicates average life expectancy for nearly any age cohort. The figure also shows that the Gompertz model performs well among middle-aged adult cohorts (e.g., 40) but not for younger or older age cohorts. 
+
 # Healthy-Sick-Dead
 
-We'll now start with a healthy-sick-dead model that has competing risks. 
+Let's now expand our simple model to include a "sick" state. For now we'll assume you're either healthy or sick, but that being sick does not confer a higher mortality rate:
 
-## Can we recover the life-expectancy? 
+![](media/digraph-healthy-sick-dead.png){fig-align="center" height="500px"}
+
+::: column-page
+```{r, eval = FALSE}
+#| echo: false
+# sketchviz code: 
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    Sick [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    Sick -> Sick;
+    Healthy -> Sick [label="r_HS"]; 
+    Sick -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;
+  }
+```
+:::
+
+Starting with a cohort aged 40, can we successfully replicate life expectancy again? 
 
 ```{r}
 starting_age = .x = 40
 
-tr_ <- bind_rows(c("healthy" = 1, "sick" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,dead)
+tr_ <- tr_alt_ <- 
+  bind_rows(c("healthy" = 1, "sick" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,dead)
 
 for (.x in 1:n_cycles) {
     
    r_death <- HP2(.x + starting_age - 1, params$heligman_bollard)$hx
     
-      # Correct Version
+    # Embedded Version
     m_Q <-
         matrix(
             c(-(r_death + params$r_HS), params$r_HS, r_death,
@@ -387,6 +577,21 @@ for (.x in 1:n_cycles) {
     m_P <-
         expm(m_Q)
     
+    # Using Formulas to Convert
+    p_death <- 1 - exp(-r_death)
+    p_sick <- 1 - exp(-params$r_HS)
+    
+    m_P_ <- 
+      matrix(c(
+       (1-p_death - p_sick), p_sick, p_death,
+       0,(1-p_death),p_death,
+       0,0,1
+      ),
+      byrow=TRUE,
+      ncol = 3,
+            dimnames = list(c("healthy", "sick","dead"), c("healthy", "sick","dead"))
+      )
+    
     tmp_ <- c(tr_[.x, "healthy"], tr_[.x, "sick"], tr_[.x, "dead"]) %>% unlist()
     
     tr_ <-
@@ -395,31 +600,70 @@ for (.x in 1:n_cycles) {
             (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,dead)
         )
     
+    tmp_ <- c(tr_alt_[.x, "healthy"], tr_alt_[.x, "sick"], tr_alt_[.x, "dead"]) %>% unlist()
+    
+    tr_alt_ <-
+        bind_rows(
+            tr_alt_,
+            (tmp_ %*% m_P_)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,dead)
+        )
+    
 }
 
 # Cycle adjustment
-cycle <- 
+cycle_adj <- 
     c(rep(c(4/3,2/3),n_cycles/2),1/3)
-cycle[1] <- 1/3
+cycle_adj[1] <- 1/3
 
 # Life-Expectancy via the discrete time Markov
-ly <- matrix(c(1,1,0),byrow=TRUE,ncol=1)
-living <- as.matrix(tr_[,c("healthy","sick","dead")]) %*% ly
+payoff_living <- matrix(c(1,1,0),byrow=TRUE,ncol=1)
+living <- as.matrix(tr_[,c("healthy","sick","dead")]) %*% payoff_living
+living_alt <- as.matrix(tr_alt_[,c("healthy","sick","dead")]) %*% payoff_living
 
-life_exp <- 
-    t(cycle) %*% living ; life_exp
+life_exp_markov <- 
+    t(cycle_adj) %*% living 
+
+life_exp_markov_alt <- 
+    t(cycle_adj) %*% living_alt
 
 # Life-Expectancy via the life table
-lt %>% filter(age==starting_age) %>% pull(ex)
+life_exp_lifetable <- 
+  lt %>% filter(age==starting_age) %>% pull(ex)
+
+tibble(markov = as.vector(life_exp_markov), 
+       markov_alt = as.vector(life_exp_markov_alt),life_table = life_exp_lifetable) %>% 
+  kable(digits = 2) %>% 
+  kable_styling()
+```
+
+What happens if we just put in a cause-specific hazard ratio that acts on the background mortality rate?
+
+![](media/digraph-healthy-sick-dead-HR.png){fig-align="center" height="500px"}
+
+
+```{r, eval = FALSE, echo = FALSE}
+# Sketchviz code
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    Sick [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    Sick -> Sick;
+    Healthy -> Sick [label="r_HS"]; 
+    Sick -> Dead [label="  hr_SD * r_HD(t)" fontcolor="red"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;
+}
 
 ```
 
-What happens if we just put in a cause-specific hazard rate for death? 
 
 ```{r}
 starting_age = .x = 40
 
-tr_ <- bind_rows(c("healthy" = 1, "sick" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,dead)
+tr_ <- tr_alt_ <- 
+  bind_rows(c("healthy" = 1, "sick" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,dead)
 
 for (.x in 1:n_cycles) {
     
@@ -439,6 +683,22 @@ for (.x in 1:n_cycles) {
     m_P <-
         expm(m_Q)
     
+    # Using Formulas to Convert
+    p_death <- 1 - exp(-r_death)
+    p_sick <- 1 - exp(-params$r_HS)
+    p_sick_death <- 1 - exp(-(r_death * params$hr_S))
+    
+    m_P_ <- 
+      matrix(c(
+       (1-p_death - p_sick), p_sick, p_death,
+       0,(1-p_sick_death),p_sick_death,
+       0,0,1
+      ),
+      byrow=TRUE,
+      ncol = 3,
+            dimnames = list(c("healthy", "sick","dead"), c("healthy", "sick","dead"))
+      )
+    
     tmp_ <- c(tr_[.x, "healthy"], tr_[.x, "sick"], tr_[.x, "dead"]) %>% unlist()
     
     tr_ <-
@@ -447,23 +707,40 @@ for (.x in 1:n_cycles) {
             (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,dead)
         )
     
+    tmp_ <- c(tr_alt_[.x, "healthy"], tr_alt_[.x, "sick"], tr_alt_[.x, "dead"]) %>% unlist()
+    
+    tr_alt_ <-
+        bind_rows(
+            tr_alt_,
+            (tmp_ %*% m_P_)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,dead)
+        )
+    
 }
 
 # Cycle adjustment
-cycle <- 
+cycle_adj <- 
     c(rep(c(4/3,2/3),n_cycles/2),1/3)
-cycle[1] <- 1/3
+cycle_adj[1] <- 1/3
 
 # Life-Expectancy via the discrete time Markov
-ly <- matrix(c(1,1,0),byrow=TRUE,ncol=1)
-living <- as.matrix(tr_[,c("healthy","sick","dead")]) %*% ly
+payoff_living <- matrix(c(1,1,0),byrow=TRUE,ncol=1)
+living <- as.matrix(tr_[,c("healthy","sick","dead")]) %*% payoff_living
+living_alt <- as.matrix(tr_alt_[,c("healthy","sick","dead")]) %*% payoff_living
 
-life_exp <- 
-    t(cycle) %*% living ; life_exp
+life_exp_markov <- 
+    t(cycle_adj) %*% living 
+
+life_exp_markov_alt <- 
+    t(cycle_adj) %*% living_alt
 
 # Life-Expectancy via the life table
-lt %>% filter(age==starting_age) %>% pull(ex)
+life_exp_lifetable <- 
+  lt %>% filter(age==starting_age) %>% pull(ex)
 
+tibble(markov = as.vector(life_exp_markov), 
+       markov_alt = as.vector(life_exp_markov_alt),life_table = life_exp_lifetable) %>% 
+  kable(digits = 2) %>% 
+  kable_styling()
 ```
 
 We no longer approximate the 'natural history' life-expectancy! Uh oh. 
@@ -607,18 +884,36 @@ hp_fit_ <- MortalityLaw(
                 Ex  = exposure_, # vector containing exposures
                 law = "HP2",
                 opt.method = "LF2")
-
-
-
 ```
 
-Now let's construct a model that adds in cause-specific death. 
+Now let's construct a model that adds in cause-specific death, and uses cause-deleted (modeled) mortality for secular death:
+
+![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="500px"}
+
+
+```{r, eval = FALSE, echo = FALSE}
+# Sketchviz code
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    Sick [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    Sick -> Sick;
+    Healthy -> Sick [label="r_HS"]; 
+    Sick -> Dead [label="  r_SD(t)" fontcolor="red"];
+    Healthy -> Dead [label="r_HDd(t)" fontcolor="red"];
+    Dead -> Dead ;
+  }
+```
+
 
 ```{r}
 params <- modifyList(params, list(cause_deleted = coef(hp_fit_)))
 starting_age = .x = 40
 
-tr_ <- bind_rows(c("healthy" = 1, "sick" = 0, "cvddeath" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,cvddeath,dead)
+tr_ <- tr_alt_ <- 
+  bind_rows(c("healthy" = 1, "sick" = 0, "cvddeath" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,cvddeath,dead)
 
 for (.x in 1:n_cycles) {
   
@@ -627,7 +922,7 @@ for (.x in 1:n_cycles) {
    r_death <- HP2(.x + starting_age - 1, params$cause_deleted)$hx
    r_cause <- lt_ %>% filter(age==current_age) %>% pull(mi)
     
-      # Correct Version
+    # Correct Version
     m_Q <-
         matrix(
             c(-(r_death + params$r_HS), params$r_HS, 0, r_death,
@@ -642,6 +937,23 @@ for (.x in 1:n_cycles) {
     m_P <-
         expm(m_Q)
     
+    # Using Formulas to Convert
+    p_death <- 1 - exp(-r_death)
+    p_sick <- 1 - exp(-params$r_HS)
+    p_sick_death <- 1 - exp(-(r_cause))
+    
+    m_P_ <- 
+      matrix(c(
+       (1-p_death - p_sick), p_sick, 0,p_death,
+       0,(1-p_sick_death - p_death),p_sick_death,p_death,
+       0,0,0,0,
+       0,0,0,1
+      ),
+      byrow=TRUE,
+      ncol = 4,
+            dimnames = list(c("healthy", "sick","cvddeath","dead"), c("healthy", "sick","cvddeath","dead"))
+      )
+    
     tmp_ <- c(tr_[.x, "healthy"], tr_[.x, "sick"], tr_[.x, "cvddeath"],tr_[.x, "dead"]) %>% unlist()
     
     tr_ <-
@@ -650,26 +962,44 @@ for (.x in 1:n_cycles) {
             (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,cvddeath,dead)
         )
     
+    tmp_ <- c(tr_alt_[.x, "healthy"], tr_alt_[.x, "sick"], tr_alt_[.x, "cvddeath"], tr_alt_[.x, "dead"]) %>% unlist()
+    
+    tr_alt_ <-
+        bind_rows(
+            tr_alt_,
+            (tmp_ %*% m_P_)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,cvddeath,dead)
+        )
+    
 }
 
 # Cycle adjustment
-cycle <- 
+cycle_adj <- 
     c(rep(c(4/3,2/3),n_cycles/2),1/3)
-cycle[1] <- 1/3
+cycle_adj[1] <- 1/3
 
 # Life-Expectancy via the discrete time Markov
-ly <- matrix(c(1,1,0,0),byrow=TRUE,ncol=1)
-living <- as.matrix(tr_[,c("healthy","sick","cvddeath","dead")]) %*% ly
+payoff_living <- matrix(c(1,1,0,0),byrow=TRUE,ncol=1)
+living <- as.matrix(tr_[,c("healthy","sick","cvddeath","dead")]) %*% payoff_living
+living_alt <- as.matrix(tr_alt_[,c("healthy","sick","cvddeath","dead")]) %*% payoff_living
 
-life_exp <- 
-    t(cycle) %*% living ; life_exp
+life_exp_markov <- 
+    t(cycle_adj) %*% living 
+
+life_exp_markov_alt <- 
+    t(cycle_adj) %*% living_alt
 
 # Life-Expectancy via the life table
-lt %>% filter(age==starting_age) %>% pull(ex)
+life_exp_lifetable <- 
+  lt %>% filter(age==starting_age) %>% pull(ex)
+
+tibble(markov = as.vector(life_exp_markov), 
+       markov_alt = as.vector(life_exp_markov_alt),life_table = life_exp_lifetable) %>% 
+  kable(digits = 2) %>% 
+  kable_styling()
 
 ```
 
-Good news: we essentially replicate overall life expectancy!
+Good news: we essentially replicate overall life expectancy! Though note the small difference with the model based on formula conversions rather than embedding. 
 
 - Note that we used the cause-deleted life table's cause-specific mortality rate (`mi`) here. Another alternative would be to use a similar mortality model as above -- but in practice, for CVD deaths this does not yield good predictions for old ages (see plot )
 
@@ -691,32 +1021,180 @@ params <- modifyList(params, list(cause_deleted = coef(hp_fit_),
 plot(hp_fit_i)
 ```
 
-# Competing Risks
 
-Let's start off with the correctly embedded transition probability matrix for a 75 year old
+# How Many People Become Sick?
+
+Now we want to simply count up how many become sick. 
+
+Can also use [Fernando's approach](https://journals.sagepub.com/doi/10.1177/0272989X19893973)
 
 ```{r}
-current_age <- 75
+
+starting_age = .x = 40
+starting_pop = N
+
+tr_ <-
+  bind_rows(c("healthy" = N, "sick" = 0, "cvddeath" = 0, "dead" = 0, "accsick" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,cvddeath,dead,accsick)
+
+tr_alt_ <- 
+  bind_rows(c("healthy" = N, "sick" = 0, "cvddeath" = 0, "dead" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick,cvddeath,dead)
+
+tr_nodeath <- 
+  bind_rows(c("healthy" = N, "sick" = 0)) %>% mutate(t = 0) %>% select(t,healthy,sick)
+
+# transition array
+arr_ <- arr_alt_ <- arr_nodeath <- list() 
+
+for (.x in 1:n_cycles) {
   
-r_death <- HP2(current_age, params$cause_deleted)$hx
-r_cause <- lt_ %>% filter(age==current_age) %>% pull(mi)
+   current_age <- min(.x + starting_age - 1,max(lt_$age))
+  
+   r_death <- HP2(.x + starting_age - 1, params$cause_deleted)$hx
+   r_cause <- lt_ %>% filter(age==current_age) %>% pull(mi)
     
+   m_Q_nodeath <- 
+     matrix(
+       c(-params$r_HS,params$r_HS,
+         0,0),
+       byrow=TRUE,
+       ncol = 2, 
+       dimnames = list(c("healthy","sick"),c("healthy","sick"))
+     )
+   
+   m_P_nodeath <- 
+     expm(m_Q_nodeath)
+   
+  tmp_nodeath <- c(tr_nodeath[.x, "healthy"], tr_nodeath[.x, "sick"]) %>% unlist()
+    
+  tr_nodeath <-
+        bind_rows(
+            tr_nodeath,
+            (tmp_nodeath %*% m_P_nodeath)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick)
+        )
+   
+    # Correct Version
+    m_Q <-
+        matrix(
+            c(-(r_death + params$r_HS), params$r_HS, 0, r_death,
+                0, -(r_cause+r_death), r_cause,r_death,
+              0,0,0,0,
+              0,0,0,0),
+            byrow = TRUE,
+            ncol = 4,
+            dimnames = list( c("healthy", "sick","cvddeath","dead"), c("healthy", "sick","cvddeath","dead"))
+        )
+    
+    # Add the accumulator 
+    m_Q_acc <- 
+      cbind(rbind(m_Q,rep(0,nrow(m_Q))),rep(0,ncol(m_Q)+1))
+    rownames(m_Q_acc) = c(rownames(m_Q),"accsick")
+    colnames(m_Q_acc) = c(colnames(m_Q),"accsick")
+    
+    m_Q_acc["healthy","accsick"] <- m_Q_acc["healthy","sick"]
 
-m_Q <-
-    matrix(
-        c(-(r_death + params$r_HS), params$r_HS, 0, r_death,
-            0, -(r_cause+r_death), r_cause,r_death,
-          0,0,0,0,
-          0,0,0,0),
-        byrow = TRUE,
-        ncol = 4,
-        dimnames = list( c("healthy", "sick","cvddeath","dead"), c("healthy", "sick","cvddeath","dead"))
-    )
+    m_P <-
+        expm(m_Q_acc)
+    
+    # Using Formulas to Convert
+    p_death <- 1 - exp(-r_death)
+    p_sick <- 1 - exp(-params$r_HS)
+    p_sick_death <- 1 - exp(-(r_cause))
+    
+    m_P_ <- 
+      matrix(c(
+       (1-p_death - p_sick), p_sick, 0,p_death,
+       0,(1-p_sick_death - p_death),p_sick_death,p_death,
+       0,0,0,0,
+       0,0,0,1
+      ),
+      byrow=TRUE,
+      ncol = 4,
+            dimnames = list(c("healthy", "sick","cvddeath","dead"), c("healthy", "sick","cvddeath","dead"))
+      )
 
-m_P <-
-    expm(m_Q)
+    tmp_ <- c(tr_[.x, "healthy"], tr_[.x, "sick"], tr_[.x, "cvddeath"],tr_[.x, "dead"],tr_[.x,"accsick"]) %>% unlist()
+    
+    tr_ <-
+        bind_rows(
+            tr_,
+            (tmp_ %*% m_P)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,cvddeath,dead,accsick)
+        )
+    
+    arr_tmp <- diag(tmp_)
+    arr_[[.x]] <- 
+      arr_tmp %*% m_P
+    
+    tmp_alt_ <- c(tr_alt_[.x, "healthy"], tr_alt_[.x, "sick"], tr_alt_[.x, "cvddeath"], tr_alt_[.x, "dead"]) %>% unlist()
+    
+    tr_alt_ <-
+        bind_rows(
+            tr_alt_,
+            (tmp_alt_ %*% m_P_)  %>% as.matrix() %>% data.frame() %>% mutate(t = .x) %>% select(t,healthy,sick,cvddeath,dead)
+        )
+    
+    arr_alt_tmp <- diag(tmp_alt_)
+    arr_alt_[[.x]] <- 
+      arr_alt_tmp %*% m_P_
+    
+    
+}
 
-m_P
+# Cycle adjustment
+cycle_adj <- 
+    c(rep(c(4/3,2/3),n_cycles/2),1/3)
+cycle_adj[1] <- 1/3
+
+# Embedded
+payoff_sick <- matrix(c(0,0,0,0,1))
+sick <- as.matrix(tr_[,c("healthy","sick","cvddeath","dead","accsick")]) %*% payoff_sick
+sick_embedded <- t(cycle_adj) %*% sick
+
+# Formulas
+payoff_sick_alt <- matrix(c(0,1,0,0))
+sick_alt <- as.matrix(tr_[,c("healthy","sick","cvddeath","dead")]) %*% payoff_sick_alt
+sick_formula <- t(cycle_adj) %*% sick_alt
+
+# No Death
+payoff_sick_nodeath <- matrix(c(0,1))
+sick_nodeath <- as.matrix(tr_nodeath[,c("healthy","sick")]) %*% payoff_sick_nodeath
+sick_nodeath <- t(cycle_adj) %*% sick_nodeath
+
+sick_nodeath
+sick_formula
+sick_embedded
+
 ```
 
-Notice that there is a positive probability of transitioning from healthy to CVD death in a cycle.
+Why the divergence? At later years the hazard of death is very high -- but the hazard of dying from CVD is also very high! 
+
+Let's take a look at what happens in the first cycle. 
+
+Here is the Markov trace for the embedded matrix:
+
+```{r}
+tr_[2,]
+```
+
+And here it is for the matrix constructed using conversion formulas:
+
+```{r}
+tr_alt_[2,]
+```
+
+We see that in both, `r tr_[2,"dead"] %>% round(0)` people die. But there are more people who remain sick in the trace based on the formulas (`r tr_alt_[2,"sick"] %>% round(0)`) than in the trace based on the embedded matrix (`r tr_[2,"sick"] %>% round(0)`). Why?
+
+> `r tr_alt_[2,"sick"] %>% round(0)` is the total who would become sick *if we don't allow any death in the interval for those who would become sick in the interval*.  
+
+That is, let's think about the population who would become sick in an interval. There are four mutually exclusive groups: 
+  1. Individuals who become sick in the interval and stay sick throughout the interval. 
+  2. Individuals who would have become sick in the interval, but died first. 
+  3. Individuals who became sick in the interval, but *also* died from the illness within the interval.
+  4. Individuals who became sick in the interval, but *also* died from background causes within the interval.
+  
+The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of the interval based on a matrix converted using standard formulas reflects the union of all the above. We're essentially "trapping" these patients within the interval and not allowing them to die for any other reason--either *before* or *after* they become ill.
+
+
+
+
+  
+
