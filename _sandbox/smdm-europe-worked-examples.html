@@ -3343,6 +3343,7 @@ border: 0;
 <h1>Questions and To-Do</h1>
 <ul>
 <li><p>[Shawn] In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket “N”. I assume we don’t need exits to background mortality because we’re only using these for accounting purposes – but if it’s for a transient utility decrement, don’t we only need to apply the utility decrement to the non-decedents within T2?</p></li>
+<li><p>[Shawn] Interestingly, in the HIV model, when I add in background mortality for Germany (based on modeled life table data), the resulting transition probability matrix (for an initial cohort of 40 year olds) results in a negative probability for transitions to secular death. I had to add in a parameter which is a hazard ratio for the HIV population (essentially multiplying the background mortality rate by 2) to get positive probabilities. But could use this as an example to show that embedding from the solved generator matrix doesn’t guarantee non-zero probabilities?</p></li>
 <li><p>[Shawn] Need the optimization algorithm to solve for PSA parameters that minimizes:</p></li>
 </ul>
 <p><span class="math display">
