@@ -4,38 +4,25 @@ editor_options:
   chunk_output_type: console
 execute:
   code-fold: true
+  code-summary: "Show the code"
   message: false
   warning: false  
-  cache: true
+  cache: false
 reference-location: margin
 self-contained: true
+format:
+  html:
+    toc: true
+    html-math-method: katex
+    css: styles.css
 editor: 
   markdown: 
     wrap: 72
 ---
 
-# Outline
 
-## 1. Alive-Dead
-  - Estimate a mortality model to parameterize background mortality.
-  - Verify that a discrete time Markov model can replicate life-expectancy at age X.
-  
-## 2. Healthy-Sick-Dead
+# 0. Setup
 
-  - Split "Alive" health state into healthy vs. sick
-  - Don't add in cause-specific mortality yet.
-  - Verify that a discrete time Markov model can replicate life-expectancy at age X.
-  
-## 3. Healthy-Sick-DeadSick-Dead
-
-  - Add a cause-specific death category.
-  - Show that if we assume a static hazard ratio for death (applied to the secular death rate) we will dramatically understate overall life expectancy.
-  - Construct a cause-deleted life table, and use the cause deleted secular deaths instead.
-  - Model using cause-specific death rate from the cause-deleted life table data. 
-    - Show how you could also use a modeled death estimate that reduces the number of parameters, rather than an age-specific estimate from the life table. 
-
-## 4. Competing Risks and Jumpover States 
-  
 
 ```{r setup}
 #| cache: false
@@ -78,10 +65,6 @@ RateToProb = function(rate, t){
 
 ```
 
-# Setup the Underlying Model 
-
-## Parameters
-
 We begin by specifying a parameter object that will ultimately guide the discrete time model. 
 
 ```{r}
@@ -120,7 +103,10 @@ v_names_str = c("quo","trt")
 n_strategies = length(v_names_str)
 ```
 
-## Underlying Life-Table Data
+
+# 1. Mortality Modeling (Alive-Dead)
+
+## Estimate a mortality model to parameterize background mortality.
 
 Background mortality will be based on a mortality model. This reduces the parameterization from the total number of age bins in the life table data to only a few parameters that can be used to characterize background mortality. 
 
@@ -134,8 +120,6 @@ First we download and store the vital statistics data for the US from the human 
 hmd.usa <- demography::hmd.mx("USA",username = "TK", password = "TK", "USA")
 write_rds(hmd.usa,file=here("_sandbox/mortality/usa-life-table.rds"))
 ```
-
-### Mortality Model
 
 Next we construct a life table from these data. This is done using the `demography` package. 
 
@@ -205,8 +189,6 @@ foo$table %>%
   kable() %>% 
   kable_styling()
 ```
-
-
 
 Because we want to stay general (i.e., model all over the age spectrum), our first attempt  will be a Gompertz model. 
 
@@ -305,7 +287,7 @@ res <-
     })) 
 
 
-res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1) + 
+res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1,lty=2) + 
     facet_wrap(~model) + 
     geom_point(data = lt, aes(x = age, y = log(mx)),alpha=0.2,size=0.1) + 
     ggsci::scale_colour_aaas() + 
@@ -315,7 +297,7 @@ res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1) +
 ```
 :::
 
-## Mortality Markov
+## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
 Now we'll answer the question: can we replicate life expectancy based on a life table using a discrete time Markov model? 
 
@@ -526,7 +508,9 @@ df_p %>%
 
 @fig-comparecohorts Shows that modeled life expectancy based on the Helligman-Bollard approach successfully replicates average life expectancy for nearly any age cohort. The figure also shows that the Gompertz model performs well among middle-aged adult cohorts (e.g., 40) but not for younger or older age cohorts. 
 
-# Healthy-Sick-Dead
+# 2. Incorporating a Disease State (Healthy-Sick-Dead)
+
+## Split “Alive” health state into healthy vs. sick
 
 Let's now expand our simple model to include a "sick" state. For now we'll assume you're either healthy or sick, but that being sick does not confer a higher mortality rate:
 
@@ -550,6 +534,8 @@ digraph G {
   }
 ```
 :::
+
+## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
 Starting with a cohort aged 40, can we successfully replicate life expectancy again? 
 
@@ -636,6 +622,10 @@ tibble(markov = as.vector(life_exp_markov),
   kable_styling()
 ```
 
+# 3. Cause-Specific Death
+
+## Show that if we assume a static hazard ratio for death (applied to the secular death rate) we will dramatically understate overall life expectancy.
+
 What happens if we just put in a cause-specific hazard ratio that acts on the background mortality rate?
 
 ![](media/digraph-healthy-sick-dead-HR.png){fig-align="center" height="500px"}
@@ -657,7 +647,6 @@ digraph G {
 }
 
 ```
-
 
 ```{r}
 starting_age = .x = 40
@@ -744,6 +733,8 @@ tibble(markov = as.vector(life_exp_markov),
 ```
 
 We no longer approximate the 'natural history' life-expectancy! Uh oh. 
+
+## Construct a cause-deleted life table, and use the cause deleted secular deaths instead.
 
 Let's get an age-specific cause of death data from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) project. 
 
@@ -886,6 +877,8 @@ hp_fit_ <- MortalityLaw(
                 opt.method = "LF2")
 ```
 
+## Model using cause-specific death rate from the cause-deleted life table data.
+
 Now let's construct a model that adds in cause-specific death, and uses cause-deleted (modeled) mortality for secular death:
 
 ![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="500px"}
@@ -1022,11 +1015,11 @@ plot(hp_fit_i)
 ```
 
 
-# How Many People Become Sick?
+# 4. Ensuring Accurate Counts, Costs and QALYs
 
-Now we want to simply count up how many become sick. 
+## Count the number who become ill under various approaches.
 
-Can also use [Fernando's approach](https://journals.sagepub.com/doi/10.1177/0272989X19893973)
+Can also try [Fernando's approach](https://journals.sagepub.com/doi/10.1177/0272989X19893973)
 
 ```{r}
 
@@ -1193,8 +1186,405 @@ That is, let's think about the population who would become sick in an interval. 
   
 The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of the interval based on a matrix converted using standard formulas reflects the union of all the above. We're essentially "trapping" these patients within the interval and not allowing them to die for any other reason--either *before* or *after* they become ill.
 
+## Adding Non-Markovian Elements to the Transition Probability Matrix
+
+### Accumulators
+
+### Tunnel states
+
+We will create a T1 state for tracking tunnels and allow exit from due to external death. This requires us to have a recieving bucket for these external risks 'N' for NULL so as not to disturb the balance of the Markov.
+
+1. Construct Markov rate matrix.
+2. Augment with Non-Markovian components.
+3. Embed into transtiion probability matrix. 
+4. Augment as needed for tunnel states. 
+
+```{r}
+
+starting_age = 40
+
+markov_rate_matrices<- function(t)
+{
+  lapply(t, function(tt){
+    
+   current_age <- min(tt + starting_age - 1,max(lt_$age))
+  
+   r_death <- HP2(current_age, params$cause_deleted)$hx
+   r_cause <- lt_ %>% filter(age==current_age) %>% pull(mi) 
+  
+    x <- matrix(c(0.0, params$r_HS, 0.0, r_death,
+                  0.0, 0.0, r_cause, r_death,
+                  0.0, 0.0, 0.0, 0.0,
+                  0.0, 0.0, 0.0, 0.0),
+           nrow=4,
+           ncol=4,
+           byrow=TRUE,
+           dimnames=list(c("healthy", "sick","cvddeath","dead"),
+                         c("healthy", "sick","cvddeath","dead")))
+  
+    diag(x) <- -rowSums(x)
+    x
+  })
+}
+
+non_markov_rate_matrices <- function(t)
+{
+  markov     <- markov_rate_matrices(t)
+  non_markov <- list()
+  for(i in t)
+  {
+    # Expand matrix
+    non_markov[[i]] <- cbind(markov[[i]],     matrix(rep(0, 4*3), nrow=4))
+    non_markov[[i]] <- rbind(non_markov[[i]], matrix(rep(0, 3*7), nrow=3))
+  }
+  
+  
+  lapply(non_markov, function(m){
+    # Put in State Names
+    rownames(m) <- c("healthy", "sick", "cvddeath", "dead", "accsick", "sickT1", "N")
+    colnames(m) <- c("healthy", "sick", "cvddeath", "dead", "accsick", "sickT1", "N")
+    
+    # Define Accumulator
+    m["healthy", "accsick"] <- m["healthy", "sick"] 
+    
+    # Define Tunnel state entry
+    m["healthy", "sickT1"]  <- m["healthy", "sick"]
+    
+    m  # Note: Tunnel states are not fully defined at this point.
+  })
+
+}
 
 
+```
 
+Next we embed the non-Markovian matrices into the time step and finish the definition of the tunnel states in the probability space.
+
+```{r}
+
+transition_prob <- function(t,h=1)
+{
+  # Embed the matrices into the timesteps
+  tp <- lapply(non_markov_rate_matrices(t), function(m) expm(m*h))
+  
+  lapply(tp, function(m)
+  {
+    # It is possible to exit tunnel to external risk of death
+    m["sickT1", "N"]  <- m["healthy", "cvddeath"] + m["healthy", "dead"]
+    m["sickT1", "sickT1"] <- 0  # Cannot remain in tunnel
+    
+    # last state in the tunnel is a terminal state
+    m["sickT1", "N"]  <- 1
+
+    # Note: At this point, the "N" state could be stripped as it was
+    #       only required for the embedding, and serves no other purpose
+    #       at this point
+    
+    states <- c("healthy", "sick", "cvddeath", "dead", "accsick", "sickT1")
+    m[states, states]
+  })
+}
+
+
+```
+
+# 5. Backwards Conversion
+
+```{r}
+m_P <- matrix(c(0.721, 0.202, 0.067, 0.010,
+                               0.000, 0.581, 0.407, 0.012,
+                               0.000, 0.000, 0.750, 0.250,
+                               0.000, 0.000, 0.000, 1.000), 
+                               nrow=4, byrow=TRUE,
+                               dimnames=list(c("A", "B", "C", "D"),
+                                             c("A", "B", "C", "D")))
+m_P  
+```
+
+The bottom diagonal was corrected to be a Markov absorbing state by having 1 on the diagonal. For the purposes of example, we'll assume we wish to add an additional state "E", which has a continuous rate of 0.2 that competes with other transitions.
+
+## Take the HIV model and use eigenvalue decomposition to obtain the continuous generator matrix.
+
+To accomplish this we must find the continuous generator.
+
+```{r}
+V  <- eigen(m_P)$vectors
+iV <- solve(V)
+Ap <- iV %*% m_P %*% V
+
+Ap
+```
+
+Due to the numeric probabilities not being exactly correct, the off-diagonal elements of $A'$ are not zero, but they are quite close. We will zero these off diagonal elements and assume that the non-zero elements are numerical error. Then continue by taking the log of the diagonal.
+
+```{r}
+lAp <- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+
+R  <- V %*% lAp %*% iV
+
+R 
+```
+
+An now we have the continuous time rate generator for the Markov Model. There is still some numerical error---for example the bottom row, has values very near to zero, and the diagonal is not exactly the negative sum of the rest of the row. We can clean this up by tweaking the numbers numerical towards their constraints.
+
+```{r}
+R[abs(R) < 1e-6 ] <- 0
+
+
+rownames(R) <- c("A", "B", "C", "D")
+colnames(R) <- c("A", "B", "C", "D")
+
+round(R, 3)
+```  
+
+Some numerical error is inevitable in this process and cannot be avoided. However, even cleaning up the small and obvious errors, the transition from B -\> D is impossible since it's negative. Rates are relative to the occupancy of the source state, in this case B. Having a negative rate implies that B would have some transitions in which the dead come alive into B based upon the occupancy of B. Obviously, this is not possible. The problem now is how to adjust the model's rates to be physically possible, while as faithful to the original data as possible. B is a sicker state, so it should have a higher death rate.
+
+## Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.
+
+Let's double check it recapitulates the original rates.
+
+```{r}
+expm(R)
+```
+
+Now let's replicate the monotherapy strategy results from the original. 
+
+```{r}
+
+params_hiv <- 
+  list(
+    R = R,
+    dmca =	 1701 , # Direct medical costs associated with state A
+    dmcb =	 1774 , # Direct medical costs associated with state B
+    dmcc =	 6948 , # Direct medical costs associated with state C
+    ccca =	 1055 , # Community care costs associated with state A
+    cccb =	 1278 , # Community care costs associated with state B
+    cccc =	 2059 , # Community care costs associated with state C
+    cAZT =	 2278 , # Zidovudine drug cost
+    cLam =	 2087 , # Lamivudine drug cost
+    RR	  =  0.509, # Treatment effect (RR)
+    cDR	 =  0.06,   # Annual discount rate - costs (%)
+    oDR	 =  0       # Annual discount rate - benefits (%)
+  )
+
+starting_age = 40
+
+markov_rate_matrices <- function(t)
+{
+  lapply(t, function(tt) {
+    current_age <- min(tt + starting_age - 1, max(lt_$age))
+    
+    # r_death <- HP2(current_age, params$cause_deleted)$hx
+    # r_cause <- lt_ %>% filter(age==current_age) %>% pull(mi)
+    
+    x <- params_hiv$R
+
+    diag(x) <- 0
+    diag(x) <- -rowSums(x)
+    x
+  })
+}
+
+transition_prob <- function(t,h=1)
+{
+  # Embed the matrices into the timesteps
+  tp <- lapply(markov_rate_matrices(t), function(m) expm(m*h))
+  
+}
+
+Y <- t(c(A = 1, B = 0, C = 0, D = 0))
+
+res_mono <- do.call(rbind, lapply(transition_prob(1:20), function(tp) {
+  Y <<- Y %*% tp
+}))
+
+res_mono <- rbind(
+  c(A = 1, B = 0, C = 0, D = 0), 
+  res_mono
+)
+
+res_mono <- round(res_mono,3)
+
+payoff_health  = matrix(c(1,1,1,0),byrow=TRUE,ncol=1,dimnames=list(c("A","B","C","D"),c("qaly")))
+qaly_mono <- as.matrix(res_mono[-1,]) %*% payoff_health
+qaly_disc_mono <- qaly_mono / (1 + params_hiv$oDR)^c(1:(nrow(res_mono)-1))
+
+payoff_cost_mono <- with(params_hiv,matrix(c(dmca + ccca + cAZT,
+                        dmcb + cccb + cAZT,
+                        dmcc + cccc + cAZT,
+                        0)))
+cost_mono <- as.matrix(res_mono[-1,]) %*% payoff_cost_mono %>% round(.,0)
+cost_disc_mono <- cost_mono / (1 + params_hiv$cDR)^c(1:(nrow(res_mono)-1))
   
 
+sum(qaly_disc_mono)
+sum(round(cost_disc_mono,0))
+```
+
+# 6. Changing Countries or Contexts
+
+Rather than have a static death rate, let's swap in secular mortality from several different countries and regions. 
+
+```{r}
+
+tibble::tribble(
+  ~code, ~country,
+        "AUS",                              "Australia",
+        "AUT",                               "Austria",
+        "BLR",                               "Belarus",
+        "BEL",                               "Belgium",
+        "BGR",                              "Bulgaria",
+        "CAN",                                "Canada",
+        "CHL",                                 "Chile",
+        "CZE",                        "Czech Republic",
+        "DNK",                               "Denmark",
+        "EST",                               "Estonia",
+        "FIN",                               "Finland",
+     "FRATNP",             "France (total population)",
+     "FRACNP",          "France (civilian population)",
+     "DEUTNP",            "Germany (total population)",
+      "DEUTE",                        "Germany (east)",
+      "DEUTW",                        "Germany (west)",
+        "GRC",                                "Greece",
+        "HUN",                               "Hungary",
+        "ISL",                               "Iceland",
+        "IRL",                               "Ireland",
+        "ISR",                                "Israel",
+        "ITA",                                 "Italy",
+        "JPN",                                 "Japan",
+        "LVA",                                "Latvia",
+        "LTU",                             "Lithuania",
+        "LUX",                            "Luxembourg",
+        "NLD",                           "Netherlands",
+     "NZL_NP",        "New Zealand (total population)",
+     "NZL_MA",        "New Zealand (Maori population)",
+     "NZL_NM",    "New Zealand (non-Maori population)",
+        "NOR",                                "Norway",
+        "POL",                                "Poland",
+        "PRT",                              "Portugal",
+        "RUS",                                "Russia",
+        "SVK",                              "Slovakia",
+        "SVN",                              "Slovenia",
+        "ESP",                                 "Spain",
+        "SWE",                                "Sweden",
+        "CHE",                           "Switzerland",
+        "TWN",                                "Taiwan",
+     "GBR_NP",                        "United Kingdom",
+    "GBRTENW",    "England & Wales (total population)",
+    "GBRCENW", "England & Wales (civilian population)",
+    "GBR_SCO",                              "Scotland",
+    "GBR_NIR",                      "Northern Ireland",
+        "USA",                                "U.S.A.",
+        "UKR",                               "Ukraine"
+    ) %>% 
+kable() %>% 
+  kable_styling()
+
+
+#hmd.ger <- demography::hmd.mx("DEUTNP",username = "", password = "", "")
+#write_rds(hmd.ger,file=here("_sandbox/mortality/germany-life-table.rds"))
+
+#hmd.pol <- demography::hmd.mx("POL",username = "", password = "", "POL")
+#write_rds(hmd.pol,file=here("_sandbox/mortality/poland-life-table.rds"))
+```
+
+## Fit a mortality model to German life-table data and use the mortality rate from this model to estimate QALYs and costs
+
+```{r}
+
+# Fit the mortality model
+
+min_age = 40
+max_age = 99
+
+hmd_ger <- read_rds(here("_sandbox/mortality/germany-life-table.rds"))
+
+lt_ger <-  # Read in the U.S. life table data from the human mortality database.
+  hmd_ger %>% 
+  lifetable(.,series = "total", years = mort_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x*N) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+ages     <- lt_ger$x[lt_ger$x<=max_age & lt_ger$x>=min_age]
+deaths   <- lt_ger$dx[lt_ger$x<=max_age & lt_ger$x>=min_age]
+exposure <- lt_ger$lx[lt_ger$x<=max_age & lt_ger$x>=min_age]
+
+hp_fit_ger <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
+
+params_hiv <- modifyList(params_hiv, list(mort = coef(hp_fit_ger),
+                                          hr_mort = 2))
+```
+
+```{r}
+markov_rate_matrices <- function(t)
+{
+  lapply(t, function(tt) {
+    current_age <- min(tt + starting_age - 1, max(lt_$age))
+    
+    r_death <- params_hiv$hr_mort * HP2(current_age, params_hiv$mort)$hx
+
+    x <- params_hiv$R
+    x["A","D"] <- r_death
+
+    diag(x) <- 0
+    diag(x) <- -rowSums(x)
+    x
+  })
+}
+
+transition_prob <- function(t,h=1)
+{
+  # Embed the matrices into the timesteps
+  tp <- lapply(markov_rate_matrices(t), function(m) expm(m*h))
+  tp
+}
+
+Y <- t(c(A = 1, B = 0, C = 0, D = 0))
+
+res_mono <- do.call(rbind, lapply(transition_prob(1:20), function(tp) {
+  Y <<- Y %*% tp
+}))
+
+res_mono <- rbind(
+  c(A = 1, B = 0, C = 0, D = 0), 
+  res_mono
+)
+
+res_mono <- round(res_mono,3)
+
+payoff_health  = matrix(c(1,1,1,0),byrow=TRUE,ncol=1,dimnames=list(c("A","B","C","D"),c("qaly")))
+qaly_mono <- as.matrix(res_mono[-1,]) %*% payoff_health
+qaly_disc_mono <- qaly_mono / (1 + params_hiv$oDR)^c(1:(nrow(res_mono)-1))
+
+payoff_cost_mono <- with(params_hiv,matrix(c(dmca + ccca + cAZT,
+                        dmcb + cccb + cAZT,
+                        dmcc + cccc + cAZT,
+                        0)))
+cost_mono <- as.matrix(res_mono[-1,]) %*% payoff_cost_mono %>% round(.,0)
+cost_disc_mono <- cost_mono / (1 + params_hiv$cDR)^c(1:(nrow(res_mono)-1))
+  
+sum(qaly_disc_mono)
+sum(round(cost_disc_mono,0))
+```
+
+
+# 7. Inpororating new evidence
+
+## Suppose a new combination therapy treatment has been approved. What is the cost effectiveness relative to monotherapy?
+
+# 8. Solving for PSA parameters
+
+## The new combination therapy arm has some new parameters with 95% CIs.
+
+## Solve for the PSA distribution parameters
+
+# 9. Simulating PSA values from copulas
+
+## Simulate direct medical care and community care costs for each state using copulas.
