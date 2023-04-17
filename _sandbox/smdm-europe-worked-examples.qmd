@@ -21,11 +21,25 @@ editor:
 
 # Questions and To-Do
 
-- In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket "N". I assume we don't need exits to background mortality because we're only using these for accounting purposes -- but if it's for a transient utility decrement, don't we only need to apply the utility decrement to the non-decedents within T2? 
+- [Shawn] In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket "N". I assume we don't need exits to background mortality because we're only using these for accounting purposes -- but if it's for a transient utility decrement, don't we only need to apply the utility decrement to the non-decedents within T2? 
 
-- Need the optimization algorithm to solve for PSA parameters.
+- [Shawn] Need the optimization algorithm to solve for PSA parameters that minimizes:
 
-- Do we need a full-fledged CEA for the CVD model? Or would just creating the natural disease model suffice?
+$$
+(F(x_1) - p_1)^2 + (F(x_2)-p_2)^2
+$$
+
+- [Shawn]. Can we also add analytic solution code for lognormal and logistic? Or just rely on the optimization? 
+
+- [All] Do we need a full-fledged CEA for the CVD model? Or would just creating the natural disease model suffice?
+
+- [Astrid] The [life table data](https://ghdx.healthdata.org/record/ihme-data/gbd-2019-life-tables-1950-2019) at the global burden of disease website is split into different files for different age buckets. Can we download these files and aggretate them together to get a full life table for each country/region/year combo?
+
+- [Astrid] Perhaps we could create a Shiny app that does the above?
+  - Input: country/region and year
+  - Output 1: Constructed life table
+  - Output 2: Parameters for mortality model
+
 
 # 0. Setup
 
