@@ -1436,6 +1436,8 @@ sum(qaly_disc_mono)
 sum(round(cost_disc_mono,0))
 ```
 
+This compares favorably to the textbook answer, which is 7.99 for QALYs and £44,663 for costs. The main differences seem to be rounding in the Excel answer within the textbook. 
+
 # 6. Changing Countries or Contexts
 
 Rather than have a static death rate, let's swap in secular mortality from several different countries and regions. 
