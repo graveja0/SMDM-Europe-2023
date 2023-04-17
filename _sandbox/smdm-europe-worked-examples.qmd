@@ -1591,7 +1591,6 @@ sum(qaly_disc_mono)
 sum(round(cost_disc_mono,0))
 ```
 
-
 # 7. Inpororating new evidence
 
 ## Suppose a new combination therapy treatment has been approved. What is the cost effectiveness relative to monotherapy?
