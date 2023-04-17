@@ -7,19 +7,25 @@ execute:
   code-summary: "Show the code"
   message: false
   warning: false  
-  cache: false
+  cache: true
 reference-location: margin
 self-contained: true
 format:
   html:
     toc: true
     html-math-method: katex
-    css: styles.css
 editor: 
   markdown: 
     wrap: 72
 ---
 
+# Questions and To-Do
+
+- In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket "N". I assume we don't need exits to background mortality because we're only using these for accounting purposes -- but if it's for a transient utility decrement, don't we only need to apply the utility decrement to the non-decedents within T2? 
+
+- Need the optimization algorithm to solve for PSA parameters.
+
+- Do we need a full-fledged CEA for the CVD model? Or would just creating the natural disease model suffice?
 
 # 0. Setup
 
@@ -1194,10 +1200,19 @@ The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of the inter
 
 We will create a T1 state for tracking tunnels and allow exit from due to external death. This requires us to have a recieving bucket for these external risks 'N' for NULL so as not to disturb the balance of the Markov.
 
-1. Construct Markov rate matrix.
-2. Augment with Non-Markovian components.
-3. Embed into transtiion probability matrix. 
-4. Augment as needed for tunnel states. 
+m = number of primary health states
+
+1. Create m x m rate matrix R with initial cell values of 0
+2. Fill in off-diagonal elements per parameters
+3. Diagonal of R is negative row sum of off-diagonal elements
+4. Add accumulator columns and rows as 0s. Call this new matrix R_
+5. Fill in appropriate accumulator transition rates in R_
+6. Add in tunnel states as new columns and rows  
+7. Add an additional "N" (NULL) state as recieving bucket external risks (e.g., background mortality)
+    that can occur while in the tunnel so as not to disturb the balance of the Markov.
+6. Take matrix exponential of R_ to obtain M_, the initial embedded transition probability matrix
+7. Make edits to R_ to reflect tunnel state activity. 
+  - Since it is possible to exit the tunnel for background mortality reasons, add the total background mortality 
 
 ```{r}
 
