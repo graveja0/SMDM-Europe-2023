@@ -19,6 +19,25 @@ editor:
     wrap: 72
 ---
 
+# Basic Outline 
+
+Can translate the below into learning objectives. 
+
+## Morning: "Bottom Up"
+
+1. Fit a mortality model and construct a simple "alive-dead" model that replicates life table data.
+2. Add in a CVD sick state and replicate overall life-expectancy.
+3. Add in a cause-specific (CVD) death state using cause-deleted life tables and cause-specific mortality rate. Verify that it replicates overall life expectancy.
+4. Using the "Healthy-CVD-Dead" natural history model, count up the total number who become sick. Show how standard conversion formulas will miscount the total number who become ill.
+
+## Afternoon: "Top Down" 
+
+5. Start with the HIV model from the Briggs textbook. Solve for the continuous generator matrix.
+6. Fit a mortality model to German life table data and swap in an age-specific death rate into the HIV monotherapy model. How do modeled costs and QALYs differ?
+7. Suppose there is a new combination therapy with a hazard ratio and 95% confidence interval. Incorporate this into the HIV model and calculate ICERs. 
+8. Now solve for the PSA distribution parameters for this new hazard ratio. 
+9. Use copulas to simulate correlated direct medical care and community care costs. 
+
 # Questions and To-Do
 
 - [Shawn] In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket "N". I assume we don't need exits to background mortality because we're only using these for accounting purposes -- but if it's for a transient utility decrement, don't we only need to apply the utility decrement to the non-decedents within T2? 
@@ -33,7 +52,7 @@ $$
 
 - [Shawn]. Can we also add analytic solution code for lognormal and logistic? Or just rely on the optimization? 
 
-- [All] Do we need a full-fledged CEA for the CVD model? Or would just creating the natural disease model suffice?
+- [All] Do we need a full-fledged CEA for the CVD model? Or would just creating the natural history model suffice?
 
 - [Astrid] The [life table data](https://ghdx.healthdata.org/record/ihme-data/gbd-2019-life-tables-1950-2019) at the global burden of disease website is split into different files for different age buckets. Can we download these files and aggretate them together to get a full life table for each country/region/year combo?
 
@@ -362,24 +381,21 @@ Now we'll answer the question: can we replicate life expectancy based on a life 
 
 To do this, we'll consruct a very simple two-state discrete time Markov model.  We'll then parameterize the model with the coefficients from the mortality models above, and then calculate life expectancy with a QALY "payoff" of 1.0 if alive and no discounting. 
 
-::: column-page
-```{r}
+
+```{r, eval = FALSE}
 #| echo: false
-#https://sketchviz.com/new
-# digraph G {
-#     layout = neato;
-#     Alive [pos="0,0!"];
-#     Dead [pos="1,-1!"]
-#     Alive -> Alive ;
-#     Alive -> Dead [label="r_AD(t)"];
-#     Dead -> Dead ;
-#   }
+https://sketchviz.com/new
+digraph G {
+    layout = neato;
+    Alive [pos="0,0!"];
+    Dead [pos="1,-1!"]
+    Alive -> Alive ;
+    Alive -> Dead [label="r_AD(t)"];
+    Dead -> Dead ;
+  }
 ```
 
-![](media/digraph-alive-dead.png){fig-align="center" height="300px"}
-
-
-:::
+![](media/digraph-alive-dead.png){fig-align="center" height="200px"}
 
 Let's start with a cohort of 40 year olds. Based on the life table, we should expect these individuals to live an additional `r  lt %>% filter(age==40) %>% pull(ex) %>% round(.,2)` years
 
@@ -568,41 +584,27 @@ df_p %>%
 
 Let's now expand our simple model to include a "sick" state. For now we'll assume you're either healthy or sick, but that being sick does not confer a higher mortality rate:
 
-![](media/digraph-healthy-sick-dead.png){fig-align="center" height="500px"}
+```{r, eval = FALSE, echo = FALSE}
+################################
+# digraph-healthy-sick-dead.png
+################################
 
-::: column-page
-```{r, eval = FALSE}
-#| echo: false
-# sketchviz code: 
-digraph G {
-    layout = neato;
-    Healthy [pos="0,0!"];
-    Sick [pos="1,1!"]; 
-    Dead [pos="1,-1!"]
-    Healthy -> Healthy ;
-    Sick -> Sick;
-    Healthy -> Sick [label="r_HS"]; 
-    Sick -> Dead [label="  r_HD(t)"];
-    Healthy -> Dead [label="r_HD(t)"];
-    Dead -> Dead ;
-}
 
 digraph G {
     layout = neato;
     Healthy [pos="0,0!"];
     CVD [pos="1,1!"]; 
     Dead [pos="1,-1!"]
-    CVDDeath [pos="3,.5!"]
     Healthy -> Healthy ;
     CVD -> CVD;
-    CVD -> CVDDeath [label="r_CVDD(t)"]
     Healthy -> CVD [label="r_HS"]; 
-    CVD -> Dead [label="  r_HD(t)"];
+    CVD -> Dead [label="   r_HD(t)" fontcolor="red"];
     Healthy -> Dead [label="r_HD(t)"];
     Dead -> Dead ;
-  }
+}
 ```
-:::
+
+![](media/digraph-healthy-sick-dead.png){fig-align="center" height="300px"}
 
 ## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
@@ -697,25 +699,25 @@ tibble(markov = as.vector(life_exp_markov),
 
 What happens if we just put in a cause-specific hazard ratio that acts on the background mortality rate?
 
-![](media/digraph-healthy-sick-dead-HR.png){fig-align="center" height="500px"}
-
-
-```{r, eval = FALSE, echo = FALSE}
-# Sketchviz code
+```{r, eval = FALSE}
+#| echo: false
+# sketchviz code: 
 digraph G {
     layout = neato;
     Healthy [pos="0,0!"];
-    Sick [pos="1,1!"]; 
+    CVD [pos="1,1!"]; 
     Dead [pos="1,-1!"]
     Healthy -> Healthy ;
-    Sick -> Sick;
-    Healthy -> Sick [label="r_HS"]; 
-    Sick -> Dead [label="  hr_SD * r_HD(t)" fontcolor="red"];
+    CVD -> CVD;
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  hr_SD * r_HD(t)" fontcolor="red"];
     Healthy -> Dead [label="r_HD(t)"];
     Dead -> Dead ;
 }
 
 ```
+
+![](media/digraph-healthy-sick-dead-HR.png){fig-align="center" height="300px"}
 
 ```{r}
 starting_age = .x = 40
@@ -966,25 +968,27 @@ hp_fit_ <- MortalityLaw(
 
 Now let's construct a model that adds in cause-specific death, and uses cause-deleted (modeled) mortality for secular death:
 
-![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="500px"}
-
-
-```{r, eval = FALSE, echo = FALSE}
-# Sketchviz code
+```{r, echo = FALSE, eval = FALSE}
 digraph G {
     layout = neato;
     Healthy [pos="0,0!"];
-    Sick [pos="1,1!"]; 
+    CVD [pos="1,1!"]; 
+    "Dead\n(CVD)" [pos="3.1,-.5!"]
     Dead [pos="1,-1!"]
     Healthy -> Healthy ;
-    Sick -> Sick;
-    Healthy -> Sick [label="r_HS"]; 
-    Sick -> Dead [label="  r_SD(t)" fontcolor="red"];
-    Healthy -> Dead [label="r_HDd(t)" fontcolor="red"];
+    CVD -> CVD;
+    CVD -> "Dead\n(CVD)" [label = "    r_DCVD(t)        " labeldistance=1 fontcolor="red"]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)"];
     Dead -> Dead ;
-  }
+}
+
+
 ```
 
+
+![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="300px"}
 
 ```{r}
 params <- modifyList(params, list(cause_deleted = coef(hp_fit_)))
