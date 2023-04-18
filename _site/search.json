@@ -305,14 +305,14 @@
     "href": "lectures/lec_structure.html",
     "title": "5. Structuring the Markov Model",
     "section": "",
-    "text": "Understand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.\nUnderstand rate-to-probability conversion formulas and transition probability embedding.\nExplain how to embed a transition probability matrix with a defined timestep.\nExplore age-, time- and country/region-specific adjustments to a Markov model."
+    "text": "library(knitr)\nlibrary(kableExtra)\nlibrary(tidyverse)\n\n── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──\n✔ ggplot2 3.4.1     ✔ purrr   1.0.1\n✔ tibble  3.2.1     ✔ dplyr   1.1.1\n✔ tidyr   1.3.0     ✔ stringr 1.5.0\n✔ readr   2.1.4     ✔ forcats 0.5.2\n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter()     masks stats::filter()\n✖ dplyr::group_rows() masks kableExtra::group_rows()\n✖ dplyr::lag()        masks stats::lag()\n\n\n\n\n\n\nUnderstand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.\nUnderstand rate-to-probability conversion formulas and competing rates.\nEmbedding a continuous transition rate matrix into a discrete timestep resulting in a transition probability matrix.\nEmbedding of non-stationary rates as a function of time.\nUnderstand additional non-Markovian components: accumulators, tunnel states."
   },
   {
     "objectID": "lectures/lec_structure.html#learning-objectives",
     "href": "lectures/lec_structure.html#learning-objectives",
     "title": "5. Structuring the Markov Model",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\n\nUnderstand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.\nUnderstand rate-to-probability conversion formulas and transition probability embedding.\nExplain how to embed a transition probability matrix with a defined timestep.\nExplore age-, time- and country/region-specific adjustments to a Markov model."
+    "text": "Learning Objectives\n\n\nUnderstand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.\nUnderstand rate-to-probability conversion formulas and competing rates.\nEmbedding a continuous transition rate matrix into a discrete timestep resulting in a transition probability matrix.\nEmbedding of non-stationary rates as a function of time.\nUnderstand additional non-Markovian components: accumulators, tunnel states."
   },
   {
     "objectID": "lectures/lec_structure.html#goal",
@@ -375,7 +375,7 @@
     "href": "lectures/lec_structure.html#transition-rate-matrix",
     "title": "5. Structuring the Markov Model",
     "section": "Transition Rate Matrix",
-    "text": "Transition Rate Matrix\n\n\nThe central “hub” of a Markov model.\nStraightforward to convert rate matrix into a transition probability matrix.\nCan be used to change the cycle length.\nFacilitates modeling using alternative techniques:\n\nContinuous time Markov\nDiscrete event simulation"
+    "text": "Transition Rate Matrix\n\n\nThe central “hub” of a Markov model.\nStraightforward to convert rate matrix into a transition probability matrix.\nCan be used to change the cycle length.\nFacilitates modeling using alternative techniques:\n\nContinuous time Markov\nDiscrete event simulation\nMicrosimulation"
   },
   {
     "objectID": "lectures/lec_structure.html#four-step-process",
@@ -389,7 +389,7 @@
     "href": "lectures/lec_structure.html#rates-vs.-probabilities",
     "title": "5. Structuring the Markov Model",
     "section": "Rates vs. Probabilities",
-    "text": "Rates vs. Probabilities\n\n\nRate: number of occurrences of an event per unit of time.\nProbability: Liklihood that an event will occur for an in individual over a defined time period.\nMajor difference is in denominator: rates take into account time at risk while probabilities do not."
+    "text": "Rates vs. Probabilities\n\n\nRate: number of occurrences of an event per unit of time. These are additive and subtractive–i.e. simple algebra for manipulation.\nProbability: Likelihood that an event will occur for an in individual over a defined time period.\nMajor difference is in denominator: rates take into account time at risk while probabilities do not."
   },
   {
     "objectID": "lectures/lec_structure.html#rates-vs.-probabilities-1",
@@ -452,21 +452,21 @@
     "href": "lectures/lec_structure.html#rates-vs.-probabilities-example",
     "title": "5. Structuring the Markov Model",
     "section": "Rates vs. Probabilities: Example",
-    "text": "Rates vs. Probabilities: Example\n\n\n\n\n\n\nCHF\nD_CHF\nD_OTH\n\n\n\n\nCHF\n0\n0\n0\n\n\nD_CHF\n0\n0\n0\n\n\nD_OTH\n0\n0\n0"
+    "text": "Rates vs. Probabilities: Example\n\n\n0.125 per person year is the rate we’d enter into our rate matrix.\nWe could also think of a separate death rate from background causes (e.g., 0.006 per person-year).1\n\n\nThis often comes from separate vital statistics / life-table data sources."
   },
   {
     "objectID": "lectures/lec_structure.html#rates-vs.-probabilities-example-1",
     "href": "lectures/lec_structure.html#rates-vs.-probabilities-example-1",
     "title": "5. Structuring the Markov Model",
     "section": "Rates vs. Probabilities: Example",
-    "text": "Rates vs. Probabilities: Example\n\n\n0.125 per person year is the rate we’d enter into our rate matrix.\nWe could also think of a separate death rate from background causes (e.g., 0.006 per person-year).1\n\n\nThis often comes from separate vital statistics / life-table data sources."
+    "text": "Rates vs. Probabilities: Example\n\n\n\n\n\n\nCHF\nD_CHF\nD_OTH\n\n\n\n\nCHF\n0\n0.125\n0.006\n\n\nD_CHF\n0\n0.000\n0.000\n\n\nD_OTH\n0\n0.000\n0.000"
   },
   {
     "objectID": "lectures/lec_structure.html#rates-vs.-probabilities-example-2",
     "href": "lectures/lec_structure.html#rates-vs.-probabilities-example-2",
     "title": "5. Structuring the Markov Model",
     "section": "Rates vs. Probabilities: Example",
-    "text": "Rates vs. Probabilities: Example\n\n\n\n\n\n\nCHF\nD_CHF\nD_OTH\n\n\n\n\nCHF\n0\n0.125\n0.006\n\n\nD_CHF\n0\n0.000\n0.000\n\n\nD_OTH\n0\n0.000\n0.000"
+    "text": "Rates vs. Probabilities: Example\n\n\n\n\nThe diagonal elements in a rate matrix are just the negative sum of the off-diagonal elements. (Markovian)\nIn this example, the diagonal value for the 1st row would be -0.131 = -(0.125+0.006)\nWe can leave all other rate matrix values at 0 because the rate of progression from death to other states is zero.\n\n\n\n\n\n\n\n\n\n\nCHF\nDeath_CHF\nDeath_Other\n\n\n\n\nCHF\n-0.131\n0.125\n0.006\n\n\nDeath_CHF\n0\n0.000\n0.000\n\n\nDeath_Other\n0\n0.000\n0.000"
   },
   {
     "objectID": "lectures/lec_structure.html#rates-vs.-probabilities-example-3",
@@ -1110,7 +1110,7 @@
     "href": "lectures/lec_structure.html#footnotes",
     "title": "5. Structuring the Markov Model",
     "section": "Footnotes",
-    "text": "Footnotes\n\n\nSource: Gidwani and Russell (2020)↩︎\nSource: Gidwani and Russell (2020)↩︎\nSource: Gidwani and Russell (2020)↩︎\nSource: Gidwani and Russell (2020)↩︎\nThis often comes from separate vital statistics / life-table data sources.↩︎\nNote this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!↩︎\nThough note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!↩︎\nIf the incidence of the outcome is fairly rare (\\(p_0&lt;0.10\\)), you will often see people simply use the OR as a RR. Source for conversion formula: Zhang and Yu (1998)↩︎\nSee the workshop blog posting for R code!↩︎"
+    "text": "Footnotes\n\n\nThis often comes from separate vital statistics / life-table data sources.↩︎\nNote this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!↩︎\nThough note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!↩︎\nIf the incidence of the outcome is fairly rare (\\(p_0&lt;0.10\\)), you will often see people simply use the OR as a RR. Source for conversion formula: Zhang and Yu (1998)↩︎\nSee the workshop blog posting for R code!↩︎"
   },
   {
     "objectID": "lectures/exercise_ANS_structure.html",
@@ -1335,5 +1335,61 @@
     "title": "Cause-Deleted Life Tables",
     "section": "",
     "text": "All-Cause Life Table Data\n\n\nModel All-Cause Mortality\n\n\nCause-Specific Deaths\n\n\n\n\n\nNote that the death rate per 100k population is not calculated above age 85, so we need to predict it. Luckily the (log) death rate is very linear:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHistorical Mortality"
+  },
+  {
+    "objectID": "lectures/lec_structure.html#common-advice-on-conversion",
+    "href": "lectures/lec_structure.html#common-advice-on-conversion",
+    "title": "5. Structuring the Markov Model",
+    "section": "Common Advice on Conversion",
+    "text": "Common Advice on Conversion\n\\(\\pi_{A \\rightarrow B} = 1 - e^{-r_{A \\rightarrow B} t}\\) to convert a rate, \\(r\\) to a probability, \\(\\pi\\).\n\\(r_{A \\rightarrow B} = -\\log(1 - (\\pi_{A \\rightarrow B} - 1) / t\\) to convert a probability, \\(\\pi\\), to a rate, \\(r\\).\nWhich is technically correct for a model with one rate."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#competing-rates",
+    "href": "lectures/lec_structure.html#competing-rates",
+    "title": "5. Structuring the Markov Model",
+    "section": "Competing Rates",
+    "text": "Competing Rates\nWhen 2 rates compete for a transition these formulas are mathematically wrong.\nWhat is correct is embedding the rate matrix, \\(X\\) into a time step, \\(Y = Y_0 e^{Xt}\\)."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#resulting-error",
+    "href": "lectures/lec_structure.html#resulting-error",
+    "title": "5. Structuring the Markov Model",
+    "section": "Resulting Error",
+    "text": "Resulting Error\n\nIf one has misapplied this in a publication, it’s okay."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#quantified-absolute-error",
+    "href": "lectures/lec_structure.html#quantified-absolute-error",
+    "title": "5. Structuring the Markov Model",
+    "section": "Quantified Absolute Error",
+    "text": "Quantified Absolute Error"
+  },
+  {
+    "objectID": "lectures/lec_structure.html#quantified-relative-error",
+    "href": "lectures/lec_structure.html#quantified-relative-error",
+    "title": "5. Structuring the Markov Model",
+    "section": "Quantified Relative Error",
+    "text": "Quantified Relative Error\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#comparison",
+    "href": "lectures/lec_structure.html#comparison",
+    "title": "5. Structuring the Markov Model",
+    "section": "Comparison",
+    "text": "Comparison\n\nCommon Economic Statistics are relative to a base or reference case.\n\nNet monetary benefit.\nNet health benefit.\nIncremental cost effectiveness ratio.\n\nThe bias introduced is generally of the same order of magnitude and cancels. Similar to the “difference in difference” method in statistics.\nThese decision thresholds are robust against this misspecification.\nAbsolute values in a single scenario will be biased relative to rates."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#rate-misspecification-conclusions",
+    "href": "lectures/lec_structure.html#rate-misspecification-conclusions",
+    "title": "5. Structuring the Markov Model",
+    "section": "Rate Misspecification Conclusions",
+    "text": "Rate Misspecification Conclusions\n\nExisting publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect.\nPublished rates from clinical studies are usually adjusted for competing events."
+  },
+  {
+    "objectID": "lectures/lec_structure.html#section",
+    "href": "lectures/lec_structure.html#section",
+    "title": "5. Structuring the Markov Model",
+    "section": "",
+    "text": "library(ggplot2); theme_set(theme_bw())\nlibrary(flexsurv) # For pgompertz\n\nLoading required package: survival\n\nlibrary(survival) # For fitting\nlibrary(readxl)\nlibrary(janitor)\n\n\nAttaching package: 'janitor'\n\n\nThe following objects are masked from 'package:stats':\n\n    chisq.test, fisher.test\n\n# Read in Raw Lifetable Data\ndeaths.male &lt;- read.table(here::here(\"gompertz-mortality/data/mltper_1x1.txt\"),skip=2,header=T,as.is=TRUE)\ndeaths.female &lt;- read.table(here::here(\"gompertz-mortality/data/fltper_1x1.txt\"),skip=2,header=T,as.is=TRUE)\n\n# Make Some Edits\ndeaths.male[which(deaths.male$Age==\"110+\"),]$Age &lt;- 110\ndeaths.female[which(deaths.female$Age==\"110+\"),]$Age &lt;- 110\ndeaths.male$Age &lt;- as.numeric(deaths.male$Age)\ndeaths.female$Age &lt;- as.numeric(deaths.female$Age)\n\n# Isolate each file to 2010 deaths only\ndeaths.male.2010 &lt;- subset(deaths.male,Year==2010)\ndeaths.female.2010 &lt;- subset(deaths.female,Year==2010)\n\n# Generate the CDF ## CDF == 1-Survival = 1 - lx/10)\ndeaths.male.2010$cdf &lt;- with(deaths.male.2010,1-lx/100000)\ndeaths.female.2010$cdf &lt;- with(deaths.female.2010,1-lx/100000)\n\n# Expand to full data frame\ndeaths.male.long &lt;- data.frame(Age=rep(deaths.male.2010$Age, deaths.male.2010$dx))\ndeaths.male.long$Death &lt;- 1\n\ndeaths.female.long &lt;- data.frame(Age=rep(deaths.female.2010$Age, deaths.female.2010$dx))\ndeaths.female.long$Death &lt;- 1\n\nparameters = data.frame(\n  Age = 0:110,\n  male.shape=rep(NA,111),\n  male.rate=rep(NA,111),\n  female.shape=rep(NA,111),\n  female.rate=rep(NA,111)\n)\n\nparameters &lt;- read.csv(here::here(\"lectures/media/gompertz-mortality.csv\"))"
   }
 ]

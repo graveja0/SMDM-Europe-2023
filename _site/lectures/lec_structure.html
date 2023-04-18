@@ -10,7 +10,7 @@
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.3.272">
 
-  <title>iHEA 2023: Health Economics Modeling Workshop - 5. Structuring the Markov Model</title>
+  <title>SMDM Europe 2023: Health Economics Modeling Workshop - 5. Structuring the Markov Model</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -439,9 +439,10 @@
 <div>
 <ul>
 <li class="fragment">Understand differences between rates and probabilities, hazard rates, relative risks, and other relevant model inputs.</li>
-<li class="fragment">Understand rate-to-probability conversion formulas and transition probability embedding.</li>
-<li class="fragment">Explain how to embed a transition probability matrix with a defined timestep.</li>
-<li class="fragment">Explore age-, time- and country/region-specific adjustments to a Markov model.</li>
+<li class="fragment">Understand rate-to-probability conversion formulas and competing rates.</li>
+<li class="fragment">Embedding a continuous transition rate matrix into a discrete timestep resulting in a transition probability matrix.</li>
+<li class="fragment">Embedding of non-stationary rates as a function of time.</li>
+<li class="fragment">Understand additional non-Markovian components: accumulators, tunnel states.</li>
 </ul>
 </div>
 </section></section>
@@ -527,6 +528,7 @@
 <ul>
 <li class="fragment">Continuous time Markov</li>
 <li class="fragment">Discrete event simulation</li>
+<li class="fragment">Microsimulation</li>
 </ul></li>
 </ul>
 </div>
@@ -551,8 +553,8 @@
 <h2>Rates vs.&nbsp;Probabilities</h2>
 <div>
 <ul>
-<li class="fragment"><strong>Rate</strong>: number of occurrences of an event per unit of time.</li>
-<li class="fragment"><strong>Probability</strong>: Liklihood that an event will occur for an in individual over a defined time period.</li>
+<li class="fragment"><strong>Rate</strong>: number of occurrences of an event per unit of time. These are additive and subtractive–i.e.&nbsp;simple algebra for manipulation.</li>
+<li class="fragment"><strong>Probability</strong>: Likelihood that an event will occur for an in individual over a defined time period.</li>
 <li class="fragment">Major difference is in denominator: rates take into account <strong>time at risk</strong> while probabilities do not.</li>
 </ul>
 </div>
@@ -578,86 +580,42 @@
 <section id="probabilities" class="slide level2">
 <h2>Probabilities</h2>
 
+<!-- ## Rates vs. Probabilities: Example[^1] -->
+<!-- [^1]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+<!-- ::: incremental -->
+<!-- -   Suppose a study followed 100 people with congestive heart failure for 4 years. -->
+<!-- -   At the end of 4 years, 40 had died. -->
+<!-- -   The probability of death over 4 years is $40/100=0.40$. -->
+<!-- ::: -->
+<!-- ## Rates vs. Probabilities: Example[^2] -->
+<!-- [^2]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+<!-- ::: incremental -->
+<!-- -   A rate takes into account the time each person was at risk. -->
+<!-- -   The 60 who survived were at risk the entire 4 years and contributed $60 \times 4 = 240$ years at risk. -->
+<!-- -   Once a person dies, he/she is no longer at risk. -->
+<!-- ::: -->
+<!-- ## Rates vs. Probabilities: Example[^3] -->
+<!-- [^3]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+<!-- ::: incremental -->
+<!-- -   When a study does not report time at risk, the conventional assumption is that the events were spread evenly over the time period. -->
+<!-- -   Using this assumption, the average time at risk for the 40 who died was 2 years, adding 40 × 2 = 80 years at risk. -->
+<!-- ::: -->
+<!-- ## Rates vs. Probabilities: Example[^4] -->
+<!-- [^4]: Source: @gidwaniEstimatingTransitionProbabilities2020 -->
+<!-- ::: incremental -->
+<!-- -   Total time at risk for the cohort of 100 people is 320 person-years (240+80). -->
+<!-- -   Thus, the rate of death from CHF is 40/320 = 0.125 deaths per person-year. -->
+<!-- -   Let's now construct a rate matrix with three states: CHF, Death from CHF, and Death from other causes. -->
+<!-- ::: -->
+<!-- ## Rates vs. Probabilities: Example -->
+<!-- ```{r} -->
+<!-- m_P <- matrix(0,nrow=3,ncol=3,dimnames=list(c("CHF","D_CHF","D_OTH"),c("CHF","D_CHF","D_OTH"))) -->
+<!-- #m_P[1,2] <- 0.125 -->
+<!-- #m_P[1,3] <- 0.006 -->
+<!-- m_P %>% kable() -->
+<!-- ``` -->
 <img data-src="images/paste-62FF1911.png" class="r-stretch"></section>
-<section id="rates-vs.-probabilities-example1" class="slide level2">
-<h2>Rates vs.&nbsp;Probabilities: Example<sup>1</sup></h2>
-<div>
-<ul>
-<li class="fragment">Suppose a study followed 100 people with congestive heart failure for 4 years.</li>
-<li class="fragment">At the end of 4 years, 40 had died.</li>
-<li class="fragment">The probability of death over 4 years is <span class="math inline">\(40/100=0.40\)</span>.</li>
-</ul>
-</div>
-<aside><ol class="aside-footnotes"><li id="fn1"><p>Source: <span class="citation" data-cites="gidwaniEstimatingTransitionProbabilities2020">Gidwani and Russell (<a href="#/references" role="doc-biblioref" onclick="">2020</a>)</span></p></li></ol></aside></section>
-<section id="rates-vs.-probabilities-example2" class="slide level2">
-<h2>Rates vs.&nbsp;Probabilities: Example<sup>1</sup></h2>
-<div>
-<ul>
-<li class="fragment">A rate takes into acccount the time each person was at risk.</li>
-<li class="fragment">The 60 who survived were at risk the entire 4 years and contributed <span class="math inline">\(60 \times 4 = 240\)</span> years at risk.</li>
-<li class="fragment">Once a person dies, he/she is no longer at risk.</li>
-</ul>
-</div>
-<aside><ol class="aside-footnotes"><li id="fn2"><p>Source: <span class="citation" data-cites="gidwaniEstimatingTransitionProbabilities2020">Gidwani and Russell (<a href="#/references" role="doc-biblioref" onclick="">2020</a>)</span></p></li></ol></aside></section>
-<section id="rates-vs.-probabilities-example3" class="slide level2">
-<h2>Rates vs.&nbsp;Probabilities: Example<sup>1</sup></h2>
-<div>
-<ul>
-<li class="fragment">When a study does not report time at risk, the conventional assumption is that the events were spread evenly over the time period.</li>
-<li class="fragment">Using this assumption, the average time at risk for the 40 who died was 2 years, adding 40 × 2 = 80 years at risk.</li>
-</ul>
-</div>
-<aside><ol class="aside-footnotes"><li id="fn3"><p>Source: <span class="citation" data-cites="gidwaniEstimatingTransitionProbabilities2020">Gidwani and Russell (<a href="#/references" role="doc-biblioref" onclick="">2020</a>)</span></p></li></ol></aside></section>
-<section id="rates-vs.-probabilities-example4" class="slide level2">
-<h2>Rates vs.&nbsp;Probabilities: Example<sup>1</sup></h2>
-<div>
-<ul>
-<li class="fragment">Total time at risk for the cohort of 100 people is 320 person-years (240+80).</li>
-<li class="fragment">Thus, the rate of death from CHF is 40/320 = 0.125 deaths per person-year.</li>
-<li class="fragment">Let’s now construct a rate matrix with three states: CHF, Death from CHF, and Death from other causes.</li>
-</ul>
-</div>
-<aside><ol class="aside-footnotes"><li id="fn4"><p>Source: <span class="citation" data-cites="gidwaniEstimatingTransitionProbabilities2020">Gidwani and Russell (<a href="#/references" role="doc-biblioref" onclick="">2020</a>)</span></p></li></ol></aside></section>
 <section id="rates-vs.-probabilities-example" class="slide level2">
-<h2>Rates vs.&nbsp;Probabilities: Example</h2>
-<div class="cell">
-<div class="cell-output-display">
-<table data-quarto-postprocess="true">
-<thead>
-<tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">CHF</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">D_CHF</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">D_OTH</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">CHF</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">D_CHF</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">D_OTH</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-</div>
-</section>
-<section id="rates-vs.-probabilities-example-1" class="slide level2">
 <h2>Rates vs.&nbsp;Probabilities: Example</h2>
 <div>
 <ul>
@@ -665,8 +623,58 @@
 <li class="fragment">We could also think of a separate death rate from background causes (e.g., 0.006 per person-year).<sup>1</sup></li>
 </ul>
 </div>
-<aside><ol class="aside-footnotes"><li id="fn5"><p>This often comes from separate vital statistics / life-table data sources.</p></li></ol></aside></section>
-<section id="rates-vs.-probabilities-example-2" class="slide level2">
+<aside><ol class="aside-footnotes"><li id="fn1"><p>This often comes from separate vital statistics / life-table data sources.</p></li></ol></aside></section>
+<section id="common-advice-on-conversion" class="slide level2">
+<h2>Common Advice on Conversion</h2>
+<p><span class="math inline">\(\pi_{A \rightarrow B} = 1 - e^{-r_{A \rightarrow B} t}\)</span> to convert a rate, <span class="math inline">\(r\)</span> to a probability, <span class="math inline">\(\pi\)</span>.</p>
+<p><span class="math inline">\(r_{A \rightarrow B} = -\log(1 - (\pi_{A \rightarrow B} - 1) / t\)</span> to convert a probability, <span class="math inline">\(\pi\)</span>, to a rate, <span class="math inline">\(r\)</span>.</p>
+<p>Which is technically correct for a model with one rate.</p>
+
+<img data-src="images/a_to_b.png" class="r-stretch"></section>
+<section id="competing-rates" class="slide level2">
+<h2>Competing Rates</h2>
+<p>When 2 rates compete for a transition these formulas are mathematically wrong.</p>
+<p>What is correct is <em>embedding</em> the rate matrix, <span class="math inline">\(X\)</span> into a time step, <span class="math inline">\(Y = Y_0 e^{Xt}\)</span>.</p>
+
+<img data-src="images/a_to_bc.png" class="r-stretch"></section>
+<section id="resulting-error" class="slide level2">
+<h2>Resulting Error</h2>
+
+<img data-src="images/dont_panic.png" class="r-stretch"><p>If one has misapplied this in a publication, it’s okay.</p>
+</section>
+<section id="quantified-absolute-error" class="slide level2">
+<h2>Quantified Absolute Error</h2>
+
+<img data-src="lec_structure_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"></section>
+<section id="quantified-relative-error" class="slide level2">
+<h2>Quantified Relative Error</h2>
+
+<img data-src="lec_structure_files/figure-revealjs/unnamed-chunk-3-1.png" width="960" class="r-stretch"><ul>
+<li>For rates &lt; 0.1 of the chosen time step the error is &lt;5%.</li>
+</ul>
+</section>
+<section id="comparison" class="slide level2">
+<h2>Comparison</h2>
+<ul>
+<li>Common Economic Statistics are relative to a base or reference case.
+<ul>
+<li>Net monetary benefit.</li>
+<li>Net health benefit.</li>
+<li>Incremental cost effectiveness ratio.</li>
+</ul></li>
+<li>The bias introduced is generally of the same order of magnitude and cancels. Similar to the “difference in difference” method in statistics.</li>
+<li>These decision thresholds are <em>robust</em> against this misspecification.</li>
+<li>Absolute values in a single scenario will be biased relative to rates.</li>
+</ul>
+</section>
+<section id="rate-misspecification-conclusions" class="slide level2">
+<h2>Rate Misspecification Conclusions</h2>
+<ul>
+<li>Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect.</li>
+<li>Published rates from clinical studies are usually adjusted for competing events.</li>
+</ul>
+</section>
+<section id="rates-vs.-probabilities-example-1" class="slide level2">
 <h2>Rates vs.&nbsp;Probabilities: Example</h2>
 <div class="cell">
 <div class="cell-output-display">
@@ -705,13 +713,13 @@
 </div>
 </div>
 </section>
-<section id="rates-vs.-probabilities-example-3" class="slide level2 smaller">
+<section id="rates-vs.-probabilities-example-2" class="slide level2 smaller">
 <h2>Rates vs.&nbsp;Probabilities: Example</h2>
 <div class="columns">
 <div class="column">
 <div>
 <ul>
-<li class="fragment">The diagonal elements in a rate matrix are just the negative sum of the off-diagonal elements.</li>
+<li class="fragment">The diagonal elements in a rate matrix are just the negative sum of the off-diagonal elements. (Markovian)</li>
 <li class="fragment">In this example, the diagonal value for the 1st row would be -0.131 = -(0.125+0.006)</li>
 <li class="fragment">We can leave all other rate matrix values at 0 because the rate of progression from death to other states is zero.</li>
 </ul>
@@ -763,10 +771,10 @@
 <div style="font-size: 0.6em">
 <table>
 <colgroup>
-<col style="width: 24%">
-<col style="width: 26%">
-<col style="width: 24%">
-<col style="width: 24%">
+<col style="width: 11%">
+<col style="width: 66%">
+<col style="width: 9%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1655,7 +1663,7 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <li class="fragment">The probability of CHF death in the placebo (control) arm in that trial was 0.15.<sup>1</sup></li>
 </ul>
 </div>
-<aside><ol class="aside-footnotes"><li id="fn6"><p>Note this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!</p></li></ol></aside></section>
+<aside><ol class="aside-footnotes"><li id="fn2"><p>Note this is slightly higher than the corresponding probability in our natural history transition probability matrix (0.1172), reflecting the fact that randomized trial participants are not necessarily representative of the entire population!</p></li></ol></aside></section>
 <section id="chf-example-continued-3" class="slide level2">
 <h2>CHF Example, Continued</h2>
 <div>
@@ -1701,10 +1709,10 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <div style="font-size: 0.5em">
 <table>
 <colgroup>
-<col style="width: 24%">
-<col style="width: 26%">
-<col style="width: 24%">
-<col style="width: 24%">
+<col style="width: 11%">
+<col style="width: 66%">
+<col style="width: 9%">
+<col style="width: 12%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1785,7 +1793,7 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <li class="fragment">If we didn’t have this information, we might <strong>assume</strong> its the same (0.1172) as in our underlying natural history probability matrix<sup>1</sup></li>
 </ul>
 </div>
-<aside><ol class="aside-footnotes"><li id="fn7"><p>Though note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!</p></li></ol></aside></section>
+<aside><ol class="aside-footnotes"><li id="fn3"><p>Though note this is an assumption, so we should incorporate a lot of uncertainty around it in our model!</p></li></ol></aside></section>
 <section id="chf-example-continued-7" class="slide level2">
 <h2>CHF Example, Continued</h2>
 <div>
@@ -1795,7 +1803,7 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <li class="fragment">A relative risk is the ratio of the probability of the outcome in the exposed group to the probability of the outcome in the unexposed group.</li>
 </ul>
 </div>
-<aside><ol class="aside-footnotes"><li id="fn8"><p>If the incidence of the outcome is fairly rare (<span class="math inline">\(p_0&lt;0.10\)</span>), you will often see people simply use the OR as a RR. Source for conversion formula: <span class="citation" data-cites="zhangWhatRelativeRisk1998">Zhang and Yu (<a href="#/references" role="doc-biblioref" onclick="">1998</a>)</span></p></li></ol></aside></section>
+<aside><ol class="aside-footnotes"><li id="fn4"><p>If the incidence of the outcome is fairly rare (<span class="math inline">\(p_0&lt;0.10\)</span>), you will often see people simply use the OR as a RR. Source for conversion formula: <span class="citation" data-cites="zhangWhatRelativeRisk1998">Zhang and Yu (<a href="#/references" role="doc-biblioref" onclick="">1998</a>)</span></p></li></ol></aside></section>
 <section id="chf-example-continued-8" class="slide level2">
 <h2>CHF Example, Continued</h2>
 <div>
@@ -1985,7 +1993,7 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <li class="fragment">Gompertz parameters (by gender) are shown in the table.</li>
 </ul>
 </div>
-<aside><ol class="aside-footnotes"><li id="fn9"><p>See the <a href="../blog/posts/gompertz-mortality.html">workshop blog posting</a> for R code!</p></li></ol></aside></section>
+<aside><ol class="aside-footnotes"><li id="fn5"><p>See the <a href="../blog/posts/gompertz-mortality.html">workshop blog posting</a> for R code!</p></li></ol></aside></section>
 <section id="background-mortality-1" class="slide level2">
 <h2>Background Mortality</h2>
 <ul>
@@ -2909,9 +2917,6 @@ p_{\text{CHF,D_CHF}}= \frac{\color{green}{0.006}}{\color{red}{0.125}+\color{gree
 <section id="references" class="title-slide slide level1 smaller scrollable">
 <h1>References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-gidwaniEstimatingTransitionProbabilities2020" class="csl-entry" role="listitem">
-Gidwani, Risha, and Louise B. Russell. 2020. <span>“Estimating <span>Transition Probabilities</span> from <span>Published Evidence</span>: <span>A Tutorial</span> for <span>Decision Modelers</span>.”</span> <em>PharmacoEconomics</em> 38 (11): 1153–64. <a href="https://doi.org/10.1007/s40273-020-00937-z">https://doi.org/10.1007/s40273-020-00937-z</a>.
-</div>
 <div id="ref-russellWhatPertussisMortality2016" class="csl-entry" role="listitem">
 Russell, Louise B., Sri Ram Pentakota, Cristiana Maria Toscano, Ben Cosgriff, and Anushua Sinha. 2016. <span>“What Pertussis Mortality Rates Make Maternal Acellular Pertussis Immunization Cost-Effective in Low-and Middle-Income Countries? A Decision Analysis.”</span> <em>Clinical Infectious Diseases</em> 63 (suppl_4): S227–35.
 </div>

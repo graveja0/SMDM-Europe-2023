@@ -9,7 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(Matrix)
 ```
 
-
 # Markov Modeling: Best Practices, Code and Examples
 
 This section provides advice on best practices for embedding literature-based parameters into discrete-time Markov models so that the final transition probabilities accurately represent the underlying continuous time process.

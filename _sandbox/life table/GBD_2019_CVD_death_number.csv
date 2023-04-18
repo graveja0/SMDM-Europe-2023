@@ -1,0 +1,41 @@
+measure,location,sex,age,cause,metric,year,val,upper,lower
+Deaths,United States of America,Male,1-4 years,Cardiovascular diseases,Number,2019,75.67138251205913,84.29070376030583,67.37833675694068
+Deaths,United States of America,Female,1-4 years,Cardiovascular diseases,Number,2019,65.53018596478636,72.25658471366253,58.30167836696908
+Deaths,United States of America,Male,5-9 years,Cardiovascular diseases,Number,2019,42.75327033692761,46.058372494741775,39.39662166406919
+Deaths,United States of America,Female,5-9 years,Cardiovascular diseases,Number,2019,44.01222522293926,47.264494197473184,40.69246372194319
+Deaths,United States of America,Male,10-14 years,Cardiovascular diseases,Number,2019,74.42473947597772,80.49240977149327,69.40090206950674
+Deaths,United States of America,Female,10-14 years,Cardiovascular diseases,Number,2019,60.00508304203008,64.25097111951595,55.862329077639906
+Deaths,United States of America,Male,15-19 years,Cardiovascular diseases,Number,2019,228.57045988400296,248.83384905108935,213.85170242731954
+Deaths,United States of America,Female,15-19 years,Cardiovascular diseases,Number,2019,142.3846588381741,154.09036040196997,132.06819574504476
+Deaths,United States of America,Male,20-24 years,Cardiovascular diseases,Number,2019,458.5109283639816,490.9694680118631,421.75266544006644
+Deaths,United States of America,Female,20-24 years,Cardiovascular diseases,Number,2019,250.9301146578797,268.64781379947055,232.6224322857508
+Deaths,United States of America,Male,25-29 years,Cardiovascular diseases,Number,2019,828.2160357839424,891.063913762269,743.4577710508154
+Deaths,United States of America,Female,25-29 years,Cardiovascular diseases,Number,2019,503.3106750160239,552.303877796898,469.23342416685654
+Deaths,United States of America,Male,30-34 years,Cardiovascular diseases,Number,2019,1538.849158566709,1652.0233252140877,1360.9441019068809
+Deaths,United States of America,Female,30-34 years,Cardiovascular diseases,Number,2019,926.883852148277,987.2124497422292,876.2987176481773
+Deaths,United States of America,Male,35-39 years,Cardiovascular diseases,Number,2019,2888.9679853069097,3043.7329023119746,2669.1236481304873
+Deaths,United States of America,Female,35-39 years,Cardiovascular diseases,Number,2019,1526.8288379825008,1594.72940269231,1455.1468724745525
+Deaths,United States of America,Male,40-44 years,Cardiovascular diseases,Number,2019,5194.276749591574,5476.980069226056,4858.466685708687
+Deaths,United States of America,Female,40-44 years,Cardiovascular diseases,Number,2019,2621.907386625529,2739.031623491812,2501.788147561281
+Deaths,United States of America,Male,45-49 years,Cardiovascular diseases,Number,2019,9617.461106762401,9973.918833371865,9191.723612461888
+Deaths,United States of America,Female,45-49 years,Cardiovascular diseases,Number,2019,4401.305152604097,4589.905248041484,4215.39845835541
+Deaths,United States of America,Male,50-54 years,Cardiovascular diseases,Number,2019,17029.14258009583,17592.326666562287,16402.876131009463
+Deaths,United States of America,Female,50-54 years,Cardiovascular diseases,Number,2019,7665.403874924125,7942.475286045525,7394.092823650691
+Deaths,United States of America,Male,55-59 years,Cardiovascular diseases,Number,2019,28648.336734781005,29565.325611573004,27643.259725256346
+Deaths,United States of America,Female,55-59 years,Cardiovascular diseases,Number,2019,12645.230153671755,13166.033818802061,12188.275095526084
+Deaths,United States of America,Male,60-64 years,Cardiovascular diseases,Number,2019,39522.3733925231,40744.782055817195,37957.48673004473
+Deaths,United States of America,Female,60-64 years,Cardiovascular diseases,Number,2019,19251.709810364617,19941.592350928404,18607.932122450584
+Deaths,United States of America,Male,65-69 years,Cardiovascular diseases,Number,2019,46631.87650980934,48061.40248856212,45136.06315395545
+Deaths,United States of America,Female,65-69 years,Cardiovascular diseases,Number,2019,25169.578075895202,26336.013045050604,24117.7452214151
+Deaths,United States of America,Male,70-74 years,Cardiovascular diseases,Number,2019,55535.288092712006,57351.73197552644,53170.521558937326
+Deaths,United States of America,Female,70-74 years,Cardiovascular diseases,Number,2019,36552.23762482905,38554.73993870981,34594.887466324384
+Deaths,United States of America,Male,75-79 years,Cardiovascular diseases,Number,2019,60336.22373189607,62627.935927738225,57080.72987322783
+Deaths,United States of America,Female,75-79 years,Cardiovascular diseases,Number,2019,46783.71741784954,49866.814737278146,43004.14059434186
+Deaths,United States of America,Male,<1 year,Cardiovascular diseases,Number,2019,194.0725866248469,217.2687917943907,171.60346766017094
+Deaths,United States of America,Female,<1 year,Cardiovascular diseases,Number,2019,159.36143422950857,176.23663708769317,142.1039048777793
+Deaths,United States of America,Male,80-84,Cardiovascular diseases,Number,2019,65413.83439766531,68908.82274033372,59632.854382818245
+Deaths,United States of America,Female,80-84,Cardiovascular diseases,Number,2019,66057.69619627943,71364.96598519442,56680.91957578571
+Deaths,United States of America,Male,85-89,Cardiovascular diseases,Number,2019,66890.59704939695,71393.49683214266,58943.73552778879
+Deaths,United States of America,Female,85-89,Cardiovascular diseases,Number,2019,83569.38813532397,92622.77330711884,67678.37286838188
+Deaths,United States of America,Male,90-94,Cardiovascular diseases,Number,2019,51364.013343376326,55626.33895754956,42798.5769253979
+Deaths,United States of America,Female,90-94,Cardiovascular diseases,Number,2019,90327.4426876554,102068.39805625279,68126.86556762777

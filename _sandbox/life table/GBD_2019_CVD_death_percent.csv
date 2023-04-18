@@ -1,0 +1,43 @@
+measure,location,sex,age,cause,metric,year,val,upper,lower
+Deaths,United States of America,Male,1-4 years,Cardiovascular diseases,Percent,2019,0.036433093399838454,0.039376220300417195,0.033139361036302044
+Deaths,United States of America,Female,1-4 years,Cardiovascular diseases,Percent,2019,0.04187389209249884,0.04512286855928011,0.03758044774268084
+Deaths,United States of America,Male,5-9 years,Cardiovascular diseases,Percent,2019,0.03391043390635266,0.03626310060796165,0.03145074536768974
+Deaths,United States of America,Female,5-9 years,Cardiovascular diseases,Percent,2019,0.04444761542899872,0.04770925377378072,0.041079235592572316
+Deaths,United States of America,Male,10-14 years,Cardiovascular diseases,Percent,2019,0.04121830986285326,0.044454125715651674,0.03850629737942918
+Deaths,United States of America,Female,10-14 years,Cardiovascular diseases,Percent,2019,0.049110234536112914,0.052540365506926284,0.04580452570771618
+Deaths,United States of America,Male,15-19 years,Cardiovascular diseases,Percent,2019,0.029956526912530975,0.032526163096062,0.028078196464181512
+Deaths,United States of America,Female,15-19 years,Cardiovascular diseases,Percent,2019,0.042488843368654,0.045966330590288214,0.03928356727855768
+Deaths,United States of America,Male,20-24 years,Cardiovascular diseases,Percent,2019,0.030604022046609624,0.03272952822997747,0.028181594792878524
+Deaths,United States of America,Female,20-24 years,Cardiovascular diseases,Percent,2019,0.052236107063108016,0.05581088361120582,0.04860133599777048
+Deaths,United States of America,Male,25-29 years,Cardiovascular diseases,Percent,2019,0.046358092533901024,0.049894436089533235,0.04157973258181505
+Deaths,United States of America,Female,25-29 years,Cardiovascular diseases,Percent,2019,0.06970452260805275,0.0763599485782197,0.06539858762041227
+Deaths,United States of America,Male,30-34 years,Cardiovascular diseases,Percent,2019,0.08030911422694283,0.08617254267835092,0.071213816749391
+Deaths,United States of America,Female,30-34 years,Cardiovascular diseases,Percent,2019,0.09747323065499684,0.10377558141597648,0.09247346299360285
+Deaths,United States of America,Male,35-39 years,Cardiovascular diseases,Percent,2019,0.13190020301580893,0.13868519122875703,0.12217690714358491
+Deaths,United States of America,Female,35-39 years,Cardiovascular diseases,Percent,2019,0.12745039369138383,0.13262902728888035,0.12207229623104833
+Deaths,United States of America,Male,40-44 years,Cardiovascular diseases,Percent,2019,0.2002572286854983,0.211517400001378,0.18778988140234495
+Deaths,United States of America,Female,40-44 years,Cardiovascular diseases,Percent,2019,0.15919733439649345,0.16596451012699473,0.15247376325141876
+Deaths,United States of America,Male,45-49 years,Cardiovascular diseases,Percent,2019,0.24475694408197166,0.2534224098115402,0.2351759984801015
+Deaths,United States of America,Female,45-49 years,Cardiovascular diseases,Percent,2019,0.17679347406535864,0.18345289662161715,0.17021327059394528
+Deaths,United States of America,Male,50-54 years,Cardiovascular diseases,Percent,2019,0.2744122521866588,0.28284151591109347,0.26556135819037646
+Deaths,United States of America,Female,50-54 years,Cardiovascular diseases,Percent,2019,0.19518563583424944,0.2018949577355382,0.18818977374074955
+Deaths,United States of America,Male,55-59 years,Cardiovascular diseases,Percent,2019,0.2885762851383554,0.2965608722513905,0.28001716298680557
+Deaths,United States of America,Female,55-59 years,Cardiovascular diseases,Percent,2019,0.20455764775613192,0.2124257382227766,0.19753135205604958
+Deaths,United States of America,Male,60-64 years,Cardiovascular diseases,Percent,2019,0.2985757965801221,0.30682143810911866,0.2883926731666296
+Deaths,United States of America,Female,60-64 years,Cardiovascular diseases,Percent,2019,0.22203109303147028,0.22981335932159036,0.21505786014970124
+Deaths,United States of America,Male,65-69 years,Cardiovascular diseases,Percent,2019,0.30005410477997446,0.30828893061645585,0.29104368632261635
+Deaths,United States of America,Female,65-69 years,Cardiovascular diseases,Percent,2019,0.23329438722729173,0.24332668687050366,0.22380540932230283
+Deaths,United States of America,Male,70-74 years,Cardiovascular diseases,Percent,2019,0.3046804973954101,0.3141098303659274,0.2923888373230824
+Deaths,United States of America,Female,70-74 years,Cardiovascular diseases,Percent,2019,0.26015413640480695,0.27417540501031135,0.24710441129525004
+Deaths,United States of America,Male,75-79 years,Cardiovascular diseases,Percent,2019,0.3216375141329116,0.3331709573815486,0.3045128758354016
+Deaths,United States of America,Female,75-79 years,Cardiovascular diseases,Percent,2019,0.2975256212518574,0.31754498391266495,0.2737207450651933
+Deaths,United States of America,Male,<1 year,Cardiovascular diseases,Percent,2019,0.016491606235984387,0.01806232236046867,0.015006461813823067
+Deaths,United States of America,Female,<1 year,Cardiovascular diseases,Percent,2019,0.01707674958060272,0.018363104276742946,0.015446281199890438
+Deaths,United States of America,Male,80-84,Cardiovascular diseases,Percent,2019,0.35152488550552524,0.3687537969065808,0.32025619887323503
+Deaths,United States of America,Female,80-84,Cardiovascular diseases,Percent,2019,0.35551614871575765,0.3840661898826446,0.30538267594018637
+Deaths,United States of America,Male,85-89,Cardiovascular diseases,Percent,2019,0.387823521286203,0.4129668762991038,0.3415375630185319
+Deaths,United States of America,Female,85-89,Cardiovascular diseases,Percent,2019,0.41004192935832606,0.4537225095883593,0.32969135423044443
+Deaths,United States of America,Male,90-94,Cardiovascular diseases,Percent,2019,0.4289392173110967,0.4654814823057185,0.3589882142266911
+Deaths,United States of America,Female,90-94,Cardiovascular diseases,Percent,2019,0.4593141719518324,0.5187208363268738,0.34722808930096316
+Deaths,United States of America,Male,95+ years,Cardiovascular diseases,Percent,2019,0.4718082015305432,0.5477531444546381,0.38483503763076793
+Deaths,United States of America,Female,95+ years,Cardiovascular diseases,Percent,2019,0.5053555939931893,0.5770743772580955,0.36518406608631926
