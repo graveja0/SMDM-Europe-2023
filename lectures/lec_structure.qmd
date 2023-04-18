@@ -337,6 +337,8 @@ title(main="Misspecified Competing Rates")
 
 * Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect. 
 * Published rates from clinical studies are usually adjusted for competing events.
+* Discrete Event Simulation automatically handles competing events.
+* microsimulation is embedded in a time step and requires Markov conversion.
 
 ## Rates vs. Probabilities: Example
 
