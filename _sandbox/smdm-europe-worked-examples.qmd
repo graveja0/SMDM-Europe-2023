@@ -7,7 +7,7 @@ execute:
   code-summary: "Show the code"
   message: false
   warning: false  
-  cache: true
+  cache: false
 reference-location: margin
 self-contained: true
 format:
@@ -70,6 +70,8 @@ library(glue)
 library(MortalityLaws)
 library(demography)
 library(MASS)
+library(directlabels)
+
 options("scipen" = 100, "digits" = 5)
 
 select <- dplyr::select
@@ -192,7 +194,7 @@ The columns here are
 - `year`: Period years or cohort years
 - `mx`: 	Death rate at age x.
 - `qx`: The probability that an individual of exact age x will die before exact age x+1.
-- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, the number of individuals or the size of a cohort from which the life table is derived).
+- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or the size of a cohort from which the life table is derived).
 - `dx`: The number of deaths between exact ages x and x+1.
 - `Lx`: Number of years lived between exact age x and exact age x+1.
 - `Tx`: Number of years lived after exact age x.
@@ -200,13 +202,18 @@ The columns here are
 
 Our next step is to fit a mortality model to these data. Generally speaking, we need three inputs:
 
-- `age`
-- `dx`
-- `lx`
+- `age`:	Ages for lifetable
+- `dx`: The number of deaths between exact ages x and x+1.
+- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or  the size of a cohort from which the life table is derived).
+
+The `MortalityLaws` package has a *number* of mortality models we can draw from. @tbl-mortlaws summarizes these.
 
 ```{r}
-foo <- availableLaws()
-foo$table %>% 
+#| tbl-cap: Mortality Models in MortalityLaws package
+#| label: tbl-mortlaws
+#| 
+laws <- availableLaws()
+laws$table %>% 
   arrange(TYPE) %>% 
   kable() %>% 
   kable_styling()
@@ -219,7 +226,6 @@ Because we want to stay general (i.e., model all over the age spectrum), our fir
 #| message: false
 #| echo: false
 #| code-fold: true
-
 
 ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
 deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
@@ -239,39 +245,41 @@ gom_fit <- MortalityLaw(
 plot(gom_fit)
 ```
 
-Gompertz doesn't fit all age ranges well. This is a well-known fact. Switching to another model. 
+Gompertz doesn't fit all age ranges well---particularly young ages. This is a well-known fact. If we were to focus only on adults, however, this would be a nice way to go.
+
+Here, for example, is a Gompertz model fit to 40 year old adults: 
 
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
 #| code-fold: true
-#| 
-hp_fit <- MortalityLaw(
+
+ages     <- lt$x[lt$x<=max_age & lt$x>= 40]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=40]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=40]
+
+############################
+# Fit the mortality model
+############################
+#availableLaws()
+
+gom_fit40 <- MortalityLaw(
                 x  = ages,
                 Dx  = deaths,   # vector with death counts
                 Ex  = exposure, # vector containing exposures
-                law = "HP2",
+                law = "gompertz",
                 opt.method = "LF2")
-
-plot(hp_fit)
+plot(gom_fit40)
 ```
 
-Let's add the fitted mortality model parameters to our overall parameter list object. 
-
+The nice thing about this is that it summarizes age-specific mortality in terms of just two parameters. We can then feed these parameters into the `gompertz()` formula to yield a death rate for a given age. Here is the mortality rate at age 75 for an initial population of 40 year olds:
 
 ```{r}
-#| warning: false
-#| message: false
-#| echo: true
-
-params <- modifyList(params,
-                     list(
-                         heligman_bollard = unname(coef(hp_fit)),
-                         gompertz = unname(coef(gom_fit))
-                     ))
+MortalityLaws::gompertz(x = 75 - 40, coef(gom_fit40))
 ```
 
+For this exercise we want to stay general, so let's select an alternative model that can better fit the entire age range. To get a sense of the options, let's select the models that are designed for the entire age range and see their fit:
 
 ::: column-page
 ```{r}
@@ -285,12 +293,13 @@ params <- modifyList(params,
 #| fig-width: 10
 #| fig-height: 10
 
+models_to_explore <- 
+  laws$table %>% 
+  filter(TYPE==6) %>% 
+  pull(CODE)
 
 res <- 
-    availableLaws()$table %>% 
-    #filter(row_number() %in% 1:12) %>% 
-    pull(CODE) %>% 
-    
+  models_to_explore %>% 
     map_df(~({
         ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
         deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
@@ -319,6 +328,34 @@ res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1,lty=2) +
 ```
 :::
 
+Here we see that some do better than others. We'll choose the HP2 (Heligman-Bollard) to fit, though note that any well-fitting mortality model can be used because there is a mapping of the fitted parameters to the mortality rate for each (see @tbl-mortlaws).  The `MortalityLaws` package also has a function for each, much like the `gompertz()` function above. For our selected model, the function is `HP2()`. 
+
+
+Let's add the fitted mortality model parameters to our overall parameter list object. We'll include gompertz , too, just for comparison later. 
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: true
+#| 
+hp_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
+
+
+```
+
+
+```{r}
+params <- modifyList(params,list(heligman_bollard = coef(hp_fit), 
+                                 gompertz = coef(gom_fit)))
+```
+
+
 ## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
 Now we'll answer the question: can we replicate life expectancy based on a life table using a discrete time Markov model? 
@@ -326,10 +363,8 @@ Now we'll answer the question: can we replicate life expectancy based on a life 
 To do this, we'll consruct a very simple two-state discrete time Markov model.  We'll then parameterize the model with the coefficients from the mortality models above, and then calculate life expectancy with a QALY "payoff" of 1.0 if alive and no discounting. 
 
 ::: column-page
-
-```{r, eval = FALSE}
+```{r}
 #| echo: false
-#| 
 #https://sketchviz.com/new
 # digraph G {
 #     layout = neato;
@@ -442,9 +477,6 @@ We'll now loop through various starting ages to verify that we can replicate lif
 #| message: false
 #| echo: false
 #| code-fold: true
-#| fig-cap: Life Expectancy from Life Table vs. Modeled Mortality, by Cohort Starting Age and Model Type
-#| label: fig-comparecohorts
-
 
 model_ages <- c(0,80) 
 
@@ -528,7 +560,7 @@ df_p %>%
     theme(legend.position = "top")
 ```
 
-@fig-comparecohorts Shows that modeled life expectancy based on the Helligman-Bollard approach successfully replicates average life expectancy for nearly any age cohort. The figure also shows that the Gompertz model performs well among middle-aged adult cohorts (e.g., 40) but not for younger or older age cohorts. 
+@fig-comparison Shows that modeled life expectancy based on the Helligman-Bollard approach successfully replicates average life expectancy for nearly any age cohort. The figure also shows that the Gompertz model performs well among middle-aged adult cohorts (e.g., 40) but not for younger or older age cohorts. 
 
 # 2. Incorporating a Disease State (Healthy-Sick-Dead)
 
@@ -551,6 +583,21 @@ digraph G {
     Sick -> Sick;
     Healthy -> Sick [label="r_HS"]; 
     Sick -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;
+}
+
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    CVDDeath [pos="3,.5!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    CVD -> CVDDeath [label="r_CVDD(t)"]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)"];
     Healthy -> Dead [label="r_HD(t)"];
     Dead -> Dead ;
   }
@@ -796,6 +843,10 @@ tibble::tribble(
 We now need to take our life table data and bin it similarly to the IHME data. 
 
 ```{r}
+#| fig-cap: Mortality Rates
+#| label: fig-mortratecd
+#| fig-height: 5
+#| fig-width: 8
 # Source: https://grodri.github.io/demography/neoplasms
 
 # The time to death wtihin intervals is drawn from the "a" column here. 
@@ -877,11 +928,23 @@ lt_ <-
 
 bx <- mutate(lt_, agem = age + n/2, mi = m - md)[-nrow(lt_), ]
 
-ggplot(bx, aes(agem, m)) + geom_line() + scale_y_log10() +
-  geom_line(aes(agem, md), col="red",linetype="dashed") + 
-  geom_line(aes(agem, mi),col="blue")  + 
-  labs(x = "Age", y = "Mortality Rate")
 
+p_cd <- 
+  bx %>% 
+  select(agem,m,md,mi) %>% 
+  gather(series,value,-agem) %>% 
+  mutate(series = factor(series,levels = c("m","md","mi"),labels = c("All Cause", "Non-CVD","CVD"))) %>% 
+  ggplot(aes(x = agem, y = value, colour = series)) + geom_line() + scale_y_log10() + 
+  ggsci::scale_color_aaas() + 
+  geom_dl(method = "smart.grid",aes(label=series)) + 
+  scale_x_continuous(expand = c(0.5,0)) + 
+  theme(legend.position = "none") + 
+  labs(x = "Age", y = "Mortality Rate") + 
+  geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = m), alpha =0.2, colour = "darkblue") + 
+  geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = md), alpha =0.2, colour = "red") + 
+  geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = m - md), alpha =0.2, colour = "darkgreen") 
+  
+p_cd
 
 ```
 
@@ -1011,6 +1074,27 @@ tibble(markov = as.vector(life_exp_markov),
        markov_alt = as.vector(life_exp_markov_alt),life_table = life_exp_lifetable) %>% 
   kable(digits = 2) %>% 
   kable_styling()
+
+```
+
+
+```{r}
+#| fig-cap: "Survival by Age: Discrete Time Markov (Red) vs. Cause-Deleted Life Table (Black)"
+#| fig-width: 6
+#| fig-height: 5
+
+lt_ %>% 
+  filter(age>=40) %>% 
+  mutate(qd = 1 - exp(-md)) %>% 
+  select(-pd) %>% 
+  mutate(pd = 1 - qd)   %>% 
+  mutate(cump = ifelse(row_number()==1,1,lag(cumprod(pd),1)) ) %>% 
+  select(-lx) %>% 
+  mutate(lx = N  * cump)  %>% 
+  mutate(ditest = lx * qd) %>% 
+  filter(age<=85) %>% 
+  ggplot(aes(x = age, y = cump)) + geom_step() + 
+  geom_line(data = tr_ %>% filter(t<=45), aes(x = starting_age + t, y = 1 - dead ), colour = "red") + labs(x = "Age", y = "Survival")
 
 ```
 
@@ -1200,7 +1284,8 @@ We see that in both, `r tr_[2,"dead"] %>% round(0)` people die. But there are mo
 
 > `r tr_alt_[2,"sick"] %>% round(0)` is the total who would become sick *if we don't allow any death in the interval for those who would become sick in the interval*.  
 
-That is, let's think about the population who would become sick in an interval. There are four mutually exclusive groups: 
+That is, let's think about the population who would become sick in an interval. There are four mutually exclusive groups:
+
   1. Individuals who become sick in the interval and stay sick throughout the interval. 
   2. Individuals who would have become sick in the interval, but died first. 
   3. Individuals who became sick in the interval, but *also* died from the illness within the interval.
@@ -1209,6 +1294,11 @@ That is, let's think about the population who would become sick in an interval. 
 The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of the interval based on a matrix converted using standard formulas reflects the union of all the above. We're essentially "trapping" these patients within the interval and not allowing them to die for any other reason--either *before* or *after* they become ill.
 
 ## Adding Non-Markovian Elements to the Transition Probability Matrix
+
+![](media/1-markov-rate.png){fig-align="center" height="200px"}  
+
+![](media/2-markov-rate-augmented.png){fig-align="center" height="200px"}
+![](media/3-transition-probability.png){fig-align="center" height="200px"}
 
 ### Accumulators
 
@@ -1318,6 +1408,73 @@ transition_prob <- function(t,h=1)
 
 
 ```
+
+
+```{r, eval = FALSE, echo = FALSE}
+
+# THIS IS THE CODE TO CONSTRUCT THE SHADED SUBMATRICES
+
+array_to_LaTeX <- function(arr) {
+    arr_ <- arr %>% data.frame() %>% rownames_to_column() %>% t()  %>% as.data.frame() %>% rownames_to_column() %>% as.matrix() %>% t()
+    arr_ <- gsub("rowname","",arr_)
+    rows <- apply(arr_, MARGIN = 1, paste, collapse = " & ")
+    matrix_string <- paste(rows, collapse = " \\ ")
+    return(paste("\\begin{bNiceMatrix}[first-row,first-col]", matrix_string, "\\end{bNiceMatrix}"))
+}
+
+markov_rate_matrices(30)[[1]] %>% round(.,4) %>% array_to_LaTeX()
+non_markov_rate_matrices(1:30)[[30]] %>%  round(.,4) %>% array_to_LaTeX()
+tmp_ <- non_markov_rate_matrices(1:30)[[30]] %>% expm(.)
+tmp_ <- tmp_[1:6,1:6]   %>% as.matrix()
+tmp_ %>% round(.,4) %>% array_to_LaTeX()
+
+\documentclass{article}
+\usepackage{nicematrix}
+\begin{document}
+Let's start with the Markov rate matrix:
+\[
+\begin{bNiceMatrix}[first-row,first-col]  
+\CodeBefore
+  \rectanglecolor{green!30}{1-1}{4-4}
+\Body 
+& healthy & sick & cvddeath & dead \\ healthy & -0.1131 &  0.0000 &  0.0000 &  0.0000 \\ sick &  0.1000 & -0.0177 &  0.0000 &  0.0000 \\ cvddeath & 0.0000 & 0.0045 & 0.0000 & 0.0000 \\ dead & 0.0131 & 0.0131 & 0.0000 & 0.0000 \end{bNiceMatrix}
+\]
+Add in the accumulator and tunnel states
+
+\[
+\begin{bNiceMatrix}[first-row,first-col]
+\CodeBefore
+  \rectanglecolor{green!30}{1-1}{4-4}
+  \rectanglecolor{blue!15}{5-1}{5-5}
+  \rectanglecolor{blue!15}{1-5}{5-5}
+  \rectanglecolor{purple!15}{6-1}{6-6}
+  \rectanglecolor{purple!15}{1-6}{6-6}  
+  \rectanglecolor{red!55}{7-1}{7-7}
+  \rectanglecolor{red!55}{1-7}{7-7}  
+\Body 
+& healthy & sick & cvddeath & dead & accsick & sickT1 & N \\ healthy & -0.1131 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 \\ sick &  0.1000 & -0.0177 &  0.0000 &  0.0000 &  0.0000 &  0.0000 &  0.0000 \\ cvddeath & 0.0000 & 0.0045 & 0.0000 & 0.0000 & 0.0000 & 0.0000 & 0.0000 \\ dead & 0.0131 & 0.0131 & 0.0000 & 0.0000 & 0.0000 & 0.0000 & 0.0000 \\ accsick & 0.1 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\ sickT1 & 0.1 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\ N & 0 & 0 & 0 & 0 & 0 & 0 & 0 \end{bNiceMatrix}
+\]
+
+Now exponentiate, drop the receiving bucket (N) and show the final transition probability matrix:
+
+\[
+\begin{bNiceMatrix}[first-row,first-col] 
+\CodeBefore
+  \rectanglecolor{green!30}{1-1}{4-4}
+  \rectanglecolor{blue!15}{5-1}{5-5}
+  \rectanglecolor{blue!15}{1-5}{5-5}
+  \rectanglecolor{purple!15}{6-1}{6-6}
+  \rectanglecolor{purple!15}{1-6}{6-6}   
+\Body 
+& healthy & sick & cvddeath & dead & accsick & sickT1 \\ healthy & 0.893 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\ sick & 0.0937 & 0.9825 & 0.0000 & 0.0000 & 0.0000 & 0.0000 \\ cvddeath & 0.0002 & 0.0045 & 1.0000 & 0.0000 & 0.0000 & 0.0000 \\ dead & 0.013 & 0.013 & 0.000 & 1.000 & 0.000 & 0.000 \\ accsick & 0.0946 & 0.0000 & 0.0000 & 0.0000 & 1.0000 & 0.0000 \\ sickT1 & 0.0946 & 0.0000 & 0.0000 & 0.0000 & 0.0000 & 1.0000 \end{bNiceMatrix}
+\]
+
+end
+
+\end{document}
+
+```
+
 
 # 5. Backwards Conversion
 
