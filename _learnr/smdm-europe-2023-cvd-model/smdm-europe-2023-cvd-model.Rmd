@@ -19,6 +19,7 @@ library(knitr)
 library(kableExtra)
 library(here)
 knitr::opts_chunk$set(echo = FALSE)
+options("scipen" = 100, "digits" = 5)
 #knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
 #set_here(here::here("_learnr/smdm-europe-2023-cvd-model/"))
 ```
@@ -61,29 +62,29 @@ lt =
 
 Let's take a look at our life table data:
 
-```{r loadlt}
-
+```{r}
 mortality_year = 2019
 radix = 100000
 
+lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
+
 lt <- 
-  list.files(recursive=TRUE,full.names = TRUE) %>% 
-  grep("www/usa-life-table.rds",.,value=TRUE) %>% 
-  read_rds(.) %>% 
+  readRDS(url(lt_usa_file)) %>% 
   demography::lifetable(.,series = "total", years = mortality_year) %>% 
   as_tibble() %>% 
   mutate_at(vars(lx,dx), function(x) x * radix) %>% 
   mutate(country = "USA") %>% 
   mutate(age = x)
+```
 
-lt %>% 
-  ungroup() %>% 
-  select(-x) %>% 
-  select(country,age,everything()) %>% 
-  head() %>% 
-  kable() %>% 
+```{r}
+lt %>%
+  ungroup() %>%
+  select(-x) %>%
+  select(country,age,everything()) %>%
+  head() %>%
+  kable() %>%
   kable_styling()
-
 ```
 
 The columns here are 
@@ -145,17 +146,207 @@ laws %>%
   #pack_rows(index = table(fct_inorder(laws$TYPE)))
 ```
 
-## Fitting a Parametric Mortality Model
+## Fitting a Parametric Mortality Model, Part 1
 
-```{r define, exercise = TRUE, exercise.setup = "loadlt"}
+```{r loadlt}
+mortality_year = 2019
+radix = 100000
+
+lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
+
+lt <- 
+  readRDS(url(lt_usa_file)) %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+```
+
+Use one of the mortality laws to fit a parametric model to the life table data. You can fit this model over any age range (e.g., 0-99, 40-99, etc.). 
+
+```{r parmort, exercise = TRUE, exercise.eval = FALSE, exercise.setup="loadlt"}
+
+min_age = 0
+max_age = 99
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "",
+                opt.method = "LF2")
+plot(mort_fit)
+```
+
+## Fitting a Parametric Mortality Model, Part 2
+
+Each mortality law has its own function to predict the mortality rate at a given time. In the block below, fit a model for a starting cohort of 40 year olds using the `HP2` mortality law, and predict the mortality rate for a 75 year old. 
+
+The basic input into the mortality law function is `x`, or the time period, and the coefficients from the fitted model object. 
+
+```{r cohort40, exercise = TRUE, exercise.eval = FALSE, exercise.setup="loadlt"}
+#| exercise.lines: 20
+#| 
+min_age = 
+max_age = 99
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "",
+                opt.method = "LF2")
+
+r_mort75 <- 
+```
+
+```{r cohort40-solution}
+min_age = 40
+max_age = 99
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
 
 
-lt
+r_mort75 <-  HP2(x = 75 - min_age, coef(mort_fit))
+r_mort75
+```
+
+## Part 2: Alive-Dead Model
+
+With background mortality fit we can construct a simple alive-dead model. 
+
+```{r setup2}
+mortality_year = 2019
+radix = 100000
+
+lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
+
+lt <- 
+  readRDS(url(lt_usa_file)) %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+min_age = 50
+max_age = 99
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
+
+params <- list(n_cycles = 100, 
+               background_mortality = coef(mort_fit),
+               payoff_qaly = c("alive" = 1, "dead" = 0))
+
+# Step 3: Define Transition Probability Matrices
+markov_prob_matrices <- function(t, h = 1)
+{
+  lapply(t, function(tt){
+   r_death<- HP2(min_age  + (tt)*h - 1, params$background_mortality)$hx
+   p_death <- 1 - exp(-r_death * h)
+   
+   matrix(c(1-p_death,p_death,0,0), 
+          byrow = TRUE,
+          nrow=2,
+          dimnames = list(c("alive","dead"),c("alive","dead")))
+
+  })
+}
+
+m_P <- 
+  markov_prob_matrices(1:params$n_cycles, h = 1)
+
+m_P_ <- 
+  markov_prob_matrices(1:(12 * params$n_cycles), h = 1/12)
+
+
+# Step 4: Construct Markov Trace
+tr <- t(c("alive" = 1, "dead" = 0))
+tr_year <- 
+    do.call(rbind,lapply(m_P, function(tp) {
+        tr <<- tr %*% tp
+    }))
+
+tr_year <- rbind(t(c(1,0)),tr_year)
+
+tr <- t(c("alive" = 1, "dead" = 0))
+tr_month <- 
+    do.call(rbind,lapply(m_P_, function(tp) {
+        tr <<- tr %*% tp
+    }))
+tr_month <- rbind(t(c(1,0)),tr_month)
+
+
+# Step 5: Calculate Life Expectancy 
+
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+alt_simp      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+life_exp_markov <- 
+  alt_simp(tr_year %*% params$payoff_qaly, 1)
+
+life_exp_markov_month <- 
+  alt_simp(tr_month %*% params$payoff_qaly, h = 1/12)
+
+life_exp_life_table <- 
+  lt %>% filter(x==min_age) %>% pull(ex)
+
+edit.na <- function(x, value) { x[is.na(x)] <- value; x}
+  
+tr_year %>% 
+  as_tibble() %>% 
+  mutate(lx = radix * alive) %>% 
+  mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>% 
+  mutate(t = min_age + (row_number()-1)/1) %>% 
+  ggplot(aes(x = t, y = log(q))) + geom_point() + 
+  geom_point(data = lt %>% filter(age>=min_age), aes(x = x, y = log(qx)),colour="red")
+
+
+# 
+# foo <- 
+#     tr_month %>% data.frame() %>% 
+#     as_tibble() %>% 
+#     mutate(t = (row_number()-1)/12)
+# 
+# tr_year %>% data.frame() %>% 
+#     as_tibble() %>% 
+#     mutate(t = 0:params$n_cycles) %>% 
+#     ggplot(aes(x = t, y = alive)) + geom_step() + 
+#     geom_step(data = foo, colour = "red")
+
 
 ```
 
 
-## Part 2: Alive-Dead Model
+![](images/digraph-alive-dead.png){fig-align="center" height="200px"}
+
 
 ## Part 3: Healthy-CVD-Dead Model
 
