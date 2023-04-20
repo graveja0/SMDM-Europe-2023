@@ -1,0 +1,165 @@
+---
+title: "What They Didn't Teach You About Decision Modeling: CVD Model"
+output:
+  learnr::tutorial:
+    progressive: true
+    ace_theme: github
+    theme: united
+runtime: shiny_prerendered
+description: >
+  This tutorial will cover background mortality modeling and model construction for a simple cardiovascular disease natural history model".
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+library(demography)
+library(MortalityLaws)
+library(knitr)
+library(kableExtra)
+library(here)
+knitr::opts_chunk$set(echo = FALSE)
+#knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+#set_here(here::here("_learnr/smdm-europe-2023-cvd-model/"))
+```
+
+## Part 1: Mortality Modeling
+
+In this section we will explore mortality modeling using the `demography` and `MortalityLaws` packages, and using data from the Human Mortality Database
+
+```{r, eval = FALSE}
+hmd.usa <- demography::hmd.mx("USA",username = "", password = "", "USA")
+write_rds(hmd.usa,file=here("_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"))
+```
+
+Our first objective is to download and load the Human Mortality Database life table data.
+
+```{r}
+#| eval: false
+#| echo: true
+hmd_usa <- demography::hmd.mx("USA",username = "<<your user name>>", password = "<<your password>>", "USA")
+```
+
+We next use the `demography::lifetable()` to extract the life table data for a single year (2019) and for a population radix (i.e., starting population) of 100,000 indiviudals. 
+
+```{r}
+#| eval: false
+#| echo: true
+
+mortality_year = 2019
+radix = 100000
+
+lt = 
+  hmd_usa %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+```
+
+Let's take a look at our life table data:
+
+```{r loadlt}
+
+mortality_year = 2019
+radix = 100000
+
+lt <- 
+  list.files(recursive=TRUE,full.names = TRUE) %>% 
+  grep("www/usa-life-table.rds",.,value=TRUE) %>% 
+  read_rds(.) %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(country,age,everything()) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+
+```
+
+The columns here are 
+
+- `age`:	Ages for lifetable
+- `year`: Period years or cohort years
+- `mx`: 	Death rate at age x.
+- `qx`: The probability that an individual of exact age x will die before exact age x+1.
+- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or the size of a cohort from which the life table is derived).
+- `dx`: The number of deaths between exact ages x and x+1.
+- `Lx`: Number of years lived between exact age x and exact age x+1.
+- `Tx`: Number of years lived after exact age x.
+- `ex`: Remaining life expectancy at exact age x.
+
+## Parametric Mortality Models
+
+Our next step is to fit a mortality model to these data. Generally speaking, we need three inputs:
+
+- `age`:	Ages for lifetable
+- `dx`: The number of deaths between exact ages x and x+1.
+- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or  the size of a cohort from which the life table is derived).
+
+The `MortalityLaws` package has a *number* of mortality models we can draw from: 
+
+```{r}
+#| tbl-cap: Mortality Models in MortalityLaws package
+
+type_lut <- c(
+"1"  =  "Infant mortality" ,             
+"2"  =  "Accident hump"      ,           
+"3"  =  "Adult mortality"   ,           
+"4"  =  "Adult and/or old-age mortality",
+"5"  =  "Old-age mortality"       ,      
+"6"  =  "Full age range" 
+)
+ 
+laws <- 
+  availableLaws()$table %>% 
+  as_tibble() %>% 
+  arrange(TYPE) %>% 
+  mutate(TYPE = type_lut[paste0(TYPE)]) %>% 
+  #filter(CODE=="HP2") %>% 
+  #mutate(MODEL = gsub("\\^","||",MODEL))
+  mutate(MODEL = paste0("$",MODEL,"$")) %>% 
+  mutate(MODEL = ifelse(CODE == "weibull","$mu[x] = 1/sigma * (x/M)^{(M/sigma - 1)}$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "invweibull","$mu[x] = 1/sigma * (x/M)^{[-M/sigma - 1]} / [exp((x/M)^{(-M/sigma)}) - 1]$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "perks","$mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "wittstein","$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "HP","$q[x]/p[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + G H^x$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "HP2","$q[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + GH^x / [1 + GH^x]$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "HP3","$q[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + GH^x / [1 + KGH^x]$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "HP3","$q[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + GH^x / [1 + KGH^x]$",MODEL)) %>% 
+  mutate(MODEL = ifelse(CODE == "kostaki","$q[x]/p[x] = A^{[(x+B)^C]} + D exp[-(E_i log(x/F_))^2] + G H^x$",MODEL))
+  
+
+laws %>% 
+  select(-YEAR,-TYPE,-FIT,-SCALE_X) %>% 
+  kable(col.names = c("Name","Model","Code"))# %>% 
+  #pack_rows(index = table(fct_inorder(laws$TYPE)))
+```
+
+## Fitting a Parametric Mortality Model
+
+```{r define, exercise = TRUE, exercise.setup = "loadlt"}
+
+
+lt
+
+```
+
+
+## Part 2: Alive-Dead Model
+
+## Part 3: Healthy-CVD-Dead Model
+
+## Part 4: Advanced Bookkeeping 
+
+
+

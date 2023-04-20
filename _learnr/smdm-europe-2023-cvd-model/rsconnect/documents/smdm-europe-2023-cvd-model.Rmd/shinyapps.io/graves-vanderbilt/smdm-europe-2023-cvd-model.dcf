@@ -1,0 +1,13 @@
+name: smdm-europe-2023-cvd-model
+title: smdm-europe-2023-cvd-model
+username:
+account: graves-vanderbilt
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8906403
+bundleId: 7114361
+url: https://graves-vanderbilt.shinyapps.io/smdm-europe-2023-cvd-model/
+when: 1682002291.62425
+lastSyncTime: 1682002291.62426
+asMultiple: FALSE
+asStatic: FALSE
