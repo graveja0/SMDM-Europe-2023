@@ -5,9 +5,9 @@ account: graves-vanderbilt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8906403
-bundleId: 7116300
+bundleId: 7118779
 url: https://graves-vanderbilt.shinyapps.io/smdm-europe-2023-cvd-model/
-when: 1682036242.413
-lastSyncTime: 1682036242.4139
+when: 1682091527.53908
+lastSyncTime: 1682091527.53908
 asMultiple: FALSE
 asStatic: FALSE
