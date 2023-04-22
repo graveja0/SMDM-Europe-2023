@@ -21,17 +21,8 @@ radix = 100000
 lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
 
 lt <- 
-    readRDS(url(lt_usa_file)) %>% 
-    demography::lifetable(.,series = "total", years = mortality_year) %>% 
-    as_tibble() %>% 
-    mutate_at(vars(lx,dx), function(x) x * radix) %>% 
-    mutate(country = "USA") %>% 
-    mutate(age = x)
-
-lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
-
-lt <- 
-    readRDS(url(lt_usa_file)) %>% 
+    #readRDS(url(lt_usa_file)) %>% 
+    readRDS("./_sandbox/mortality/usa-life-table.rds") %>% 
     demography::lifetable(.,series = "total", years = mortality_year) %>% 
     as_tibble() %>% 
     mutate_at(vars(lx,dx), function(x) x * radix) %>% 
@@ -200,7 +191,7 @@ m_Qt_markov <- function(t, h = params$time_step)
     })
 }
 
-m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("T1CVD"))
+m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2"))
 {
     markov     <- m_Qt_markov(t)
     non_markov <- list()
@@ -224,7 +215,7 @@ m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("T1CVD"))
         m["healthy", "accCVD"] <- m["healthy", "cvd"] 
         
         # Define Tunnel state entry
-        m["healthy", "T1CVD"]  <- m["healthy", "cvd"]
+        m["healthy", "t_CVD_1"]  <- m["healthy", "cvd"]
         
         m  # Note: Tunnel states are not fully defined at this point.
     })
@@ -242,12 +233,15 @@ m_Pt_fn <- function(t,h = params$time_step) {
     
     lapply(m_P_, function(m)
     {
+        
         # It is possible to exit tunnel to external risk of death
-        m["T1CVD", "N"]  <- m["healthy", "cvddeath"] + m["healthy", "dead"]
-        m["T1CVD", "T1CVD"] <- 0  # Cannot remain in tunnel
+        m["t_CVD_1", "N"]  <- m["healthy", "cvddeath"] + m["healthy", "dead"]
+        m["t_CVD_1", "t_CVD_1"] <- 0  # Cannot remain in tunnel
+        m["t_CVD_1", "t_CVD_2"] <- 1 - m["t_CVD_1", "N"]  # The tunnel is everything else 
         
         # last state in the tunnel is a terminal state
-        m["T1CVD", "N"]  <- 1
+        m["t_CVD_2", "t_CVD_2"] <- 0
+        m["t_CVD_2", "N"]  <- 1
         
         # Note: At this point, the "N" state could be stripped as it was
         #       only required for the embedding, and serves no other purpose
@@ -264,25 +258,43 @@ params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
 # Simulation
 ################
 
-sim_alive_dead <- function(params) {
-    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0,  "T1CVD" = 0))
+sim_cvd <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0,  "t_CVD_1" = 0, "t_CVD_2" = 0))
     tr <- 
         do.call(rbind,lapply(params$m_P, function(tp) {
             tr_ <<- tr_ %*% tp
         }))
-    tr <- rbind(t(c(1,0,0,0,0,0)),tr)
+    tr <- rbind(t(c(1,0,0,0,0,0,0)),tr)
     return(tr)
 }
 
-tr_alive_dead <- 
-    sim_alive_dead(params)
+tr_cvd <- 
+    sim_cvd(params)
 
 ###########
 # Payoffs
 ###########
 
 life_exp <- 
-    cycle_adj(tr_alive_dead[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
+    cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
 life_exp
 
+lt_markov <- 
+    tr_cvd %>% 
+    as_tibble() %>%
+    mutate(alive = healthy + cvd) %>% 
+    mutate(lx = radix * alive) %>%
+    mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>%
+    mutate(age = params$min_age + (row_number()-1)/1) %>% 
+    inner_join(lt %>% filter(age>=min_age & age <max_age),"age") %>% 
+    select(age, q, qx) %>% 
+    gather(source,value,-age) %>% 
+    mutate(source = factor(source,levels = c("q","qx"), labels = c("Markov","Life Table")))
 
+lt_markov %>% 
+    ggplot(aes(x = age, y = value, colour = source)) + 
+    geom_point() +
+    hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+    ggsci::scale_colour_aaas(name="") + 
+    theme(legend.position = "top") + 
+    labs(x = "Age" , y = "log(Death Rate)")

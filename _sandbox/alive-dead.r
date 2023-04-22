@@ -23,17 +23,8 @@ radix = 100000
 lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
 
 lt <- 
-    readRDS(url(lt_usa_file)) %>% 
-    demography::lifetable(.,series = "total", years = mortality_year) %>% 
-    as_tibble() %>% 
-    mutate_at(vars(lx,dx), function(x) x * radix) %>% 
-    mutate(country = "USA") %>% 
-    mutate(age = x)
-
-lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
-
-lt <- 
-    readRDS(url(lt_usa_file)) %>% 
+    #readRDS(url(lt_usa_file)) %>% 
+    readRDS("./_sandbox/mortality/usa-life-table.rds") %>% 
     demography::lifetable(.,series = "total", years = mortality_year) %>% 
     as_tibble() %>% 
     mutate_at(vars(lx,dx), function(x) x * radix) %>% 

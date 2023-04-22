@@ -415,27 +415,47 @@ We next need to define a function that returns the transition probability matrix
 
 ```{r 2a_2, exercise = TRUE, exercise.eval = TRUE, exercise.setup = "setup2"}
 #| exercise.lines: 25
-markov_prob_matrices <- function(t, h = 1)
+
+m_Pt_fn <- function(t, h = 1)
 {
-  lapply(t, function(tt) {
-    r_death <- HP2(min_age  + (tt) * h - 1, params$background_mortality)$hx
-    p_death <- 1 - exp(-r_death * h)
-    
-    matrix(
-      c(1 - p_death, p_death, 0, 0),
-      byrow = TRUE,
-      nrow = 2,
-      dimnames = list(c("alive", "dead"), c("alive", "dead"))
-    )
-    
-  })
+    lapply(t, function(tt){
+        current_age <- min_age  + (tt)*h - 1
+        r_death<- HP2(current_age, params$background_mortality)$hx
+        p_death <- 1 - exp(-r_death * h)
+        
+        matrix(c(1-p_death,p_death,0,0), 
+               byrow = TRUE,
+               nrow=2,
+               dimnames = list(c("alive","dead"),c("alive","dead")))
+        
+    })
 }
 
-m_P <- 
-  markov_prob_matrices(1:params$n_cycles, h = params$time_step)
-
+params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
 # Look at the transition probability matrix for the 100th time step. 
-m_P[[100]]
+params$m_P[[100]]
+
+# markov_prob_matrices <- function(t, h = 1)
+# {
+#   lapply(t, function(tt) {
+#     r_death <- HP2(min_age  + (tt) * h - 1, params$background_mortality)$hx
+#     p_death <- 1 - exp(-r_death * h)
+#     
+#     matrix(
+#       c(1 - p_death, p_death, 0, 0),
+#       byrow = TRUE,
+#       nrow = 2,
+#       dimnames = list(c("alive", "dead"), c("alive", "dead"))
+#     )
+#     
+#   })
+# }
+# 
+# m_P <- 
+#   markov_prob_matrices(1:params$n_cycles, h = params$time_step)
+# 
+# # Look at the transition probability matrix for the 100th time step. 
+# m_P[[100]]
 
 ```
 
@@ -444,20 +464,25 @@ m_P[[100]]
 
 We will next construct a markov trace by, essentially, looping over the list object with transition probability matrices at each time step (i.e., `m_P`). 
 
-The code below draws on the "superassignment" operator `<<-` which will continuously update the trace (`tr`) with the last value calculated. 
+The code below draws on the "super assignment" operator `<<-`, which allows for assignment in the global environment outside the function call itself. That is, the code below will continuously update the Markov trace object `tr` until the total number of cycles is reached. 
 
 For life expectancy we will simulate a single "cohort" of one indiviudal. 
 
 ```{r 2b, exercise = TRUE, exercise.setup = "setup2"}
 #| exercise.lines: 10
-tr_ <- t(c("alive" = 1, "dead" = 0))
-tr <- 
-    do.call(rbind,lapply(m_P, function(tp) {
-        tr_ <<- tr_ %*% tp
-    }))
 
-tr <- rbind(t(c(1,0)),tr)
-tr
+sim_alive_dead <- function(params) {
+    tr_ <- t(c("alive" = 1, "dead" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0)),tr)
+    return(tr)
+}
+
+tr_alive_dead <- sim_alive_dead(params)
+
 ```
 
 ### 2c. Calculate Life Expectancy
@@ -470,7 +495,7 @@ We see in this exercise that the two are very similar, suggesting that we are ap
 
 ```{r 2c1, exercise = TRUE, exercise.eval = TRUE, exercise.setup = "setup2"}
 lt_markov <- 
-  tr %>% 
+  tr_alive_dead %>% 
   as_tibble() %>%
   mutate(lx = radix * alive) %>%
   mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>%
@@ -503,8 +528,9 @@ To calculate life expectancy from the Markov trace we need to do a few things:
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
 cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 
-life_exp_markov <- 
-  cycle_adj(tr %*% params$payoff_qaly, 1)
+life_exp <- 
+    cycle_adj(tr_alive_dead %*% params$payoff_qaly, 1)
+life_exp
 
 life_exp_life_table <- 
   lt %>% filter(x==min_age) %>% pull(ex)
