@@ -1,6 +1,13 @@
 library(tidyverse)
 library(demography)
 library(MortalityLaws)
+library(directlabels)
+library(ggsci)
+library(hrbrthemes)
+library(MASS)
+library(mgcv)
+library(patchwork)
+select <- dplyr::select
 options("scipen" = 100, "digits" = 5)
 
 # Functions
@@ -13,9 +20,9 @@ cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 #####################
 max_age =  # Max age in life table
     99
-min_age =  # Min age in life table
+cohort_starting_age =  # Min age in life table
     0
-mortality_year = 2019
+mortality_year = 2021
 radix = 100000
 
 lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
@@ -31,7 +38,7 @@ lt <-
 
 # Cause-Deleted Mortality 
 
-ihme_cvd <- 
+ihme_cvd <-   # Source: https://vizhub.healthdata.org/gbd-results/
     tibble::tribble(
         ~age_name,        ~val,
         1L, 0.038771524,
@@ -128,12 +135,30 @@ lt_ <-
            li = 100000 * cumprod(c(1, pi[-length(pi)]))) %>% 
     mutate(mi = m - md)
 
+bx <- mutate(lt_, agem = age + n/2, mi = m - md)[-nrow(lt_), ]
+
+p_cd <- 
+    bx %>% 
+    select(agem,m,md,mi) %>% 
+    gather(series,value,-agem) %>% 
+    mutate(series = factor(series,levels = c("m","md","mi"),labels = c("All Cause", "Non-CVD","CVD"))) %>% 
+    ggplot(aes(x = agem, y = value, colour = series)) + geom_line() + scale_y_log10() + 
+    ggsci::scale_color_aaas() + 
+    geom_dl(method = "smart.grid",aes(label=series)) + 
+    scale_x_continuous(expand = c(0.5,0)) + 
+    labs(x = "Age", y = "Mortality Rate") + 
+    geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = m), alpha =0.2, colour = "darkblue") + 
+    geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = md), alpha =0.2, colour = "red") + 
+    geom_point(data = lt_ %>% mutate(series = "Life Table") %>% filter(age<100), aes(x = age, y = m - md), alpha =0.2, colour = "darkgreen") +
+    theme_ipsum_tw(base_family = "Arial") +
+    theme(legend.position = "none"); p_cd
+
 ###########################
 # Cause-Specific Mortality 
 ###########################
-ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=min_age]
-deaths_   <- lt_$d[lt_$age<=max_age & lt_$age>=min_age] - lt_$di[lt_$age<=max_age & lt_$age>=min_age]
-exposure_  <- lt_$lx[lt_$age<=max_age & lt_$age>=min_age]
+ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+deaths_   <- lt_$d[lt_$age<=max_age & lt_$age>=cohort_starting_age] - lt_$di[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+exposure_  <- lt_$lx[lt_$age<=max_age & lt_$age>=cohort_starting_age]
 
 mort_fit_CVDdeleted <- MortalityLaw(
     x  = ages_,
@@ -142,12 +167,20 @@ mort_fit_CVDdeleted <- MortalityLaw(
     law = "HP2",
     opt.method = "LF2")
 
+plot(mort_fit_CVDdeleted)
+
+cvd_fit <- 
+    gam(mi ~ s(age), family = gaussian(link="log"), data = lt_ %>% filter(age < max_age))
+
+plot(cohort_starting_age:max_age,predict(cvd_fit,newdata = tibble(age = cohort_starting_age:max_age),type="link"))
+points(lt_$age,log(lt_$mi),col='red')
+
 ######################
 # Parameterize model
 ######################
 params <-
     list(
-        min_age = 50,
+        cohort_starting_age = cohort_starting_age,
         n_cycles = 100,
         time_step = 1,
         r_H_CVD = 0.1,
@@ -160,7 +193,8 @@ params <-
         c_DCVD = 0,
         c_D = 0, 
         background_mortality = coef(mort_fit_CVDdeleted),
-        cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2)
+        cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2),
+        cause_specific_mortality_gam = cvd_fit
     )
 
 params <- modifyList(params, list(
@@ -171,9 +205,12 @@ params <- modifyList(params, list(
 m_Qt_markov <- function(t, h = params$time_step)
 {
     lapply(t, function(tt){
-        current_age <- params$min_age  + (tt)*h - 1; current_age
+        current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
         r_death = HP2(current_age, params$background_mortality)$hx; r_death
-        r_cvd <- params$cause_specific_mortality(current_age) ; r_cvd
+        r_cvd <- #params$cause_specific_mortality(current_age) ; r_cvd
+            predict(params$cause_specific_mortality_gam,newdata = tibble(age = current_age),type="link") %>% 
+            exp(.)
+ 
         
         m_Q <- 
             matrix(c(
@@ -279,22 +316,37 @@ life_exp <-
     cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
 life_exp
 
+lt %>% filter(age==cohort_starting_age) %>% pull(ex)
+
 lt_markov <- 
     tr_cvd %>% 
     as_tibble() %>%
     mutate(alive = healthy + cvd) %>% 
     mutate(lx = radix * alive) %>%
     mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>%
-    mutate(age = params$min_age + (row_number()-1)/1) %>% 
-    inner_join(lt %>% filter(age>=min_age & age <max_age),"age") %>% 
+    mutate(age = params$cohort_starting_age + (row_number()-1)/1) %>% 
+    inner_join(lt %>% filter(age>=cohort_starting_age & age <max_age),"age") %>% 
     select(age, q, qx) %>% 
     gather(source,value,-age) %>% 
     mutate(source = factor(source,levels = c("q","qx"), labels = c("Markov","Life Table")))
 
-lt_markov %>% 
-    ggplot(aes(x = age, y = value, colour = source)) + 
+p1 <- 
+    lt_markov %>% 
+    ggplot(aes(x = age, y = value, colour = source)) + #scale_y_log10() + 
+    geom_point() +
+    hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+    ggsci::scale_colour_aaas(name="") + 
+    theme(legend.position = "top") + 
+    labs(x = "Age" , y = "Death Rate")
+
+
+p2 <- 
+    lt_markov %>% 
+    ggplot(aes(x = age, y = value, colour = source)) + scale_y_log10() + 
     geom_point() +
     hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
     ggsci::scale_colour_aaas(name="") + 
     theme(legend.position = "top") + 
     labs(x = "Age" , y = "log(Death Rate)")
+
+p1 + p2

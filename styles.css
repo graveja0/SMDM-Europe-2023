@@ -1,1 +1,22 @@
 /* css styles */
+.theorem {
+    border: 0.5px solid;
+    border-radius: 1em;
+    padding: 0.5em 1em 0.5em 1em;
+    margin-bottom: 2em;
+}
+
+
+.proof {
+    background: #feeee8;
+    border-radius: 1em;
+    padding: 0.5em 1em 0.5em 1em;
+    margin-bottom: 2em;
+}
+
+.example {
+    border: 0.5px solid;
+    border-radius: 1em;
+    padding: 0.5em 1em 0.5em 1em;
+    margin-bottom: 2em;
+}
