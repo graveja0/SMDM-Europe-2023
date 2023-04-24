@@ -17,16 +17,23 @@ description: >
 
     # ace_theme: github
     # theme: united
-    
 library(learnr)
 library(tidyverse)
 library(demography)
 library(MortalityLaws)
+library(directlabels)
+library(ggsci)
+library(hrbrthemes)
+library(MASS)
+library(mgcv)
+library(patchwork)
 library(knitr)
 library(kableExtra)
 library(here)
-library(hrbrthemes)
 library(ggsci)
+select <- dplyr::select
+options("scipen" = 100, "digits" = 5)
+
 knitr::opts_chunk$set(echo = FALSE)
 options("scipen" = 100, "digits" = 5)
 #knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
@@ -277,77 +284,50 @@ mort_fit <- MortalityLaw(
                 opt.method = "LF2")
 
 params <- list(n_cycles = 100, 
-               time_step = 1,  # annual
+               time_step = 1, 
                background_mortality = coef(mort_fit),
                payoff_qaly = c("alive" = 1, "dead" = 0),
                payoff_cost = c("alive" = 0, "dead" = 0))
 
-# Step 3: Define Transition Probability Matrices
-markov_prob_matrices <- function(t, h = 1)
-{
-  lapply(t, function(tt){
-   r_death<- HP2(min_age  + (tt)*h - 1, params$background_mortality)$hx
-   p_death <- 1 - exp(-r_death * h)
-   
-   matrix(c(1-p_death,p_death,0,0), 
-          byrow = TRUE,
-          nrow=2,
-          dimnames = list(c("alive","dead"),c("alive","dead")))
 
-  })
+m_Pt_fn <- function(t, h = 1)
+{
+    lapply(t, function(tt){
+        current_age <- min_age  + (tt)*h - 1
+        r_death<- HP2(current_age, params$background_mortality)$hx
+        p_death <- 1 - exp(-r_death * h)
+        
+        matrix(c(1-p_death,p_death,0,0), 
+               byrow = TRUE,
+               nrow=2,
+               dimnames = list(c("alive","dead"),c("alive","dead")))
+        
+    })
 }
 
-m_P <- 
-  markov_prob_matrices(1:params$n_cycles, h = params$time_step)
-
-m_P_ <-  # Try a monthly time step just to make sure things are working
-  markov_prob_matrices(1:(12 * params$n_cycles), h = 1/12)
-
-# Step 4: Construct Markov Trace
-
-tr_ <- t(c("alive" = 1, "dead" = 0))
-tr <- 
-    do.call(rbind,lapply(m_P, function(tp) {
-        tr_ <<- tr_ %*% tp
-    }))
-
-tr <- rbind(t(c(1,0)),tr)
+params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
 
 
+sim_alive_dead <- function(params) {
+    tr_ <- t(c("alive" = 1, "dead" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0)),tr)
+    return(tr)
+}
 
-tr_m <- t(c("alive" = 1, "dead" = 0))
-tr_month <- 
-    do.call(rbind,lapply(m_P_, function(tp) {
-        tr_m <<- tr_m %*% tp
-    }))
-tr_month <- rbind(t(c(1,0)),tr_month)
-
-
-# Step 5: Calculate Life Expectancy 
+tr_alive_dead <- sim_alive_dead(params)
 
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
-alt_simp      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 
-life_exp_markov <- 
-  alt_simp(tr %*% params$payoff_qaly, 1)
-
-life_exp_markov_month <- 
-  alt_simp(tr_month %*% params$payoff_qaly, h = 1/12)
+life_exp <- 
+    cycle_adj(tr_alive_dead %*% params$payoff_qaly, 1)
 
 life_exp_life_table <- 
   lt %>% filter(x==min_age) %>% pull(ex)
-
- 
-# foo <-
-#     tr_month %>% data.frame() %>%
-#     as_tibble() %>%
-#     mutate(t = (row_number()-1)/12)
-# 
-# tr %>% data.frame() %>%
-#     as_tibble() %>%
-#     mutate(t = 0:params$n_cycles) %>%
-#     ggplot(aes(x = t, y = alive)) + geom_step() +
-#     geom_step(data = foo, colour = "red")
 
 
 ```
@@ -400,7 +380,6 @@ params <-
   list(
     n_cycles = 100,
     time_step = 1,
-    # annual
     background_mortality = coef(mort_fit),
     payoff_qaly = c("alive" = 1, "dead" = 0),
     payoff_cost = c("alive" = 0, "dead" = 0)
@@ -436,29 +415,6 @@ m_Pt_fn <- function(t, h = 1)
 params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
 # Look at the transition probability matrix for the 100th time step. 
 params$m_P[[100]]
-
-# markov_prob_matrices <- function(t, h = 1)
-# {
-#   lapply(t, function(tt) {
-#     r_death <- HP2(min_age  + (tt) * h - 1, params$background_mortality)$hx
-#     p_death <- 1 - exp(-r_death * h)
-#     
-#     matrix(
-#       c(1 - p_death, p_death, 0, 0),
-#       byrow = TRUE,
-#       nrow = 2,
-#       dimnames = list(c("alive", "dead"), c("alive", "dead"))
-#     )
-#     
-#   })
-# }
-# 
-# m_P <- 
-#   markov_prob_matrices(1:params$n_cycles, h = params$time_step)
-# 
-# # Look at the transition probability matrix for the 100th time step. 
-# m_P[[100]]
-
 ```
 
 
@@ -471,7 +427,7 @@ The code below draws on the "super assignment" operator `<<-`, which allows for 
 For life expectancy we will simulate a single "cohort" of one indiviudal. 
 
 ```{r 2b, exercise = TRUE, exercise.setup = "setup2"}
-#| exercise.lines: 10
+#| exercise.lines: 15
 
 sim_alive_dead <- function(params) {
     tr_ <- t(c("alive" = 1, "dead" = 0))
@@ -484,6 +440,11 @@ sim_alive_dead <- function(params) {
 }
 
 tr_alive_dead <- sim_alive_dead(params)
+
+tr_alive_dead %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
 
 ```
 
@@ -530,9 +491,8 @@ To calculate life expectancy from the Markov trace we need to do a few things:
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
 cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 
-life_exp <- 
+life_exp_markov <- 
     cycle_adj(tr_alive_dead %*% params$payoff_qaly, 1)
-life_exp
 
 life_exp_life_table <- 
   lt %>% filter(x==min_age) %>% pull(ex)
@@ -544,6 +504,368 @@ life_exp_life_table
 As we see above, we have successfully replicated life expectancy for a 40 year old cohort!
 
 ## Part 3: Healthy-CVD-Dead Model
+
+```{r setup3}
+#| echo: false
+#| warning: false
+#| messages: false
+#| eval: true
+
+##########################################################
+# !!!!! NOTE THIS IS SIMPLY THE CODE IN healthy-cvd-dead.r
+##########################################################
+
+# Functions
+edit.na <- function(x, value) { x[is.na(x)] <- value; x}
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+#####################
+# Mortality Modeling
+#####################
+max_age =  # Max age in life table
+    99
+cohort_starting_age =  # Min age in life table
+    0
+mortality_year = 2019
+radix = 100000
+
+lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
+
+lt <- 
+    readRDS(url(lt_usa_file)) %>% 
+    #readRDS("./_sandbox/mortality/usa-life-table.rds") %>% 
+    demography::lifetable(.,series = "total", years = mortality_year) %>% 
+    as_tibble() %>% 
+    mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+    mutate(country = "USA") %>% 
+    mutate(age = x)
+
+# Cause-Deleted Mortality 
+
+ihme_cvd <-   # Source: https://vizhub.healthdata.org/gbd-results/
+    tibble::tribble(
+        ~age_name,        ~val,
+        1L, 0.038771524,
+        5L, 0.038546046,
+        10L, 0.044403585,
+        15L, 0.033781126,
+        20L, 0.035856165,
+        25L, 0.053077797,
+        30L, 0.086001439,
+        35L, 0.130326551,
+        40L, 0.184310334,
+        45L,  0.21839762,
+        50L, 0.243705394,
+        55L, 0.256334637,
+        60L,  0.26828001,
+        65L, 0.272698709,
+        70L,  0.28529754,
+        75L, 0.310642009,
+        0L, 0.016750489,
+        80L, 0.353518012,
+        85L, 0.399856716,
+        90L, 0.447817792,
+        95L, 0.495305502
+    ) %>% 
+    mutate(age_ihme = cut(age_name,unique(c(0,1,seq(0,95,5),105)),right=FALSE))  %>% 
+    select(age_ihme,  pct_cvd = val) 
+
+lt_ <-  # Source: https://grodri.github.io/demography/neoplasms
+    lt %>% 
+    mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
+    left_join(ihme_cvd,"age_ihme") %>%
+    mutate(dx_i = round(dx * pct_cvd)) %>% 
+    select(age_ihme,
+           age,
+           D = dx,  # Deaths
+           Di = dx_i, # Cause-specific deaths
+           lx = lx) %>% # Living
+    mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5))  %>% 
+    mutate(age_interval = c(diff(age), NA)) %>% 
+    select(age,lx,D,Di,a,age_interval) %>% 
+    # Probability of death in interval =  deaths / total living at beginning of interval. 
+    mutate(q = replace_na(1 - lead(lx) / lx, 1)) %>%  
+    # Cause specific probability of death. 
+    mutate(qi = q * Di / D) %>% 
+    mutate(m = -log(1-q)/age_interval) %>% 
+    # We compute cause-specific rates by dividing deaths of a given cause into person-years
+    # of exposure, which is equivalent to multiplying the overall rate by the ratio of
+    # deaths of a given cause to the total.
+    mutate(Rd = (D - Di) / D) %>% 
+    mutate(md = m * Rd) %>% 
+    mutate(mi = m - md)
+
+###########################
+# Cause-Specific Mortality 
+###########################
+ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+deaths_   <- lt_$D[lt_$age<=max_age & lt_$age>=cohort_starting_age] - lt_$Di[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+exposure_  <- lt_$lx[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+
+mort_fit_CVDdeleted <- MortalityLaw(
+    x  = ages_,
+    Dx  = deaths_,   # vector with death counts
+    Ex  = exposure_, # vector containing exposures
+    law = "HP2",
+    opt.method = "LF2")
+
+######################
+# Parameterize model
+######################
+params <-
+    list(
+        cohort_starting_age = cohort_starting_age,
+        n_cycles = 100,
+        time_step = 1,
+        r_H_CVD = 0.1,
+        u_H = 1, 
+        u_CVD = 1,
+        u_D = 0,
+        u_DCVD = 0,
+        c_H = 0, 
+        c_CVD = 0,
+        c_DCVD = 0,
+        c_D = 0, 
+        background_mortality = coef(mort_fit_CVDdeleted),
+        cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2)
+    )
+
+params <- modifyList(params, list(
+    payoff_qaly = c("healthy" = params$u_H, "cvd" = params$u_CVD, "cvddeath" = params$u_DCVD, "dead" = params$u_D),
+    payoff_cost = c("healthy" = params$c_H, "cvd" = params$c_CVD, "cvddeath" = params$c_DCVD, "dead" = params$c_D)
+))
+
+m_Qt_markov <- function(t, h = params$time_step)
+{
+    lapply(t, function(tt){
+        current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
+        r_death = HP2(current_age, params$background_mortality)$hx; r_death
+        r_cvd <- params$cause_specific_mortality(current_age) ; r_cvd
+            # predict(params$cause_specific_mortality_gam,newdata = tibble(age = current_age),type="link") %>% 
+            # exp(.)
+ 
+        
+        m_Q <- 
+            matrix(c(
+            0, params$r_H_CVD , 0, r_death ,
+            0, 0, r_cvd , r_death ,
+            0, 0, 0, 0,
+            0, 0, 0, 0),
+            nrow = 4,
+            byrow= TRUE,
+            dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+        )
+        diag(m_Q) <- -rowSums(m_Q)
+        m_Q
+        
+    })
+}
+
+m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2"))
+{
+    markov     <- m_Qt_markov(t)
+    non_markov <- list()
+    for(i in t)
+    {
+        r_ <- nrow(markov[[i]])
+        add_ <- length(acc) + length(tunnel) + 1 
+        
+        # Expand matrix
+        non_markov[[i]] <- cbind(markov[[i]],     matrix(rep(0, r_ * add_), nrow=r_))
+        non_markov[[i]] <- rbind(non_markov[[i]], matrix(rep(0, add_ * (r_+add_)), nrow=add_))
+    }
+    
+    
+    lapply(non_markov, function(m){
+        # Put in State Names
+        rownames(m) <- c(rownames(m)[-which(rownames(m)=="")], acc, tunnel, "N")
+        colnames(m) <- c(colnames(m)[-which(colnames(m)=="")], acc, tunnel, "N")
+        
+        # Define Accumulator
+        m["healthy", "accCVD"] <- m["healthy", "cvd"] 
+        
+        # Define Tunnel state entry
+        m["healthy", "t_CVD_1"]  <- m["healthy", "cvd"]
+        
+        m  # Note: Tunnel states are not fully defined at this point.
+    })
+    
+}
+
+m_Pt_simple <- function(t,h = params$time_step) {
+    m_P <- # Embed the matrices into the timesteps
+        lapply(m_Qt_markov(t), function(m) expm::expm(m * h))
+
+}
+
+m_Pt_fn <- function(t,h = params$time_step) {
+    m_P_ <- lapply(m_Qt_non_markov(t), function(m) expm::expm(m * h))
+    
+    lapply(m_P_, function(m)
+    {
+        
+        # It is possible to exit tunnel to external risk of death
+        m["t_CVD_1", "N"]  <- m["healthy", "cvddeath"] + m["healthy", "dead"]
+        m["t_CVD_1", "t_CVD_1"] <- 0  # Cannot remain in tunnel
+        m["t_CVD_1", "t_CVD_2"] <- 1 - m["t_CVD_1", "N"]  # The tunnel is everything else 
+        
+        # last state in the tunnel is a terminal state
+        m["t_CVD_2", "t_CVD_2"] <- 0
+        m["t_CVD_2", "N"]  <- 1
+        
+        # Note: At this point, the "N" state could be stripped as it was
+        #       only required for the embedding, and serves no other purpose
+        #       at this point
+        
+        states <- colnames(m)[-which(colnames(m)=="N")]
+        m[states, states]
+    })
+}
+
+params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
+
+################
+# Simulation
+################
+
+sim_cvd <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0,  "t_CVD_1" = 0, "t_CVD_2" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd <- 
+    sim_cvd(params)
+
+###########
+# Payoffs
+###########
+
+life_exp <- 
+    cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
+
+# life_exp
+# lt %>% filter(age==params$cohort_starting_age) %>% pull(ex)
+
+lt_markov <- 
+    tr_cvd %>% 
+    as_tibble() %>%
+    mutate(alive = healthy + cvd) %>% 
+    mutate(lx = radix * alive) %>%
+    mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>%
+    mutate(age = params$cohort_starting_age + (row_number()-1)/1) %>% 
+    inner_join(lt %>% filter(age>=cohort_starting_age & age <max_age),"age") %>% 
+    select(age, q, qx) %>% 
+    gather(source,value,-age) %>% 
+    mutate(source = factor(source,levels = c("q","qx"), labels = c("Markov","Life Table")))
+
+
+```
+
+
+Our next objective is to construct a model with cardiovascular disease as a separate disease state, and with cause (CVD)-deleted background mortality. 
+
+![](images/digraph-healthy-sick-dead-cause-deleted.png){fig-align="right" height="300px"}
+
+### 3a: Cause-Deleted Life Table
+
+More on constructing cause-deleted life table data can be found [here](https://grodri.github.io/demography/neoplasms). 
+
+Constructing the cause-deleted life table will provide two necessary inputs: 
+
+1. CVD-Deleted mortality rates (by age)
+2. CVD-specific mortality rates (by age)
+
+Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. The screenshot below shows 
+
+![Screenshot of Global Burden of Disease Data](images/gbd-cvd-deaths.png){height="500px"}
+
+We extract the percentage of overall deaths that are from CVD by age bin:
+
+```{r, echo = TRUE}
+ihme_cvd <- 
+  tibble::tribble(
+        ~age_name,        ~val,
+               1, 0.038771524,
+               5, 0.038546046,
+              10, 0.044403585,
+              15, 0.033781126,
+              20, 0.035856165,
+              25, 0.053077797,
+              30, 0.086001439,
+              35, 0.130326551,
+              40, 0.184310334,
+              45,  0.21839762,
+              50, 0.243705394,
+              55, 0.256334637,
+              60,  0.26828001,
+              65, 0.272698709,
+              70,  0.28529754,
+              75, 0.310642009,
+               0, 0.016750489,
+              80, 0.353518012,
+              85, 0.399856716,
+              90, 0.447817792,
+              95, 0.495305502
+        ) %>% 
+    mutate(age_ihme = cut(age_name,unique(c(0,1,seq(0,95,5),105)),right=FALSE))  %>% 
+    select(age_ihme,  pct_cvd = val) 
+```
+
+
+Next, we will merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age: 
+
+```{r, echo = TRUE, warning = FALSE, message= FALSE}
+lt_ <-  # 
+    lt %>% 
+    mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
+    left_join(ihme_cvd,"age_ihme") %>%
+    mutate(dx_i = round(dx * pct_cvd)) 
+```
+
+```{r, echo = FALSE}
+lt_ %>% 
+  select(age,age_ihme,pct_cvd,dx,dx_i) %>% 
+  filter(age %in% c(0,10,25,50,75,98))  %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+We next calculate the cause-deleted probability of death (`q`) and death rate (`m`), as well as the cause-specific probability of death (`qi`) and death rate (`mi`):
+
+```{r, echo = TRUE, warning = FALSE, message= FALSE}
+
+lt_ <- 
+  lt_ %>% 
+    select(age_ihme,
+           age,
+           D = dx,  # Deaths
+           Di = dx_i, # Cause-specific deaths
+           lx = lx) %>% # Living
+    mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5)) %>% # time lived by deaths in age group
+    mutate(age_interval = c(diff(age), NA)) %>% 
+    select(age,lx,D,Di,a,age_interval) %>% 
+    # Probability of death in interval =  deaths / total living at beginning of interval. 
+    mutate(q = replace_na(1 - lead(lx) / lx, 1)) %>%  
+    # Cause specific probability of death. 
+    mutate(qi = q * Di / D) %>% 
+    # Convert probability to rate. Note that we could also use q/(age_interval - q * (age_interval - a))
+    mutate(m = -log(1-q)/age_interval) %>% 
+    # We compute cause-specific rates by dividing deaths of a given cause into person-years
+    # of exposure, which is equivalent to multiplying the overall rate by the ratio of
+    # deaths of a given cause to the total.
+    mutate(Rd = (D - Di) / D) %>% 
+    mutate(md = m * Rd) %>% 
+    mutate(mi = m - md)
+```
+
+
+
 
 ## Part 4: Advanced Bookkeeping 
 

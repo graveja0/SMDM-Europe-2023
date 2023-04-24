@@ -814,7 +814,7 @@ These data summarize, by age group, the percentage of overall deaths that are at
 ```{r}
 
 ihme_cvd <- 
-tibble::tribble(
+  tibble::tribble(
         ~age_name,        ~val,
                1L, 0.038771524,
                5L, 0.038546046,

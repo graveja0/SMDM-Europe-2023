@@ -28,8 +28,8 @@ radix = 100000
 lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
 
 lt <- 
-    #readRDS(url(lt_usa_file)) %>% 
-    readRDS("./_sandbox/mortality/usa-life-table.rds") %>% 
+    readRDS(url(lt_usa_file)) %>% 
+    #readRDS("./_sandbox/mortality/usa-life-table.rds") %>% 
     demography::lifetable(.,series = "total", years = mortality_year) %>% 
     as_tibble() %>% 
     mutate_at(vars(lx,dx), function(x) x * radix) %>% 
@@ -66,7 +66,7 @@ ihme_cvd <-   # Source: https://vizhub.healthdata.org/gbd-results/
     mutate(age_ihme = cut(age_name,unique(c(0,1,seq(0,95,5),105)),right=FALSE))  %>% 
     select(age_ihme,  pct_cvd = val) 
 
-lt_ <-
+lt_ <-  # Source: https://grodri.github.io/demography/neoplasms
     lt %>% 
     mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
     left_join(ihme_cvd,"age_ihme") %>%
@@ -76,66 +76,22 @@ lt_ <-
            D = dx,  # Deaths
            Di = dx_i, # Cause-specific deaths
            lx = lx) %>% # Living
-    mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5)) %>% 
-    
-    # The conditional probability of dying of a given cause given survival to 
-    # the age group is easy to obtain, we just multiply the overall probability 
-    # by the ratio of deaths of a given cause to all deaths.
-    
-    mutate(q = edit.na(1 - lead(lx)/lx, 1),
-           qi = q * Di/D) %>% 
-    
-    # The unconditional counts of deaths of any cause and of a given cause 
-    # are calculated multiplying by the number surviving to the start of each 
-    # age group, which is lx. Recall that to die of cause i in the interval 
-    # [x, x+n) one must survive all causes up to age x.
-    
-    mutate(d = lx * q, 
-           di = lx * qi) %>% 
-    
-    # In preparation for the next part, note that if we had nmx and we were willing 
-    # to assume that the hazard is constant in each age group we would have had a 
-    # slightly different estimate of the survival function. Let us “back out” 
-    # the rates from the probabilities:
-    
-    mutate(n = c(diff(age),NA), 
-           m =  edit.na( q/(n - q * (n - a)), 1/tail(a,1))) %>%  # m[last] = 1/a[last]
-    
-    # With these rates we compute the cumulative hazard and survival as
-    
-    mutate(H = cumsum(n * m), 
-           S = edit.na(exp(-lag(H)), 1)) %>%  # S[1] = 1
-    
-    # We compute cause-specific rates by dividing deaths of a given cause into person-years 
-    # of exposure, which is equivalent to multiplying the overall rate by the ratio of 
-    # deaths of a given cause to the total. Here we want deaths for causes other than 
-    # neoplasms. I will use the subscript d for deleted:
-    
-    mutate(Rd = (D - Di)/D,
-           md = m * Rd) %>% 
-    
-    # We compute the conditional probability of surviving an age group after 
-    # deleting a cause as the overall probability raised to Rd, and then calculate 
-    # the survival function as a cumulative product
-    
-    mutate(pd = (1 - q)^Rd,
-           ld = 100000 * cumprod(c(1, pd[-length(pd)]))) %>% 
-    
-    # Then we construct a survival function in the usual way, but treating this 
-    # hazard as if it was the only one operating:
-    
-    mutate(Hd = cumsum(n * md), 
-           Sd = edit.na(exp(-lag(Hd)), 1)) %>% # Sd[1] = 1 
-    mutate(Pd =  edit.na((Sd - lead(Sd))/md, tail(Sd/md, 1))) %>% 
-    
-    # Now do it for cause-specific death. 
-    
-    mutate(Ri = Di / D, 
-           pi = (1 - qi)^Ri,
-           li = 100000 * cumprod(c(1, pi[-length(pi)]))) %>% 
+    mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5))  %>% 
+    mutate(age_interval = c(diff(age), NA)) %>% 
+    select(age,lx,D,Di,a,age_interval) %>% 
+    # Probability of death in interval =  deaths / total living at beginning of interval. 
+    mutate(q = replace_na(1 - lead(lx) / lx, 1)) %>%  
+    # Cause specific probability of death. 
+    mutate(qi = q * Di / D) %>% 
+    mutate(m = -log(1-q)/age_interval) %>% 
+    # We compute cause-specific rates by dividing deaths of a given cause into person-years
+    # of exposure, which is equivalent to multiplying the overall rate by the ratio of
+    # deaths of a given cause to the total.
+    mutate(Rd = (D - Di) / D) %>% 
+    mutate(md = m * Rd) %>% 
     mutate(mi = m - md)
 
-bx <- mutate(lt_, agem = age + n/2, mi = m - md)[-nrow(lt_), ]
+bx <- mutate(lt_, agem = age + age_interval/2, mi = m - md)[-nrow(lt_), ]
 
 p_cd <- 
     bx %>% 
