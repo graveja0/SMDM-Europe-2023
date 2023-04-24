@@ -45,3 +45,16 @@ See @thm-line.
 ## Slide 2: Image
 
 ![](media/1-markov-rate.png)
+
+## 
+
+```{r}
+#| echo: true
+#| output-location: slide
+#| code-line-numbers: "2"
+library(ggplot2) 
+ggplot(airquality, aes(Temp, Ozone)) +   # <1>
+  geom_point() + 
+  geom_smooth(method = "loess")
+```
+1. Ggplot

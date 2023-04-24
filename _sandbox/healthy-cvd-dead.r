@@ -169,11 +169,20 @@ mort_fit_CVDdeleted <- MortalityLaw(
 
 plot(mort_fit_CVDdeleted)
 
-cvd_fit <- 
-    gam(mi ~ s(age), family = gaussian(link="log"), data = lt_ %>% filter(age < max_age))
 
-plot(cohort_starting_age:max_age,predict(cvd_fit,newdata = tibble(age = cohort_starting_age:max_age),type="link"))
-points(lt_$age,log(lt_$mi),col='red')
+# library(splines)
+# cvd_fit <- 
+#     glm(mi ~ bs(age,knots = c(1,5,10,20,30)), data = lt_ %>% filter(age < max_age),family = gaussian(link="log"),start = c(0,0,0,0,0,0,0,0,0))
+# 
+# plot(lt_$age,log(lt_$mi),col='red')    
+# points(cohort_starting_age:max_age,predict(cvd_fit,newdata = list(age = cohort_starting_age:max_age),type="link"))
+# 
+
+cvd_fit <-
+    gam(mi ~ s(age), family = gaussian(link="log"), data = lt_ %>% filter(age < max_age))
+plot(lt_$age,log(lt_$mi),col='red')
+points(cohort_starting_age:max_age,predict(cvd_fit,newdata = tibble(age = cohort_starting_age:max_age),type="link"))
+
 
 ######################
 # Parameterize model
@@ -207,9 +216,9 @@ m_Qt_markov <- function(t, h = params$time_step)
     lapply(t, function(tt){
         current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
         r_death = HP2(current_age, params$background_mortality)$hx; r_death
-        r_cvd <- #params$cause_specific_mortality(current_age) ; r_cvd
-            predict(params$cause_specific_mortality_gam,newdata = tibble(age = current_age),type="link") %>% 
-            exp(.)
+        r_cvd <- params$cause_specific_mortality(current_age) ; r_cvd
+            # predict(params$cause_specific_mortality_gam,newdata = tibble(age = current_age),type="link") %>% 
+            # exp(.)
  
         
         m_Q <- 

@@ -313,6 +313,8 @@ tr <-
 
 tr <- rbind(t(c(1,0)),tr)
 
+
+
 tr_m <- t(c("alive" = 1, "dead" = 0))
 tr_month <- 
     do.call(rbind,lapply(m_P_, function(tp) {
