@@ -103,7 +103,7 @@ ProbToRate = function(prob, t){
 }
 
 RateToProb = function(rate, t){
-  1 - exp(-rate*t)
+  
 }
 
 ```

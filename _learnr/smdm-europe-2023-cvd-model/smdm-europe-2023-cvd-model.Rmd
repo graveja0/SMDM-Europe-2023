@@ -504,7 +504,7 @@ life_exp_life_table
 
 As we see above, we have successfully replicated life expectancy for a 40 year old cohort!
 
-## Part 3: Healthy-CVD-Dead Model
+## Part 3: Cardiovascular Disease Model
 
 ```{r setup3}
 #| echo: false
@@ -642,7 +642,7 @@ m_Qt_markov <- function(t, h = params$time_step)
     lapply(t, function(tt){
         current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
         r_death = HP2(current_age, params$background_mortality)$hx; r_death
-        r_cvd <- params$cause_specific_mortality(current_age) ; r_cvd
+        r_death_cvd <- params$cause_specific_mortality(current_age) ; r_death_cvd
             # predict(params$cause_specific_mortality_gam,newdata = tibble(age = current_age),type="link") %>% 
             # exp(.)
  
@@ -650,7 +650,7 @@ m_Qt_markov <- function(t, h = params$time_step)
         m_Q <- 
             matrix(c(
             0, params$r_H_CVD , 0, r_death ,
-            0, 0, r_cvd , r_death ,
+            0, 0, r_death_cvd , r_death ,
             0, 0, 0, 0,
             0, 0, 0, 0),
             nrow = 4,
@@ -694,10 +694,38 @@ m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2")
     
 }
 
-m_Pt_simple <- function(t,h = params$time_step) {
+m_Pt_formula <- function(t,h = params$time_step) {
+    lapply(t, function(tt){
+      current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
+            # Get background and CVD mortality rates
+      r_death = HP2(current_age, params$background_mortality)$hx
+      r_death_cvd = params$cause_specific_mortality(current_age) 
+      
+      # Convert to probabilities using standard conversion formulas. 
+      p_death = 1 - exp(-r_death * params$time_step)
+      p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
+      p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
+      
+      m_P <- 
+          matrix(c(
+          0, p_cvd , 0, r_death ,
+          0, 0, r_death_cvd , r_death ,
+          0, 0, 0, 0,
+          0, 0, 0, 0),
+          nrow = 4,
+          byrow= TRUE,
+          dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+      )
+      diag(m_P) <- 1-rowSums(m_P)
+      m_P
+        
+    })
+}
+
+
+m_Pt <- function(t,h = params$time_step) {
     m_P <- # Embed the matrices into the timesteps
         lapply(m_Qt_markov(t), function(m) expm::expm(m * h))
-
 }
 
 m_Pt_fn <- function(t,h = params$time_step) {
@@ -910,7 +938,7 @@ tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>%
 
 ### 3d. Parameterize a Discrete Time Markov Model
 
-Next, we parameterize a discrete time Markov model:
+Next, we parameterize a discrete time Markov model.
 
 ```{r 3d, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 25
@@ -942,20 +970,78 @@ params
 
 ### 3e. Transition Matrices
 
-```{r 3e, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#### Using Rate-to-Probability Conversion Formulas
+
+```{r 3e_1, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 25
+current_age = 95
+
+# Get background and CVD mortality rates
+r_death = HP2(current_age, params$background_mortality)$hx
+r_death_cvd = params$cause_specific_mortality(current_age) 
+
+# Convert to probabilities using standard conversion formulas. 
+p_death = 1 - exp(-r_death * params$time_step)
+p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
+p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
+
+m_P <- 
+    matrix(c(
+    0, p_cvd , 0, r_death ,
+    0, 0, r_death_cvd , r_death ,
+    0, 0, 0, 0,
+    0, 0, 0, 0),
+    nrow = 4,
+    byrow= TRUE,
+    dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+)
+diag(m_P) <- 1-rowSums(m_P)
+m_P
+
+        
+```
+
+#### Using Embedding from a Transition Rate Matrix
+
+```{r 3e_2, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 20
+current_age = 95
+
+# Get background and CVD mortality rates
+r_death = HP2(current_age, params$background_mortality)$hx
+r_death_cvd = params$cause_specific_mortality(current_age) 
+
+m_Q <- 
+      matrix(c(
+      0, params$r_H_CVD , 0, r_death ,
+      0, 0, r_death_cvd , r_death ,
+      0, 0, 0, 0,
+      0, 0, 0, 0),
+      nrow = 4,
+      byrow= TRUE,
+      dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+  )
+diag(m_Q) <- -rowSums(m_Q)
+m_P <- expm(m_Q*params$time_step)
+m_P
+        
+```
+
+
+```{r 3e, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 35
 
 m_Qt_markov <- function(t, h = params$time_step)
 {
     lapply(t, function(tt){
         current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
         r_death = HP2(current_age, params$background_mortality)$hx; r_death
-        r_cvd <- params$cause_specific_mortality(current_age) 
+        r_death_cvd <- params$cause_specific_mortality(current_age) 
  
         m_Q <- 
             matrix(c(
             0, params$r_H_CVD , 0, r_death ,
-            0, 0, r_cvd , r_death ,
+            0, 0, r_death_cvd , r_death ,
             0, 0, 0, 0,
             0, 0, 0, 0),
             nrow = 4,
@@ -967,9 +1053,136 @@ m_Qt_markov <- function(t, h = params$time_step)
         
     })
 }
-m_Q <- m_Qt_markov(1:params$n_cycles)
-m_Q
-expm(m_Q[[50]])
+
+m_Pt <- function(t,h = params$time_step) {
+    m_P <- # Embed the matrices into the timesteps
+        lapply(m_Qt_markov(t), function(m) expm::expm(m * h))
+}
+
+params$m_P <- m_Pt(1:params$n_cycles)
+
+
+params$m_P[[71]]
+```
+
+### 3f. CVD Natural History Model 
+
+#### Learning Objectives
+
+1. Construct a Markov trace for a natural history model of CVD
+2. Compare life expectancy from the Markov model to the underlying cause-deleted life table data.
+3. Compare deaths by age between the Markov model and the underlying cause-deleted life table data. 
+
+```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 25
+
+params$m_P <- m_Pt(1:params$n_cycles)
+
+sim_cvd <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd <-  # Markov Trace
+    sim_cvd(params)
+
+life_exp <- # Life expectancy from Markov trace
+    cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% c(1,1,0,0), 1)
+
+life_exp_lifetable <-  # Life expectancy from life table data. 
+  lt %>% filter(age==params$cohort_starting_age) %>% pull(ex)
+
+c("Markov" = life_exp, "Life Table" = life_exp_lifetable)
+```
+
+
+```{r}
+#| fig.height: 7
+
+params$m_P <- m_Pt(1:params$n_cycles)
+params$m_P_form <- m_Pt_formula(1:params$n_cycles)
+
+sim_cvd <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+sim_cvd_form <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P_form, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+
+tr_cvd <-  # Markov Trace
+    sim_cvd(params)
+tr_cvd_form <-  # Markov Trace
+    sim_cvd_form(params)
+
+lt_compare <- 
+  lt_ %>% 
+  mutate(dx = dx - dx_i) %>% 
+  select(age = age, dead_lt = dx, cvddeath_lt = dx_i) %>% 
+  mutate(age = age + 1) %>% 
+  filter(age>=params$cohort_starting_age) %>% 
+  mutate(dead_lt = ifelse(age==25,0,dead_lt),
+         cvddeath_lt = ifelse(age==25,0,cvddeath_lt)) %>% 
+  mutate_at(vars(dead_lt,cvddeath_lt), cumsum)
+
+res_form <- 
+  tr_cvd_form %>% 
+  data.frame() %>% 
+  tibble() %>% 
+  set_names(c("healthy","cvd","cvddeath_form","dead_form")) %>% 
+  mutate_all(function(x) x*radix) %>%
+  mutate(age = params$cohort_starting_age  + (row_number())*params$time_step - 1 ) %>% 
+  select(age,cvddeath_form,dead_form)
+
+
+tr_cvd %>% 
+  data.frame() %>% 
+  tibble() %>% 
+  set_names(c("healthy","cvd","cvddeath","dead")) %>% 
+  mutate_all(function(x) x*radix) %>%
+  mutate(age = params$cohort_starting_age  + (row_number())*params$time_step - 1 ) %>% 
+  select(age,cvddeath,dead) %>% 
+  inner_join(lt_compare, "age") %>% 
+  inner_join(res_form,"age") %>% 
+  gather(state,value,-age) %>% 
+  mutate(state = factor(state,levels = c("cvddeath","cvddeath_form","cvddeath_lt","dead","dead_form","dead_lt"), 
+                        labels = c("CVD Deaths (Embedded Markov)",
+                                   "CVD Deaths (Markov)",
+                                   "CVD Deaths (Life Table)",
+                                   "Background Mortality (Embedded Markov)",
+                                   "Background Mortality (Markov)",
+                                   "Background Mortality (Life Table)"))) %>% 
+  mutate(state1 = ifelse(grepl("CVD Deaths",state),"CVD Deaths","Background Deaths")) %>% 
+  mutate(state2 = ifelse(grepl("Embedded",state),"Embedded Markov",ifelse(grepl("Markov",state),"Markov","Life Table"))) %>% 
+  filter(state2 != "Markov") %>% 
+  ggplot(aes(x = age, y = value, colour = state2)) + 
+  geom_line(aes(lty=state1))  +
+  theme_ipsum(base_family = "Arial") + 
+  scale_colour_aaas(name="") + 
+  scale_linetype(guide="none") +
+  geom_dl(method = list("last.bumpup",hjust=1),aes(label=state1),colour = "black") +
+  theme(legend.position="top") + 
+  labs(x = "Age", y = "Deaths") + 
+  scale_y_continuous(limits = c(0,radix))
+
 ```
 
 
