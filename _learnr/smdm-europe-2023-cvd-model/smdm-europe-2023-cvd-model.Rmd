@@ -31,6 +31,7 @@ library(knitr)
 library(kableExtra)
 library(here)
 library(ggsci)
+library(expm)
 select <- dplyr::select
 options("scipen" = 100, "digits" = 5)
 
@@ -526,7 +527,7 @@ cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 max_age =  # Max age in life table
     99
 cohort_starting_age =  # Min age in life table
-    0
+    25
 mortality_year = 2019
 radix = 100000
 
@@ -583,7 +584,7 @@ lt_ <-  # Source: https://grodri.github.io/demography/neoplasms
            lx = lx) %>% # Living
     mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5))  %>% 
     mutate(age_interval = c(diff(age), NA)) %>% 
-    select(age,lx,D,Di,a,age_interval) %>% 
+    select(age,lx,D,Di,a,age_interval,age_ihme) %>% 
     # Probability of death in interval =  deaths / total living at beginning of interval. 
     mutate(q = replace_na(1 - lead(lx) / lx, 1)) %>%  
     # Cause specific probability of death. 
@@ -820,12 +821,14 @@ ihme_cvd <-
 
 Next, we will merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age: 
 
-```{r, echo = TRUE, warning = FALSE, message= FALSE}
+```{r 3a_1, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = TRUE,exercise.setup = "setup3"}
+#| exercise.lines: 10
 lt_ <-  # 
     lt %>% 
     mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
     left_join(ihme_cvd,"age_ihme") %>%
     mutate(dx_i = round(dx * pct_cvd)) 
+lt_
 ```
 
 ```{r, echo = FALSE}
@@ -838,16 +841,16 @@ lt_ %>%
 
 We next calculate the cause-deleted probability of death (`q`) and death rate (`m`), as well as the cause-specific probability of death (`qi`) and death rate (`mi`):
 
-```{r, echo = TRUE, warning = FALSE, message= FALSE}
+```{r 3a_2, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 30
 
 lt_ <- 
   lt_ %>% 
-    select(age_ihme,
-           age,
-           D = dx,  # Deaths
-           Di = dx_i, # Cause-specific deaths
-           lx = lx) %>% # Living
-    mutate(a = ifelse(age_ihme == "[0,1)", 0.152, 0.5)) %>% # time lived by deaths in age group
+    select(age,
+           D,  # Deaths
+           Di, # Cause-specific deaths
+           lx) %>% # Living
+    mutate(a = ifelse(age==0, 0.152, 0.5)) %>% # time lived by deaths in age group
     mutate(age_interval = c(diff(age), NA)) %>% 
     select(age,lx,D,Di,a,age_interval) %>% 
     # Probability of death in interval =  deaths / total living at beginning of interval. 
@@ -862,9 +865,112 @@ lt_ <-
     mutate(Rd = (D - Di) / D) %>% 
     mutate(md = m * Rd) %>% 
     mutate(mi = m - md)
+lt_ 
+```
+
+### 3b. Cause-Deleted Background Mortality
+
+We now have sufficient information to fit a mortality model for cause-deleted deaths.
+
+```{r 3b, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 15
+ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+deaths_   <- lt_$D[lt_$age<=max_age & lt_$age>=cohort_starting_age] - lt_$Di[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+exposure_  <- lt_$lx[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+
+mort_fit_CVDdeleted <- MortalityLaw(
+    x  = ages_,
+    Dx  = deaths_,   # vector with death counts
+    Ex  = exposure_, # vector containing exposures
+    law = "HP2",
+    opt.method = "LF2")
+
+plot(mort_fit_CVDdeleted)
+```
+
+### 3c. Cause-Specific Death Rates
+
+With our cause-deleted life table, we can use `approxfun()` to construct a flexible function that returns the cause-specific death rate:
+
+```{r 3c, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 12
+cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2)
+
+tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>% 
+  ggplot(aes(x = x)) + 
+  geom_point(aes(y = mi), col = "red",size=3) + 
+  geom_line(aes(y = pmi),lwd=1) + 
+  scale_y_log10() +
+  theme_ipsum() + 
+  labs(x = "Age", y = "ln(CVD Mortality Rate)")
+
+
 ```
 
 
+### 3d. Parameterize a Discrete Time Markov Model
+
+Next, we parameterize a discrete time Markov model:
+
+```{r 3d, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 25
+params <-
+    list(
+        cohort_starting_age = 25,
+        n_cycles = 100,
+        time_step = 1, # Annual Time Step
+        r_H_CVD = 0.1,
+        u_H = 1, 
+        u_CVD = 1,
+        u_D = 0,
+        u_DCVD = 0,
+        c_H = 0, 
+        c_CVD = 0,
+        c_DCVD = 0,
+        c_D = 0, 
+        background_mortality = coef(mort_fit_CVDdeleted),
+        cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2)
+    )
+
+params <- modifyList(params, list(
+    payoff_qaly = c("healthy" = params$u_H, "cvd" = params$u_CVD, "cvddeath" = params$u_DCVD, "dead" = params$u_D),
+    payoff_cost = c("healthy" = params$c_H, "cvd" = params$c_CVD, "cvddeath" = params$c_DCVD, "dead" = params$c_D)
+))
+
+params
+```
+
+### 3e. Transition Matrices
+
+```{r 3e, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+#| exercise.lines: 25
+
+m_Qt_markov <- function(t, h = params$time_step)
+{
+    lapply(t, function(tt){
+        current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
+        r_death = HP2(current_age, params$background_mortality)$hx; r_death
+        r_cvd <- params$cause_specific_mortality(current_age) 
+ 
+        m_Q <- 
+            matrix(c(
+            0, params$r_H_CVD , 0, r_death ,
+            0, 0, r_cvd , r_death ,
+            0, 0, 0, 0,
+            0, 0, 0, 0),
+            nrow = 4,
+            byrow= TRUE,
+            dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+        )
+        diag(m_Q) <- -rowSums(m_Q)
+        m_Q
+        
+    })
+}
+m_Q <- m_Qt_markov(1:params$n_cycles)
+m_Q
+expm(m_Q[[50]])
+```
 
 
 ## Part 4: Advanced Bookkeeping 
