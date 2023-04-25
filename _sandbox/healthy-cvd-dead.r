@@ -21,7 +21,7 @@ cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 max_age =  # Max age in life table
     99
 cohort_starting_age =  # Min age in life table
-    0
+    25
 mortality_year = 2021
 radix = 100000
 
@@ -113,7 +113,7 @@ p_cd <-
 # Cause-Specific Mortality 
 ###########################
 ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=cohort_starting_age]
-deaths_   <- lt_$d[lt_$age<=max_age & lt_$age>=cohort_starting_age] - lt_$di[lt_$age<=max_age & lt_$age>=cohort_starting_age]
+deaths_   <- lt_$D[lt_$age<=max_age & lt_$age>=cohort_starting_age] - lt_$Di[lt_$age<=max_age & lt_$age>=cohort_starting_age]
 exposure_  <- lt_$lx[lt_$age<=max_age & lt_$age>=cohort_starting_age]
 
 mort_fit_CVDdeleted <- MortalityLaw(
