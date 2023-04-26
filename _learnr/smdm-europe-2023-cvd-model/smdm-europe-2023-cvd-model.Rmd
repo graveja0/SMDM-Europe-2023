@@ -531,6 +531,10 @@ cohort_starting_age =  # Min age in life table
 mortality_year = 2019
 radix = 100000
 
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+
 lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
 
 lt <- 
@@ -637,6 +641,47 @@ params <- modifyList(params, list(
     payoff_cost = c("healthy" = params$c_H, "cvd" = params$c_CVD, "cvddeath" = params$c_DCVD, "dead" = params$c_D)
 ))
 
+##########################
+### TRANSITION MATRICES
+##########################
+
+## Transition Probability Matrices
+
+# Using Conversion Formula
+m_Pt_formula <- function(t,h = params$time_step) {
+    lapply(t, function(tt){
+      current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
+            # Get background and CVD mortality rates
+      r_death = HP2(current_age, params$background_mortality)$hx
+      r_death_cvd = params$cause_specific_mortality(current_age) 
+      
+      # Convert to probabilities using standard conversion formulas. 
+      p_death = 1 - exp(-r_death * params$time_step)
+      p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
+      p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
+      
+      m_P <- 
+          matrix(c(
+          0, p_cvd , 0, r_death ,
+          0, 0, r_death_cvd , r_death ,
+          0, 0, 0, 0,
+          0, 0, 0, 0),
+          nrow = 4,
+          byrow= TRUE,
+          dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
+      )
+      diag(m_P) <- 1-rowSums(m_P)
+      m_P
+        
+    })
+}
+
+params$m_P_formula <- m_Pt_formula(1:params$n_cycle)
+
+###########
+# Embedded 
+###########
+
 m_Qt_markov <- function(t, h = params$time_step)
 {
     lapply(t, function(tt){
@@ -663,7 +708,57 @@ m_Qt_markov <- function(t, h = params$time_step)
     })
 }
 
-m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2"))
+m_Pt <- function(t,h = params$time_step) {
+    m_P <- # Embed the matrices into the timesteps
+        lapply(m_Qt_markov(t), function(m) expm::expm(m * h))
+}
+params$m_P <- m_Pt(1:params$n_cycles, h = params$time_step)
+
+##########################
+# Adding a CVD accumulator
+##########################
+
+m_Qt_non_markov_acc <- function(t, acc = c("accCVD")) {
+  markov     <- m_Qt_markov(t)
+  non_markov <- list()
+  for(i in t)
+    {
+        r_ <- nrow(markov[[i]])
+        add_ <- length(acc) 
+        
+        # Expand matrix
+        non_markov[[i]] <- cbind(markov[[i]],     matrix(rep(0, r_ * add_), nrow=r_))
+        non_markov[[i]] <- rbind(non_markov[[i]], matrix(rep(0, add_ * (r_+add_)), nrow=add_))
+  }
+  
+  lapply(non_markov, function(m){
+        # Put in State Names
+        rownames(m) <- c(rownames(m)[-which(rownames(m)=="")], acc)
+        colnames(m) <- c(colnames(m)[-which(colnames(m)=="")], acc)
+        
+        # Define Accumulator
+        m["healthy", "accCVD"] <- m["healthy", "cvd"] 
+        
+        m  
+    })
+}
+
+m_Pt_acc <- function(t,h = params$time_step) {
+    m_P_ <- lapply(m_Qt_non_markov_acc(t), function(m) expm::expm(m * h))
+    
+    lapply(m_P_, function(m)
+    {
+      expm(m)
+    })
+}
+params$m_P_acc <- m_Pt_acc(1:params$n_cycles)
+
+
+############################
+### TWO-CYCLE TUNNEL STATE
+############################
+
+m_Qt_non_markov_acc_tunn <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2"))
 {
     markov     <- m_Qt_markov(t)
     non_markov <- list()
@@ -694,42 +789,8 @@ m_Qt_non_markov <- function(t,acc = c("accCVD"), tunnel = c("t_CVD_1","t_CVD_2")
     
 }
 
-m_Pt_formula <- function(t,h = params$time_step) {
-    lapply(t, function(tt){
-      current_age <- params$cohort_starting_age  + (tt)*h - 1; current_age
-            # Get background and CVD mortality rates
-      r_death = HP2(current_age, params$background_mortality)$hx
-      r_death_cvd = params$cause_specific_mortality(current_age) 
-      
-      # Convert to probabilities using standard conversion formulas. 
-      p_death = 1 - exp(-r_death * params$time_step)
-      p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
-      p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
-      
-      m_P <- 
-          matrix(c(
-          0, p_cvd , 0, r_death ,
-          0, 0, r_death_cvd , r_death ,
-          0, 0, 0, 0,
-          0, 0, 0, 0),
-          nrow = 4,
-          byrow= TRUE,
-          dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
-      )
-      diag(m_P) <- 1-rowSums(m_P)
-      m_P
-        
-    })
-}
-
-
-m_Pt <- function(t,h = params$time_step) {
-    m_P <- # Embed the matrices into the timesteps
-        lapply(m_Qt_markov(t), function(m) expm::expm(m * h))
-}
-
-m_Pt_fn <- function(t,h = params$time_step) {
-    m_P_ <- lapply(m_Qt_non_markov(t), function(m) expm::expm(m * h))
+m_Pt_acc_tunn <- function(t,h = params$time_step) {
+    m_P_ <- lapply(m_Qt_non_markov_acc_tunn(t), function(m) expm::expm(m * h))
     
     lapply(m_P_, function(m)
     {
@@ -752,37 +813,82 @@ m_Pt_fn <- function(t,h = params$time_step) {
     })
 }
 
-params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
+params$m_P_acc_tunn <- m_Pt_acc_tunn(1:params$n_cycles)
 
 ################
 # Simulation
 ################
 
+# Using conversion formulas
+sim_cvd_formula <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P_formula, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd_formula <- 
+    sim_cvd_formula(params)
+
+# Using embedding
 sim_cvd <- function(params) {
-    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0,  "t_CVD_1" = 0, "t_CVD_2" = 0))
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
     tr <- 
         do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd_embedded <- 
+    sim_cvd(params)
+
+# Adding an event accumulator
+sim_cvd_acc <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P_acc, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd_acc_tunn <- 
+    sim_cvd_acc(params)
+
+# Adding an event accumulator and tunnel states
+sim_cvd_acc_tunn <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0, "accCVD"   = 0,  "t_CVD_1" = 0, "t_CVD_2" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P_acc_tun, function(tp) {
             tr_ <<- tr_ %*% tp
         }))
     tr <- rbind(t(c(1,0,0,0,0,0,0)),tr)
     return(tr)
 }
 
-tr_cvd <- 
-    sim_cvd(params)
+tr_cvd_acc_tunn <- 
+    sim_cvd_acc_tunn(params)
+
+
 
 ###########
 # Payoffs
 ###########
 
 life_exp <- 
-    cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
+    cycle_adj(tr_cvd_embedded[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
 
 # life_exp
 # lt %>% filter(age==params$cohort_starting_age) %>% pull(ex)
 
 lt_markov <- 
-    tr_cvd %>% 
+    tr_cvd_embedded %>% 
     as_tibble() %>%
     mutate(alive = healthy + cvd) %>% 
     mutate(lx = radix * alive) %>%
@@ -1187,6 +1293,23 @@ tr_cvd %>%
 
 
 ## Part 4: Advanced Bookkeeping 
+
+### 4a. How Many People Develop CVD?
+
+```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+
+payoff_cvd_count <- matrix(c(0,1,0,0))
+tr <- radix * tr_cvd_form
+
+cycle_adj(tr %*% payoff_cvd_count,1)
+```
+
+#### Learning Objectives
+
+```{r}
+
+```
+
 
 
 
