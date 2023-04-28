@@ -34,7 +34,7 @@ A. Back-converting a discrete-time Markov model into an underlying generator rat
 
 B. Augmenting an underlying rate matrix with new parameters and health states.
 
-C. Including accumulators within an embedded transition probability matrix to accurately account for \"jumpover\" states that occur when a continuous time process is captured in a discrete-time model.
+C. Including accumulators within an embedded transition probability matrix to accurately account for "jumpover" states that occur when a continuous time process is captured in a discrete-time model.
 
 D. Fitting and characterizing background mortality using a Gompertz model fit to life-table data.
 

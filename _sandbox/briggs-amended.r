@@ -34,7 +34,7 @@ params = list(
     
     n_cycles = 46,
     Initial_age =55,
-    effect =0.5,
+    effect =0.5, # at 0.048 the two approaches will straddle a WTP of 100k
     
     cAsymp =500,
     cDeath =1000,
@@ -42,12 +42,11 @@ params = list(
     cProg =3000,
     uAsymp =0.95,
     uProg =0.75,
-    oDr = 0, #0.06,
-    cDr = 0, # 0.06,
+    oDr = 0.06,
+    cDr = 0.06,
     tpDcm =0.15,
     tpProg =0.01,
-    tpDn =0.0379 , # over 65 year old
-    effect =0.5
+    tpDn =0.0379 
     
 )
 
@@ -320,8 +319,10 @@ inc_cost2 <- (tot_costs_with - tot_costs_without); inc_cost
 
 icer2 = inc_cost2 / inc_qaly2 ; icer2
 
+icer2/icer
 
-markov_trace
+c("traditional" = icer, "embedded" = icer2)
+
 
 
 
