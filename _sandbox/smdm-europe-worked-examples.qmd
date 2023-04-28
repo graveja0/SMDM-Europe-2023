@@ -19,51 +19,84 @@ editor:
     wrap: 72
 ---
 
-# Basic Outline 
+# Basic Outline
 
-Can translate the below into learning objectives. 
+Can translate the below into learning objectives.
 
 ## Morning: "Bottom Up"
 
-1. Fit a mortality model and construct a simple "alive-dead" model that replicates life table data.
-2. Add in a CVD sick state and replicate overall life-expectancy.
-3. Add in a cause-specific (CVD) death state using cause-deleted life tables and cause-specific mortality rate. Verify that it replicates overall life expectancy.
-4. Using the "Healthy-CVD-Dead" natural history model, count up the total number who become sick. Show how standard conversion formulas will miscount the total number who become ill.
+1.  Fit a mortality model and construct a simple "alive-dead" model that
+    replicates life table data.
+2.  Add in a CVD sick state and replicate overall life-expectancy.
+3.  Add in a cause-specific (CVD) death state using cause-deleted life
+    tables and cause-specific mortality rate. Verify that it replicates
+    overall life expectancy.
+4.  Using the "Healthy-CVD-Dead" natural history model, count up the
+    total number who become sick. Show how standard conversion formulas
+    will miscount the total number who become ill.
 
-## Afternoon: "Top Down" 
+## Afternoon: "Top Down"
 
-5. Start with the HIV model from the Briggs textbook. Solve for the continuous generator matrix.
-6. Fit a mortality model to German life table data and swap in an age-specific death rate into the HIV monotherapy model. How do modeled costs and QALYs differ?
-7. Suppose there is a new combination therapy with a hazard ratio and 95% confidence interval. Incorporate this into the HIV model and calculate ICERs. 
-8. Now solve for the PSA distribution parameters for this new hazard ratio. 
-9. Use copulas to simulate correlated direct medical care and community care costs. 
+5.  Start with the HIV model from the Briggs textbook. Solve for the
+    continuous generator matrix.
+6.  Fit a mortality model to German life table data and swap in an
+    age-specific death rate into the HIV monotherapy model. How do
+    modeled costs and QALYs differ?
+7.  Suppose there is a new combination therapy with a hazard ratio and
+    95% confidence interval. Incorporate this into the HIV model and
+    calculate ICERs.
+8.  Now solve for the PSA distribution parameters for this new hazard
+    ratio.
+9.  Use copulas to simulate correlated direct medical care and community
+    care costs.
 
 # Questions and To-Do
 
-- [Shawn] In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket "N". I assume we don't need exits to background mortality because we're only using these for accounting purposes -- but if it's for a transient utility decrement, don't we only need to apply the utility decrement to the non-decedents within T2? 
+-   \[Shawn\] In our appendix example, we have a two-cycle tunnel state
+    (T1 and T2) once you become ill. We allow for exits to background
+    mortality from T1, but everyone in T2 exits to the receiving bucket
+    "N". I assume we don't need exits to background mortality because
+    we're only using these for accounting purposes -- but if it's for a
+    transient utility decrement, don't we only need to apply the utility
+    decrement to the non-decedents within T2?
 
-- [Shawn] Interestingly, in the HIV model, when I add in background mortality for Germany (based on modeled life table data), the resulting transition probability matrix (for an initial cohort of 40 year olds) results in a negative probability for transitions to secular death. I had to add in a parameter which is a hazard ratio for the HIV population (essentially multiplying the background mortality rate by 2) to get positive probabilities. But could use this as an example to show that embedding from the solved generator matrix doesn't guarantee non-zero probabilities? 
+-   \[Shawn\] Interestingly, in the HIV model, when I add in background
+    mortality for Germany (based on modeled life table data), the
+    resulting transition probability matrix (for an initial cohort of 40
+    year olds) results in a negative probability for transitions to
+    secular death. I had to add in a parameter which is a hazard ratio
+    for the HIV population (essentially multiplying the background
+    mortality rate by 2) to get positive probabilities. But could use
+    this as an example to show that embedding from the solved generator
+    matrix doesn't guarantee non-zero probabilities?
 
-- [Shawn] Need the optimization algorithm to solve for PSA parameters that minimizes:
+-   \[Shawn\] Need the optimization algorithm to solve for PSA
+    parameters that minimizes:
 
 $$
 (F(x_1) - p_1)^2 + (F(x_2)-p_2)^2
 $$
 
-- [Shawn]. Can we also add analytic solution code for lognormal and logistic? Or just rely on the optimization? 
+-   \[Shawn\]. Can we also add analytic solution code for lognormal and
+    logistic? Or just rely on the optimization?
 
-- [All] Do we need a full-fledged CEA for the CVD model? Or would just creating the natural history model suffice?
+-   \[All\] Do we need a full-fledged CEA for the CVD model? Or would
+    just creating the natural history model suffice?
 
-- [Astrid] The [life table data](https://ghdx.healthdata.org/record/ihme-data/gbd-2019-life-tables-1950-2019) at the global burden of disease website is split into different files for different age buckets. Can we download these files and aggretate them together to get a full life table for each country/region/year combo?
+-   \[Astrid\] The [life table
+    data](https://ghdx.healthdata.org/record/ihme-data/gbd-2019-life-tables-1950-2019)
+    at the global burden of disease website is split into different
+    files for different age buckets. Can we download these files and
+    aggretate them together to get a full life table for each
+    country/region/year combo?
 
-- [Astrid] Perhaps we could create a Shiny app that does the above?
-  - Input: country/region and year
-  - Output 1: Constructed life table
-  - Output 2: Parameters for mortality model
+-   \[Astrid\] Perhaps we could create a Shiny app that does the above?
 
+    -   Input: country/region and year
+    -   Output 1: Constructed life table
+    -   Output 2: Parameters for mortality model
 
 # 0. Setup
-
 
 ```{r setup}
 #| cache: false
@@ -108,7 +141,8 @@ RateToProb = function(rate, t){
 
 ```
 
-We begin by specifying a parameter object that will ultimately guide the discrete time model. 
+We begin by specifying a parameter object that will ultimately guide the
+discrete time model.
 
 ```{r}
 #| warning: false
@@ -146,14 +180,17 @@ v_names_str = c("quo","trt")
 n_strategies = length(v_names_str)
 ```
 
-
 # 1. Mortality Modeling (Alive-Dead)
 
 ## Estimate a mortality model to parameterize background mortality.
 
-Background mortality will be based on a mortality model. This reduces the parameterization from the total number of age bins in the life table data to only a few parameters that can be used to characterize background mortality. 
+Background mortality will be based on a mortality model. This reduces
+the parameterization from the total number of age bins in the life table
+data to only a few parameters that can be used to characterize
+background mortality.
 
-First we download and store the vital statistics data for the US from the human mortality database:
+First we download and store the vital statistics data for the US from
+the human mortality database:
 
 ```{r, eval = FALSE}
 #| warning: false
@@ -164,7 +201,8 @@ hmd.usa <- demography::hmd.mx("USA",username = "TK", password = "TK", "USA")
 write_rds(hmd.usa,file=here("_sandbox/mortality/usa-life-table.rds"))
 ```
 
-Next we construct a life table from these data. This is done using the `demography` package. 
+Next we construct a life table from these data. This is done using the
+`demography` package.
 
 ```{r}
 #| warning: false
@@ -207,25 +245,32 @@ lt %>%
 
 ```
 
-The columns here are 
+The columns here are
 
-- `age`:	Ages for lifetable
-- `year`: Period years or cohort years
-- `mx`: 	Death rate at age x.
-- `qx`: The probability that an individual of exact age x will die before exact age x+1.
-- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or the size of a cohort from which the life table is derived).
-- `dx`: The number of deaths between exact ages x and x+1.
-- `Lx`: Number of years lived between exact age x and exact age x+1.
-- `Tx`: Number of years lived after exact age x.
-- `ex`: Remaining life expectancy at exact age x.
+-   `age`: Ages for lifetable
+-   `year`: Period years or cohort years
+-   `mx`: Death rate at age x.
+-   `qx`: The probability that an individual of exact age x will die
+    before exact age x+1.
+-   `lx`: Number of survivors to exact age x. This is defined relative
+    to a **radix**, or the size of a cohort from which the life table is
+    derived).
+-   `dx`: The number of deaths between exact ages x and x+1.
+-   `Lx`: Number of years lived between exact age x and exact age x+1.
+-   `Tx`: Number of years lived after exact age x.
+-   `ex`: Remaining life expectancy at exact age x.
 
-Our next step is to fit a mortality model to these data. Generally speaking, we need three inputs:
+Our next step is to fit a mortality model to these data. Generally
+speaking, we need three inputs:
 
-- `age`:	Ages for lifetable
-- `dx`: The number of deaths between exact ages x and x+1.
-- `lx`: Number of survivors to exact age x. This is defined relative to a **radix**, or  the size of a cohort from which the life table is derived).
+-   `age`: Ages for lifetable
+-   `dx`: The number of deaths between exact ages x and x+1.
+-   `lx`: Number of survivors to exact age x. This is defined relative
+    to a **radix**, or the size of a cohort from which the life table is
+    derived).
 
-The `MortalityLaws` package has a *number* of mortality models we can draw from. @tbl-mortlaws summarizes these.
+The `MortalityLaws` package has a *number* of mortality models we can
+draw from. @tbl-mortlaws summarizes these.
 
 ```{r}
 #| tbl-cap: Mortality Models in MortalityLaws package
@@ -238,7 +283,8 @@ laws$table %>%
   kable_styling()
 ```
 
-Because we want to stay general (i.e., model all over the age spectrum), our first attempt  will be a Gompertz model. 
+Because we want to stay general (i.e., model all over the age spectrum),
+our first attempt will be a Gompertz model.
 
 ```{r}
 #| warning: false
@@ -264,9 +310,11 @@ gom_fit <- MortalityLaw(
 plot(gom_fit)
 ```
 
-Gompertz doesn't fit all age ranges well---particularly young ages. This is a well-known fact. If we were to focus only on adults, however, this would be a nice way to go.
+Gompertz doesn't fit all age ranges well---particularly young ages. This
+is a well-known fact. If we were to focus only on adults, however, this
+would be a nice way to go.
 
-Here, for example, is a Gompertz model fit to 40 year old adults: 
+Here, for example, is a Gompertz model fit to 40 year old adults:
 
 ```{r}
 #| warning: false
@@ -292,13 +340,19 @@ gom_fit40 <- MortalityLaw(
 plot(gom_fit40)
 ```
 
-The nice thing about this is that it summarizes age-specific mortality in terms of just two parameters. We can then feed these parameters into the `gompertz()` formula to yield a death rate for a given age. Here is the mortality rate at age 75 for an initial population of 40 year olds:
+The nice thing about this is that it summarizes age-specific mortality
+in terms of just two parameters. We can then feed these parameters into
+the `gompertz()` formula to yield a death rate for a given age. Here is
+the mortality rate at age 75 for an initial population of 40 year olds:
 
 ```{r}
 MortalityLaws::gompertz(x = 75 - 40, coef(gom_fit40))
 ```
 
-For this exercise we want to stay general, so let's select an alternative model that can better fit the entire age range. To get a sense of the options, let's select the models that are designed for the entire age range and see their fit:
+For this exercise we want to stay general, so let's select an
+alternative model that can better fit the entire age range. To get a
+sense of the options, let's select the models that are designed for the
+entire age range and see their fit:
 
 ::: column-page
 ```{r}
@@ -347,10 +401,15 @@ res %>% ggplot(aes(x = age, y = log(prmort))) + geom_line(lwd=1,lty=2) +
 ```
 :::
 
-Here we see that some do better than others. We'll choose the HP2 (Heligman-Bollard) to fit, though note that any well-fitting mortality model can be used because there is a mapping of the fitted parameters to the mortality rate for each (see @tbl-mortlaws).  The `MortalityLaws` package also has a function for each, much like the `gompertz()` function above. For our selected model, the function is `HP2()`. 
+Here we see that some do better than others. We'll choose the HP2
+(Heligman-Bollard) to fit, though note that any well-fitting mortality
+model can be used because there is a mapping of the fitted parameters to
+the mortality rate for each (see @tbl-mortlaws). The `MortalityLaws`
+package also has a function for each, much like the `gompertz()`
+function above. For our selected model, the function is `HP2()`.
 
-
-Let's add the fitted mortality model parameters to our overall parameter list object. We'll include gompertz , too, just for comparison later. 
+Let's add the fitted mortality model parameters to our overall parameter
+list object. We'll include gompertz , too, just for comparison later.
 
 ```{r}
 #| warning: false
@@ -368,19 +427,20 @@ hp_fit <- MortalityLaw(
 
 ```
 
-
 ```{r}
 params <- modifyList(params,list(heligman_bollard = coef(hp_fit), 
                                  gompertz = coef(gom_fit)))
 ```
 
-
 ## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
-Now we'll answer the question: can we replicate life expectancy based on a life table using a discrete time Markov model? 
+Now we'll answer the question: can we replicate life expectancy based on
+a life table using a discrete time Markov model?
 
-To do this, we'll consruct a very simple two-state discrete time Markov model.  We'll then parameterize the model with the coefficients from the mortality models above, and then calculate life expectancy with a QALY "payoff" of 1.0 if alive and no discounting. 
-
+To do this, we'll consruct a very simple two-state discrete time Markov
+model. We'll then parameterize the model with the coefficients from the
+mortality models above, and then calculate life expectancy with a QALY
+"payoff" of 1.0 if alive and no discounting.
 
 ```{r, eval = FALSE}
 #| echo: false
@@ -397,7 +457,9 @@ digraph G {
 
 ![](media/digraph-alive-dead.png){fig-align="center" height="200px"}
 
-Let's start with a cohort of 40 year olds. Based on the life table, we should expect these individuals to live an additional `r  lt %>% filter(age==40) %>% pull(ex) %>% round(.,2)` years
+Let's start with a cohort of 40 year olds. Based on the life table, we
+should expect these individuals to live an additional
+`r  lt %>% filter(age==40) %>% pull(ex) %>% round(.,2)` years
 
 ```{r}
 #| warning: false
@@ -485,8 +547,8 @@ tibble(markov = as.vector(life_exp_markov),
   kable_styling()
 ```
 
-
-We'll now loop through various starting ages to verify that we can replicate life expectancy with a simple discrete time Markov model.
+We'll now loop through various starting ages to verify that we can
+replicate life expectancy with a simple discrete time Markov model.
 
 ```{r}
 #| warning: false
@@ -576,13 +638,19 @@ df_p %>%
     theme(legend.position = "top")
 ```
 
-@fig-comparison Shows that modeled life expectancy based on the Helligman-Bollard approach successfully replicates average life expectancy for nearly any age cohort. The figure also shows that the Gompertz model performs well among middle-aged adult cohorts (e.g., 40) but not for younger or older age cohorts. 
+@fig-comparison Shows that modeled life expectancy based on the
+Helligman-Bollard approach successfully replicates average life
+expectancy for nearly any age cohort. The figure also shows that the
+Gompertz model performs well among middle-aged adult cohorts (e.g., 40)
+but not for younger or older age cohorts.
 
 # 2. Incorporating a Disease State (Healthy-Sick-Dead)
 
-## Split “Alive” health state into healthy vs. sick
+## Split "Alive" health state into healthy vs. sick
 
-Let's now expand our simple model to include a "sick" state. For now we'll assume you're either healthy or sick, but that being sick does not confer a higher mortality rate:
+Let's now expand our simple model to include a "sick" state. For now
+we'll assume you're either healthy or sick, but that being sick does not
+confer a higher mortality rate:
 
 ```{r, eval = FALSE, echo = FALSE}
 ################################
@@ -604,11 +672,13 @@ digraph G {
 }
 ```
 
-![](media/digraph-healthy-sick-dead.png){fig-align="center" height="300px"}
+![](media/digraph-healthy-sick-dead.png){fig-align="center"
+height="300px"}
 
 ## Verify that a discrete time Markov model can replicate life-expectancy at age X.
 
-Starting with a cohort aged 40, can we successfully replicate life expectancy again? 
+Starting with a cohort aged 40, can we successfully replicate life
+expectancy again?
 
 ```{r}
 starting_age = .x = 40
@@ -697,7 +767,8 @@ tibble(markov = as.vector(life_exp_markov),
 
 ## Show that if we assume a static hazard ratio for death (applied to the secular death rate) we will dramatically understate overall life expectancy.
 
-What happens if we just put in a cause-specific hazard ratio that acts on the background mortality rate?
+What happens if we just put in a cause-specific hazard ratio that acts
+on the background mortality rate?
 
 ```{r, eval = FALSE}
 #| echo: false
@@ -717,7 +788,8 @@ digraph G {
 
 ```
 
-![](media/digraph-healthy-sick-dead-HR.png){fig-align="center" height="300px"}
+![](media/digraph-healthy-sick-dead-HR.png){fig-align="center"
+height="300px"}
 
 ```{r}
 starting_age = .x = 40
@@ -803,13 +875,15 @@ tibble(markov = as.vector(life_exp_markov),
   kable_styling()
 ```
 
-We no longer approximate the 'natural history' life-expectancy! Uh oh. 
+We no longer approximate the 'natural history' life-expectancy! Uh oh.
 
 ## Construct a cause-deleted life table, and use the cause deleted secular deaths instead.
 
-Let's get an age-specific cause of death data from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) project. 
+Let's get an age-specific cause of death data from the [Global Burden of
+Disease](https://vizhub.healthdata.org/gbd-results/) project.
 
-These data summarize, by age group, the percentage of overall deaths that are attributable to cardiovascular disease. 
+These data summarize, by age group, the percentage of overall deaths
+that are attributable to cardiovascular disease.
 
 ```{r}
 
@@ -842,7 +916,8 @@ ihme_cvd <-
     select(age_ihme,  pct_cvd = val) 
 ```
 
-We now need to take our life table data and bin it similarly to the IHME data. 
+We now need to take our life table data and bin it similarly to the IHME
+data.
 
 ```{r}
 #| fig-cap: Mortality Rates
@@ -950,7 +1025,6 @@ p_cd
 
 ```
 
-
 ```{r}
 ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=min_age]
 deaths_   <- lt_$d[lt_$age<=max_age & lt_$age>=min_age] - lt_$di[lt_$age<=max_age & lt_$age>=min_age]
@@ -966,7 +1040,8 @@ hp_fit_ <- MortalityLaw(
 
 ## Model using cause-specific death rate from the cause-deleted life table data.
 
-Now let's construct a model that adds in cause-specific death, and uses cause-deleted (modeled) mortality for secular death:
+Now let's construct a model that adds in cause-specific death, and uses
+cause-deleted (modeled) mortality for secular death:
 
 ```{r, echo = FALSE, eval = FALSE}
 digraph G {
@@ -987,8 +1062,8 @@ digraph G {
 
 ```
 
-
-![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="300px"}
+![](media/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center"
+height="300px"}
 
 ```{r}
 params <- modifyList(params, list(cause_deleted = coef(hp_fit_)))
@@ -1081,7 +1156,6 @@ tibble(markov = as.vector(life_exp_markov),
 
 ```
 
-
 ```{r}
 #| fig-cap: "Survival by Age: Discrete Time Markov (Red) vs. Cause-Deleted Life Table (Black)"
 #| fig-width: 6
@@ -1102,9 +1176,14 @@ lt_ %>%
 
 ```
 
-Good news: we essentially replicate overall life expectancy! Though note the small difference with the model based on formula conversions rather than embedding. 
+Good news: we essentially replicate overall life expectancy! Though note
+the small difference with the model based on formula conversions rather
+than embedding.
 
-- Note that we used the cause-deleted life table's cause-specific mortality rate (`mi`) here. Another alternative would be to use a similar mortality model as above -- but in practice, for CVD deaths this does not yield good predictions for old ages (see plot )
+-   Note that we used the cause-deleted life table's cause-specific
+    mortality rate (`mi`) here. Another alternative would be to use a
+    similar mortality model as above -- but in practice, for CVD deaths
+    this does not yield good predictions for old ages (see plot )
 
 ```{r}
 ages_     <- lt_$age[lt_$age<=max_age & lt_$age>=min_age]
@@ -1124,12 +1203,12 @@ params <- modifyList(params, list(cause_deleted = coef(hp_fit_),
 plot(hp_fit_i)
 ```
 
-
 # 4. Ensuring Accurate Counts, Costs and QALYs
 
 ## Count the number who become ill under various approaches.
 
-Can also try [Fernando's approach](https://journals.sagepub.com/doi/10.1177/0272989X19893973)
+Can also try [Fernando's
+approach](https://journals.sagepub.com/doi/10.1177/0272989X19893973)
 
 ```{r}
 
@@ -1268,9 +1347,10 @@ sick_embedded
 
 ```
 
-Why the divergence? At later years the hazard of death is very high -- but the hazard of dying from CVD is also very high! 
+Why the divergence? At later years the hazard of death is very high --
+but the hazard of dying from CVD is also very high!
 
-Let's take a look at what happens in the first cycle. 
+Let's take a look at what happens in the first cycle.
 
 Here is the Markov trace for the embedded matrix:
 
@@ -1284,45 +1364,68 @@ And here it is for the matrix constructed using conversion formulas:
 tr_alt_[2,]
 ```
 
-We see that in both, `r tr_[2,"dead"] %>% round(0)` people die. But there are more people who remain sick in the trace based on the formulas (`r tr_alt_[2,"sick"] %>% round(0)`) than in the trace based on the embedded matrix (`r tr_[2,"sick"] %>% round(0)`). Why?
+We see that in both, `r tr_[2,"dead"] %>% round(0)` people die. But
+there are more people who remain sick in the trace based on the formulas
+(`r tr_alt_[2,"sick"] %>% round(0)`) than in the trace based on the
+embedded matrix (`r tr_[2,"sick"] %>% round(0)`). Why?
 
-> `r tr_alt_[2,"sick"] %>% round(0)` is the total who would become sick *if we don't allow any death in the interval for those who would become sick in the interval*.  
+> `r tr_alt_[2,"sick"] %>% round(0)` is the total who would become sick
+> *if we don't allow any death in the interval for those who would
+> become sick in the interval*.
 
-That is, let's think about the population who would become sick in an interval. There are four mutually exclusive groups:
+That is, let's think about the population who would become sick in an
+interval. There are four mutually exclusive groups:
 
-  1. Individuals who become sick in the interval and stay sick throughout the interval. 
-  2. Individuals who would have become sick in the interval, but died first. 
-  3. Individuals who became sick in the interval, but *also* died from the illness within the interval.
-  4. Individuals who became sick in the interval, but *also* died from background causes within the interval.
-  
-The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of the interval based on a matrix converted using standard formulas reflects the union of all the above. We're essentially "trapping" these patients within the interval and not allowing them to die for any other reason--either *before* or *after* they become ill.
+1.  Individuals who become sick in the interval and stay sick throughout
+    the interval.
+2.  Individuals who would have become sick in the interval, but died
+    first.
+3.  Individuals who became sick in the interval, but *also* died from
+    the illness within the interval.
+4.  Individuals who became sick in the interval, but *also* died from
+    background causes within the interval.
+
+The total number `r tr_alt_[2,"sick"] %>% round(0)` sick at the end of
+the interval based on a matrix converted using standard formulas
+reflects the union of all the above. We're essentially "trapping" these
+patients within the interval and not allowing them to die for any other
+reason--either *before* or *after* they become ill.
 
 ## Adding Non-Markovian Elements to the Transition Probability Matrix
 
-![](media/1-markov-rate.png){fig-align="center" height="200px"}  
+![](media/1-markov-rate.png){fig-align="center" height="200px"}
 
-![](media/2-markov-rate-augmented.png){fig-align="center" height="200px"}
-![](media/3-transition-probability.png){fig-align="center" height="200px"}
+![](media/2-markov-rate-augmented.png){fig-align="center"
+height="200px"}
+![](media/3-transition-probability.png){fig-align="center"
+height="200px"}
 
 ### Accumulators
 
 ### Tunnel states
 
-We will create a T1 state for tracking tunnels and allow exit from due to external death. This requires us to have a recieving bucket for these external risks 'N' for NULL so as not to disturb the balance of the Markov.
+We will create a T1 state for tracking tunnels and allow exit from due
+to external death. This requires us to have a recieving bucket for these
+external risks 'N' for NULL so as not to disturb the balance of the
+Markov.
 
 m = number of primary health states
 
-1. Create m x m rate matrix R with initial cell values of 0
-2. Fill in off-diagonal elements per parameters
-3. Diagonal of R is negative row sum of off-diagonal elements
-4. Add accumulator columns and rows as 0s. Call this new matrix R_
-5. Fill in appropriate accumulator transition rates in R_
-6. Add in tunnel states as new columns and rows  
-7. Add an additional "N" (NULL) state as recieving bucket external risks (e.g., background mortality)
-    that can occur while in the tunnel so as not to disturb the balance of the Markov.
-6. Take matrix exponential of R_ to obtain M_, the initial embedded transition probability matrix
-7. Make edits to R_ to reflect tunnel state activity. 
-  - Since it is possible to exit the tunnel for background mortality reasons, add the total background mortality 
+1.  Create m x m rate matrix R with initial cell values of 0
+2.  Fill in off-diagonal elements per parameters
+3.  Diagonal of R is negative row sum of off-diagonal elements
+4.  Add accumulator columns and rows as 0s. Call this new matrix R\_
+5.  Fill in appropriate accumulator transition rates in R\_
+6.  Add in tunnel states as new columns and rows\
+7.  Add an additional "N" (NULL) state as recieving bucket external
+    risks (e.g., background mortality) that can occur while in the
+    tunnel so as not to disturb the balance of the Markov.
+8.  Take matrix exponential of R\_ to obtain M\_, the initial embedded
+    transition probability matrix
+9.  Make edits to R\_ to reflect tunnel state activity.
+
+-   Since it is possible to exit the tunnel for background mortality
+    reasons, add the total background mortality
 
 ```{r}
 
@@ -1383,7 +1486,8 @@ non_markov_rate_matrices <- function(t)
 
 ```
 
-Next we embed the non-Markovian matrices into the time step and finish the definition of the tunnel states in the probability space.
+Next we embed the non-Markovian matrices into the time step and finish
+the definition of the tunnel states in the probability space.
 
 ```{r}
 
@@ -1412,7 +1516,6 @@ transition_prob <- function(t,h=1)
 
 
 ```
-
 
 ```{r, eval = FALSE, echo = FALSE}
 
@@ -1479,7 +1582,6 @@ end
 
 ```
 
-
 # 5. Backwards Conversion
 
 ```{r}
@@ -1493,7 +1595,10 @@ m_P <- matrix(c(0.721, 0.202, 0.067, 0.010,
 m_P  
 ```
 
-The bottom diagonal was corrected to be a Markov absorbing state by having 1 on the diagonal. For the purposes of example, we'll assume we wish to add an additional state "E", which has a continuous rate of 0.2 that competes with other transitions.
+The bottom diagonal was corrected to be a Markov absorbing state by
+having 1 on the diagonal. For the purposes of example, we'll assume we
+wish to add an additional state "E", which has a continuous rate of 0.2
+that competes with other transitions.
 
 ## Take the HIV model and use eigenvalue decomposition to obtain the continuous generator matrix.
 
@@ -1507,7 +1612,11 @@ Ap <- iV %*% m_P %*% V
 Ap
 ```
 
-Due to the numeric probabilities not being exactly correct, the off-diagonal elements of $A'$ are not zero, but they are quite close. We will zero these off diagonal elements and assume that the non-zero elements are numerical error. Then continue by taking the log of the diagonal.
+Due to the numeric probabilities not being exactly correct, the
+off-diagonal elements of $A'$ are not zero, but they are quite close. We
+will zero these off diagonal elements and assume that the non-zero
+elements are numerical error. Then continue by taking the log of the
+diagonal.
 
 ```{r}
 lAp <- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
@@ -1517,7 +1626,11 @@ R  <- V %*% lAp %*% iV
 R 
 ```
 
-An now we have the continuous time rate generator for the Markov Model. There is still some numerical error---for example the bottom row, has values very near to zero, and the diagonal is not exactly the negative sum of the rest of the row. We can clean this up by tweaking the numbers numerical towards their constraints.
+An now we have the continuous time rate generator for the Markov Model.
+There is still some numerical error---for example the bottom row, has
+values very near to zero, and the diagonal is not exactly the negative
+sum of the rest of the row. We can clean this up by tweaking the numbers
+numerical towards their constraints.
 
 ```{r}
 R[abs(R) < 1e-6 ] <- 0
@@ -1527,9 +1640,17 @@ rownames(R) <- c("A", "B", "C", "D")
 colnames(R) <- c("A", "B", "C", "D")
 
 round(R, 3)
-```  
+```
 
-Some numerical error is inevitable in this process and cannot be avoided. However, even cleaning up the small and obvious errors, the transition from B -\> D is impossible since it's negative. Rates are relative to the occupancy of the source state, in this case B. Having a negative rate implies that B would have some transitions in which the dead come alive into B based upon the occupancy of B. Obviously, this is not possible. The problem now is how to adjust the model's rates to be physically possible, while as faithful to the original data as possible. B is a sicker state, so it should have a higher death rate.
+Some numerical error is inevitable in this process and cannot be
+avoided. However, even cleaning up the small and obvious errors, the
+transition from B -\> D is impossible since it's negative. Rates are
+relative to the occupancy of the source state, in this case B. Having a
+negative rate implies that B would have some transitions in which the
+dead come alive into B based upon the occupancy of B. Obviously, this is
+not possible. The problem now is how to adjust the model's rates to be
+physically possible, while as faithful to the original data as possible.
+B is a sicker state, so it should have a higher death rate.
 
 ## Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.
 
@@ -1539,7 +1660,7 @@ Let's double check it recapitulates the original rates.
 expm(R)
 ```
 
-Now let's replicate the monotherapy strategy results from the original. 
+Now let's replicate the monotherapy strategy results from the original.
 
 ```{r}
 
@@ -1613,11 +1734,14 @@ sum(qaly_disc_mono)
 sum(round(cost_disc_mono,0))
 ```
 
-This compares favorably to the textbook answer, which is 7.99 for QALYs and £44,663 for costs. The main differences seem to be rounding in the Excel answer within the textbook. 
+This compares favorably to the textbook answer, which is 7.99 for QALYs
+and £44,663 for costs. The main differences seem to be rounding in the
+Excel answer within the textbook.
 
 # 6. Changing Countries or Contexts
 
-Rather than have a static death rate, let's swap in secular mortality from several different countries and regions. 
+Rather than have a static death rate, let's swap in secular mortality
+from several different countries and regions.
 
 ```{r}
 
@@ -1774,12 +1898,13 @@ sum(round(cost_disc_mono,0))
 
 # 8. Solving for PSA parameters
 
-- [Source](https://www.johndcook.com/quantiles_parameters.pdf) 
+-   [Source](https://www.johndcook.com/quantiles_parameters.pdf)
 
-- [Another source](https://forum.effectivealtruism.org/posts/tvTqRtMLnJiiuAep5/how-to-determine-distribution-parameters-from-quantiles) 
+-   [Another
+    source](https://forum.effectivealtruism.org/posts/tvTqRtMLnJiiuAep5/how-to-determine-distribution-parameters-from-quantiles)
 
-- [Excel Functions](https://docs.google.com/spreadsheets/d/1noozmyQvdqVXB8lH1JP1P7e6g-0FSV-9Q1EZS3Gh220/edit#gid=0)
-
+-   [Excel
+    Functions](https://docs.google.com/spreadsheets/d/1noozmyQvdqVXB8lH1JP1P7e6g-0FSV-9Q1EZS3Gh220/edit#gid=0)
 
 ## The new combination therapy arm has some new parameters with 95% CIs.
 
@@ -1795,7 +1920,6 @@ sum(round(cost_disc_mono,0))
 | Right skew (e.g., cost)         | gamma, lognormal |
 | Relative risks or hazard ratios | lognormal        |
 | Odds Ratio                      | logistic         |
-
 
 ### Normal Distribution
 
@@ -1944,9 +2068,7 @@ cor(Y_[,1],Y_[,2])
 
 ```
 
-
 ## Simulate direct medical care and community care costs for each state using copulas.
-
 
 ```{r}
 
@@ -1960,4 +2082,3 @@ Y_[,2] <- qpois(U_[,2],lambda = 12)
 
 cor(Y_[,1],Y_[,2])
 ```
-
