@@ -1574,6 +1574,8 @@ end
 
 # 5. Backwards Conversion
 
+Using the model in Table 2.2 pg.32, from "Decision Modelling for Health Economic Evaluation" by A Briggs, K Claxton and M Sculpher. Oxford, 2006. 
+
 ```{r}
 m_P <- matrix(c(0.721, 0.202, 0.067, 0.010,
                 0.000, 0.581, 0.407, 0.012,
@@ -1587,7 +1589,7 @@ m_P
 
 The theoretical approach requires computation of the eigenvalues of the
 matrix, and then correction along the way for various numerical errors to
-derive the generator matrix of rates from this. The observed statistical
+derive the generator matrix of rates. The observed statistical
 error from a stochastic process in general create a situation in which the 
 Q-matrix is not derivable theoretically resulting in negative probabilities.
 Finding the closest generator matrix can be
@@ -1645,7 +1647,6 @@ r.est <- optim((-diag(R))[1:3],
 m_3r(r.est)
 round(expm(m_3r(r.est)),3)
 ```
-
 
 Now let's replicate the monotherapy strategy results from the original.
 
