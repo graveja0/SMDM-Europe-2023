@@ -801,7 +801,7 @@ To properly account for compound transitions that can occur due to competing ris
 Our rate matrix `Q` is constructed by including the relevant transition rates in the off-diagonal cells. The diagonal of `Q` is the negative sum of off-diagonal elements in the same row:
 
 |         | Healthy                | Sick                     | Dead                  |
-|----------------|-------------------|--------------------|------------------|
+|------------------|------------------|-------------------|------------------|
 | Healthy | -($r_{HS}$ + $r_{HD}$) | $r_{HS}$                 | $r_{HD}$              |
 | Sick    | 0                      | -($hr_{S} \cdot r_{HD}$) | $hr_{S} \cdot r_{HD}$ |
 | Dead    | 0                      | 0                        | 0                     |
@@ -969,7 +969,7 @@ Fortunately, accumulators are easy to build in. We simply add the relevant trans
 Suppose we want to count up all the Healthy {{< fa arrow-right >}} Sick transitions in the model. To do this we simply add the appropriate transition rate ($r_{HS}$) in as an accumulator column:
 
 |         | Healthy                | Sick                     | Dead                  | accHS    |
-|--------------|---------------|----------------|--------------|--------------|
+|---------------|---------------|---------------|---------------|---------------|
 | Healthy | -($r_{HS}$ + $r_{HD}$) | $r_{HS}$                 | $r_{HD}$              | $r_{HS}$ |
 | Sick    | 0                      | -($hr_{S} \cdot r_{HD}$) | $hr_{S} \cdot r_{HD}$ | 0        |
 | Dead    | 0                      | 0                        | 0                     | 0        |

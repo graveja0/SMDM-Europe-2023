@@ -65,10 +65,13 @@ params = list(
     s_names  = c("Asympt", "Progressive", "DeadCause","Dead"), # State names
     n_states = 4, # Number of states
     
+    a_names = c("accProgressive"),       # <1>
+    tunnel_names = c("trProgressive","trDeadCause"),  # <2>
+    
     n_cohort =1000, # Cohort size
     cycle = 1, # Cycle length
     
-    n_cycles = 46, # Total number of cycles
+
     Initial_age = 55,  # Cohort starting age
     effect = 0.5,  # Treatment Effect (drug) 
     
@@ -84,16 +87,20 @@ params = list(
     tpProg =0.01, # Transition prob: progressive disease
     tpDn =0.0379  # Background mortality transition prob
 )
+params <- modifyList(params,list(    n_cycles = 46/params$cycle))
 ```
+
 
 
 Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
 
 ```{r}
+t = 1:params$n_cycles
+tt = params$n_cycles
 mPt <- function(t, params) {
     lapply(t, function(tt){
         
-        current_age <- params$Initial_age  + (tt) - 1 
+        current_age <- params$Initial_age  +  (tt)*params$cycle - 1 
 
         tpDn_lookup <-
             c("(34,44]" = 0.0017,
@@ -107,8 +114,18 @@ mPt <- function(t, params) {
                        breaks = c(34,44,54,64,74,84,100))
         
         tpDn <- tpDn_lookup[age_grp]
-        tpProg_ <- params$tpProg * (tt )
+        tpProg_ <- params$tpProg * (tt * params$cycle )
         tpDcm_ <- params$tpDcm 
+        
+        rDn <- -log(1 - tpDn)
+        rProg_ <- -log(1 - tpProg_)
+        rDcm_ <- -log(1 - tpDcm_)
+        
+        tpDn <- 1 - exp(-rDn * params$cycle)
+        tpProg_ <- 1 - exp(-rProg_ * params$cycle)
+        tpDcm_ <- 1 - exp(-rDcm_ * params$cycle)
+        
+        
         effect_ <- params$effect
         n_states_ <- params$n_states
         s_names_ <- params$s_names

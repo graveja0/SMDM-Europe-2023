@@ -1,0 +1,455 @@
+---
+title: "Signs of Trouble"
+subtitle: "Changing Cycle Lengths"
+editor: visual
+editor_options: 
+  chunk_output_type: console
+bibliography: ../../../slides/references.bib
+execute: 
+  cache: false
+---
+
+
+```{r setup}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(demography)
+library(MortalityLaws)
+library(directlabels)
+library(ggsci)
+library(hrbrthemes)
+library(MASS)
+library(mgcv)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+library(here)
+library(ggsci)
+library(expm)
+library(glue)
+
+select =dplyr::select
+options("scipen" = 100, "digits" = 5)
+```
+
+
+# Parameterize
+
+```{r}
+#| message: false
+#| warning: false
+#| code-fold: false
+params = list(
+    t_names = c("without_drug", "with_drug"),   # Treatment names
+    n_treatments =2, # Number of treatments
+    s_names  = c("Asympt", "Progressive", "DeadCause","Dead"), # State names
+    n_states = 4, # Number of states
+    
+    a_names = c("accProgressive"),       # <1>
+    tunnel_names = c("trProgressive","trDeadCause"),  # <2>
+    
+    n_cohort =1000, # Cohort size
+    cycle = 1, # Cycle length
+    
+
+    Initial_age = 55,  # Cohort starting age
+    effect = 0.5,  # Treatment Effect (drug) 
+    
+    cAsymp =500,   # Cost of asympomatic state
+    cDeath =1000,  # cost of death (progressive disease state only)
+    cDrug =1000,   # Cost of drug
+    cProg =3000,   # Cycle cost of progressive disease
+    uAsymp =0.95, # Asymptomatic state utility
+    uProg =0.75,  # Progressive disease state utility
+    oDr = 0, #0.06,  # Discount rate (QALYs)
+    cDr = 0, #0.06,  # Discount rate (costs)
+    tpDcm =0.15,  # Death from progressive disease trans prob
+    tpProg =0.01, # Transition prob: progressive disease
+    tpDn =0.0379  # Background mortality transition prob
+)
+params <- modifyList(params,list(    n_cycles = 46/params$cycle))
+params12 <- modifyList(params, list(n_cycles = 46 * 12, cycle = 1/12))
+params365 <- modifyList(params, list(n_cycles = 46 * 365, cycle = 1/365))
+
+```
+1. Accumulators
+2. Transition tracker
+
+# Transition Probability Matrices
+
+Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
+
+## 1. Using Conversion Formulas
+
+1. Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
+2. Convert the rate to the model timestep using $1 - exp(-rt)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle)
+3. Construct the transition probability matrix using the converted probabilities. 
+
+```{r mPt}
+#| message: false
+#| warning: false
+#| code-fold: true
+mPt <- function(t, params) {
+    lapply(t, function(tt){
+        
+        current_age <- params$Initial_age  +  (tt)*params$cycle - 1 
+
+        tpDn_lookup <-
+            c("(34,44]" = 0.0017,
+              "(44,54]" = 0.0044,
+              "(54,64]" = 0.0138,
+              "(64,74]" = 0.0379,
+              "(74,84]" = 0.0912,
+              "(84,100]" = 0.1958)
+        
+        age_grp <- cut(current_age, 
+                       breaks = c(34,44,54,64,74,84,100))
+        
+        tpDn <- tpDn_lookup[age_grp]
+        tpProg_ <- params$tpProg * (tt * params$cycle )
+        tpDcm_ <- params$tpDcm 
+        
+        rDn <- -log(1 - tpDn)
+        rProg_ <- -log(1 - tpProg_)
+        rDcm_ <- -log(1 - tpDcm_)
+        
+        tpDn <- 1 - exp(-rDn * params$cycle)
+        tpProg_ <- 1 - exp(-rProg_ * params$cycle)
+        tpDcm_ <- 1 - exp(-rDcm_ * params$cycle)
+        
+        effect_ <- params$effect
+        n_states_ <- params$n_states
+        s_names_ <- params$s_names
+        t_names_ <- params$t_names
+        n_treatments_ <- params$n_treatments
+        
+        mP_ <- 
+            array(data = c(0, 0, 0,0,
+                           tpProg_, 0, 0,0,
+                           0,tpDcm_,0,0,
+                           tpDn , tpDn, 0,0,
+                           
+                           0, 0, 0,0,
+                           tpProg_*(1-effect_), 0, 0,0,
+                           0,tpDcm_,0,0,
+                           tpDn, tpDn,0, 0),
+                  dim = c(n_states_, n_states_, n_treatments_),
+                  dimnames = list(from = s_names_,
+                                  to = s_names_,
+                                  t_names_))
+        diag(mP_[,,1]) <-  # Diagonal of transition probability matrix is 1 minus off-diagonal sum
+            1 - rowSums(mP_[,,1])
+        diag(mP_[,,2]) <- 
+            1 - rowSums(mP_[,,2])
+        
+        mP <- # This turns the named array into a simpler list object
+            apply(mP_,3,function(x) x, simplify = FALSE)
+
+        return(mP)
+    })
+}
+```
+
+## 2. Using Transition Rate Matrix Embedding
+
+1. Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
+2. Use these rates to fill out the Markovian transition rate matrix `mR`
+    - Diagonal of `mR` is the negative row sum of off-diagonal elements.
+3. Augment the transition rate matrix with non-Markovian accumulators and transition/tunnel states. 
+4. Embed the transition rate matrix into the time step using $mP = exp(mR*t)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle). 
+
+```{r mPt_emb}
+#| message: false
+#| warning: false
+#| code-fold: true
+mPt_embedded <- function(t,params) {
+    lapply(t, function(tt){
+        
+        current_age <- params$Initial_age  + (tt)*params$cycle - 1
+        cycle = tt
+        cycle_years <- ceiling(tt * params$cycle)
+            
+        tpDn_lookup <-
+            c("(34,44]" = 0.0017,
+              "(44,54]" = 0.0044,
+              "(54,64]" = 0.0138,
+              "(64,74]" = 0.0379,
+              "(74,84]" = 0.0912,
+              "(84,100]" = 0.1958)
+        
+        age_grp <- cut(current_age, 
+                       breaks = c(34,44,54,64,74,84,100))
+        tpDn <- tpDn_lookup[age_grp]
+        
+        tpProg_ <- params$tpProg * (cycle_years)
+        tpDcm_ <- params$tpDcm 
+        effect_ <- params$effect
+        n_states_ <- params$n_states
+        s_names_ <- params$s_names
+        t_names_ <- params$t_names
+        n_treatments_ <- params$n_treatments
+        
+        mR_ <- 
+            array(data = c(0, 0, 0,0,
+                                   -log(1-tpProg_), 0, 0,0,
+                                   0,-log(1-tpDcm_),0,0,
+                           -log(1 - tpDn),  -log(1 - tpDn), 0,0,
+                           
+                                   0, 0, 0,0,
+                                   -log(1-(tpProg_*(1-effect_))), 0, 0,0,
+                                   0,-log(1-tpDcm_),0,0,
+                           -log(1 - tpDn),  -log(1 - tpDn),0, 0),
+                          dim = c(n_states_, n_states_, n_treatments_),
+                          dimnames = list(from = s_names_,
+                                          to = s_names_,
+                                          t_names_))
+
+        mR_ <- apply(mR_,3,function(x){
+            diag(x) <- -rowSums(x)
+            x
+        },simplify=FALSE)
+        
+        ###############################
+        # Add Non-Markovian Components
+        ###############################
+        
+        mR <- lapply(mR_,function(x){
+            r_ <- nrow(x)
+            add_ <- length(params$a_names)   + length(params$tunnel_names) + 1
+            
+            new_row_names <- c(rownames(x), params$a_names,params$tunnel_names,"XX")
+            new_col_names <- c(colnames(x), params$a_names,params$tunnel_names,"XX")
+            # Expand matrix
+            x <- cbind(x,  matrix(rep(0, r_ * add_), nrow=r_))
+            x  <- rbind(x, matrix(rep(0, add_ * (r_+add_)), nrow=add_))
+            
+            rownames(x) <- new_row_names
+            colnames(x) <- new_col_names
+            
+            x["Asympt","accProgressive"] = x["Asympt","Progressive"]
+            x["Asympt","trProgressive"] = x["Asympt","Progressive"]
+            x["Progressive","trDeadCause"] = x["Progressive","DeadCause"] 
+            x
+        })
+        
+        mP_ <- # Embed the transition probability matrix
+            lapply(mR,function(x) expm(x * params$cycle))
+                
+        mP <- lapply(mP_,function(x){
+            # Don't allow the transition columns to remain...
+            x["trDeadCause","trDeadCause"] = 0
+            x["trProgressive","trProgressive"] = 0
+            # The receiving bucket was required for embedding, but is no longer needed
+            x[-which(rownames(x)=="XX"),-which(colnames(x)=="XX")]    
+        }) 
+        
+        
+    })
+}
+
+```
+
+# Simulate a Cohort of 1,000 Individuals
+
+- Construct a Markov trace and plot state occupancy over the simulation time horizon. 
+
+```{r}
+#| message: false
+#| warning: false
+#| code-fold: true
+#| column: page
+#| fig-width: 10 
+sim_cohort <- function(params) {
+    
+    mP <- mPt(1:(params$n_cycles-1),params) # <1>
+    
+    tr <-  # <2>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asympt" = params$n_cohort, "Progressive" = 0, "DeadCause" = 0, "Dead" = 0))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+            }))
+        }))
+    tr <-  
+        tr %>% 
+        map(~({
+            .x <- rbind(t(c(params$n_cohort,0,0,0)),.x)
+        }))
+    
+    arr <-  # <3>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asymptomatic_disease" = params$n_cohort, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0))
+            arr_ <- diag(as.vector(tr_))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+                arr_ <<- diag(as.vector(tr_)) %*% tp
+                arr_
+            }))
+        }))
+    arr <- 
+        arr %>% 
+        map(~({
+            .x <- rbind(diag(c(params$n_cohort,0,0,0)),.x)
+        }))
+    
+    arr <- arr %>% map(~({
+        .x %>% data.frame() %>% 
+            mutate(cycle = sort(rep(1:params$n_cycles,params$n_states))) %>% 
+            group_by(cycle) %>% 
+            nest()
+    }))
+    
+    return(list(trace = tr, array = arr))
+}
+
+markov_result <-
+    sim_cohort(params)
+markov_result12 <- 
+    sim_cohort(params12)
+markov_result365 <- 
+    sim_cohort(params365)
+
+markov_result$trace %>% 
+    map(~(.x %>% data.frame() %>% 
+              mutate(cycle = (row_number()-1)))) %>% 
+    bind_rows(.id = "strategy") %>% 
+    mutate(cycle = cycle * params$cycle) %>% 
+    mutate(cycle_length = paste0(params$cycle))  %>% 
+    bind_rows(
+        markov_result12$trace %>% 
+        map(~(.x %>% data.frame() %>% 
+                  mutate(cycle = (row_number()-1)))) %>% 
+        bind_rows(.id = "strategy") %>% 
+        mutate(cycle = cycle * params12$cycle) %>% 
+        mutate(cycle_length = paste0(params12$cycle))
+    ) %>% 
+     bind_rows(
+        markov_result365$trace %>% 
+        map(~(.x %>% data.frame() %>% 
+                  mutate(cycle = (row_number()-1)))) %>% 
+        bind_rows(.id = "strategy") %>% 
+        mutate(cycle = cycle * params365$cycle) %>% 
+        mutate(cycle_length = paste0(params365$cycle))
+    ) %>%
+    mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c("Day","Month","Year"))) %>% 
+    gather(state,value,-strategy,-cycle,-cycle_length) %>% 
+    ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + 
+    geom_line() +
+    facet_grid(~strategy) +
+    hrbrthemes::theme_ipsum(base_family = "Arial") + 
+    ggsci::scale_color_aaas(name="") + 
+    theme(legend.position = "top") +
+    geom_dl(method = list("last.bumpup",hjust=1,vjust=-1),aes(label = state)) +
+    geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state))
+```
+
+# Embedding Approach
+
+```{r}
+#| message: false
+#| warning: false
+#| code-fold: true
+#| column: page
+#| fig-width: 10
+#| fig-align: center
+#| 
+sim_cohort_emb <- function(params) {
+    
+    mP <- mPt_embedded(1:(params$n_cycles-1),params) # <1>
+    
+    tr <-  # <2>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asymptomatic_disease" = params$n_cohort, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0,
+                       "accProgressive" = 0, "trProgressive" = 0, "trDeadCause" = 0))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+            }))
+        }))
+    tr <-  
+        tr %>% 
+        map(~({
+            .x <- rbind(t(c(params$n_cohort,0,0,0,rep(0,length(c(params$a_names,params$t_names))))),.x)
+        }))
+    
+    arr <-  # <3>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asymptomatic_disease" = params$n_cohort, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0, 
+                       "accProgressive" = 0, "trProgressive" = 0, "trDeadCause" = 0))
+            arr_ <- diag(as.vector(tr_))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+                arr_ <<- diag(as.vector(tr_)) %*% tp
+                arr_
+            }))
+        }))
+    arr <- 
+        arr %>% 
+        map(~({
+            .x <- rbind(diag(c(params$n_cohort,0,0,0,rep(0,length(c(params$a_names,params$t_names))))),.x)
+        }))
+    
+   
+    arr <- arr %>% map(~({
+        .x %>% data.frame() %>% 
+            mutate(cycle = sort(rep(1:params$n_cycles,params$n_states+length(c(params$a_names,params$t_names))))) %>% 
+            group_by(cycle) %>% 
+            nest()
+    }))
+    
+    return(list(trace = tr, array = arr))
+}
+
+markov_result_emb <- # <4> 
+    sim_cohort_emb(params)
+markov_result_emb12 <- # <4> 
+    sim_cohort_emb(params12)
+markov_result_emb365 <- # <5> 
+    sim_cohort_emb(params365)
+
+markov_result_emb$trace %>% 
+    map(~(.x %>% data.frame() %>% 
+              mutate(cycle = (row_number()-1)))) %>% 
+    bind_rows(.id = "strategy") %>% 
+    mutate(cycle = cycle * params$cycle) %>% 
+    mutate(cycle_length = paste0(params$cycle))  %>% 
+    bind_rows(
+        markov_result_emb12$trace %>% 
+        map(~(.x %>% data.frame() %>% 
+                  mutate(cycle = (row_number()-1)))) %>% 
+        bind_rows(.id = "strategy") %>% 
+        mutate(cycle = cycle * params12$cycle) %>% 
+        mutate(cycle_length = paste0(params12$cycle))
+    ) %>% 
+    bind_rows(
+        markov_result_emb365$trace %>% 
+        map(~(.x %>% data.frame() %>% 
+                  mutate(cycle = (row_number()-1)))) %>% 
+        bind_rows(.id = "strategy") %>% 
+        mutate(cycle = cycle * params365$cycle) %>% 
+        mutate(cycle_length = paste0(params365$cycle))
+    ) %>%   
+    select(-starts_with("tr"),-starts_with("acc")) %>% 
+    mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c("Day","Month","Year"))) %>% 
+    gather(state,value,-strategy,-cycle,-cycle_length) %>% 
+    ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + 
+    geom_line() +
+    facet_grid(~strategy) +
+    hrbrthemes::theme_ipsum(base_family = "Arial") + 
+    ggsci::scale_color_aaas(name="") + 
+    theme(legend.position = "top") +
+    geom_dl(method = list("last.bumpup",hjust=1,vjust=-1),aes(label = state)) +
+    geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state))
+```
+
+
+
+```{r}
+
+```
+
