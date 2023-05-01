@@ -232,115 +232,6 @@ library(tidyverse)
 
 [^1]: This often comes from separate vital statistics / life-table data sources.
 
-## Common Advice on Conversion
-
-$\pi_{A \rightarrow B} = 1 - e^{-r_{A \rightarrow B} t}$ to convert a rate, $r$ to a probability, $\pi$.
-
-$r_{A \rightarrow B} = -\log(1 - (\pi_{A \rightarrow B} - 1) / t$ to convert a probability, $\pi$, to a rate, $r$.
-
-Which is technically correct for a model with one rate.
-
-![](images/a_to_b.png)
-
-## Competing Rates
-
-When 2 rates compete for a transition these formulas are mathematically wrong.
-
-What is correct is *embedding* the rate matrix, $X$ into a time step, $Y = Y_0 e^{Xt}$.
-
-![](images/a_to_bc.png)
-
-## Resulting Error
-
-![](images/dont_panic.png)
-
-If one has misapplied this in a publication, it's okay.
-
-## Quantified Absolute Error
-
-```{r}
-
-library(expm)
-
-truth <- Vectorize(function(r1, r2, t)
-{
-  # Embed properly
-  x <- matrix(c(-r1-r2, r1, r2, rep(0, 6)), nrow=3, ncol=3, byrow=TRUE)
-  (c(1, 0, 0) %*% expm(x*t))[,2:3]
-})
-
-misspecify <- Vectorize(function(r1, r2, t)
-{
-  # Common Advice
-  # RL Fleurence, Christopher S. Hollenbeak. Rates and Probabilities in Economics, Pharmacoeconomics 2007; 25 (1) 3-6
-  tp1 <- 1-exp(-r1*t)
-  tp2 <- 1-exp(-r2*t)
- 
-  # THIS CONVERSION CAN RESULT IN IMPOSSIBLE VALUES!
-  if(tp1 + tp2 > 1) return(NA)
-  
-  # Mispecify
-  x <- matrix(c(1-tp1-tp2, tp1, tp2, 0, 1, 0, 0, 0, 1), nrow=3, ncol=3, byrow=TRUE)
-  (c(1, 0, 0) %*% x)[,2:3]
-})
-
-par(mfrow=c(1,1))
-abs.error <- Vectorize(function(r1, r2, t=1)
-{
-  misspecify(r1, r2, t) - truth(r1, r2, t)
-})
-
-x <- seq(0.01, 0.7, by = 0.01)
-y <- x
-z <- outer(x, y, FUN=function(x, y) {abs.error(x, y)[1,]})
-contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
-        main="Misspecified Competing Rates",
-        sub="Absolute Error Contour State B, t=1")
-```
-
-## Quantified Relative Error
-
-```{r}
-rel.error <- Vectorize(function(r1, r2, t=1)
-{
-    x <- truth(r1, r2, t)
-    100*(misspecify(r1, r2, t) - x)/x
-})
-
-par(mfrow=c(1,2))
-z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[1,]})
-contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
-        main="",
-        sub="Relative Error Contour (%) State B, t=1")
-
-z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[2,]})
-contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
-        main="",
-        sub="Relative Error Contour (%) State C, t=1")
-par(mfrow=c(1,1))
-title(main="Misspecified Competing Rates")
-```
-
--   For rates \< 0.1 of the chosen time step the error is \<5%.
-
-## Comparison
-
--   Common Economic Statistics are relative to a base or reference case.
-    -   Net monetary benefit.
-    -   Net health benefit.
-    -   Incremental cost effectiveness ratio.
--   The bias introduced is generally of the same order of magnitude and cancels. Similar to the "difference in difference" method in statistics.
--   These decision thresholds are *robust* against this misspecification.
--   Absolute values in a single scenario will be biased relative to rates.
-
-## Rate Misspecification Conclusions
-
-* Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect. 
-* Discrete Event Simulation automatically handles competing events.
-* microsimulation is embedded in a time step and requires Markov conversion.
--   Existing publications are generally okay if they misspecified rates via these formulas. Check the maximum rate of an event as a rough estimate of effect.
--   Published rates from clinical studies are usually adjusted for competing events.
-
 ## Rates vs. Probabilities: Example
 
 ```{r}
@@ -383,7 +274,7 @@ m_P %>% data.frame() %>%
 
 ::: {style="font-size: 0.6em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|------------------|---------------------------------------------------------------------------------------------------------|---------------|--------------------|
+|-----------|---------------------------------------|-----------|-----------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
 :::
@@ -773,6 +664,133 @@ library(expm)
 m_P %>% expm() %>% kable(digits = 4)
 ```
 
+## Common Advice on Conversion
+
+$\pi_{A \rightarrow B} = 1 - e^{-r_{A \rightarrow B} t}$ to convert a rate, $r$ to a probability, $\pi$.
+
+$r_{A \rightarrow B} = -\log(1 - (\pi_{A \rightarrow B} - 1) / t$ to convert a probability, $\pi$, to a rate, $r$.
+
+Which is technically correct for a model with one rate.
+
+![](images/a_to_b.png)
+
+## Competing Rates
+
+When 2 rates compete for a transition these formulas are mathematically wrong.
+
+What is correct is *embedding* the rate matrix, $X$ into a time step, $Y = Y_0 e^{Xt}$.
+
+![](images/a_to_bc.png)
+
+## Resulting Error
+
+![](images/dont_panic.png)
+
+If one has misapplied this in a publication, it's okay.
+
+## Quantified Absolute Error
+
+```{r}
+
+library(expm)
+
+truth <- Vectorize(function(r1, r2, t)
+{
+  # Embed properly
+  x <- matrix(c(-r1-r2, r1, r2, rep(0, 6)), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% expm(x*t))[,2:3]
+})
+
+misspecify <- Vectorize(function(r1, r2, t)
+{
+  # Common Advice
+  # RL Fleurence, Christopher S. Hollenbeak. Rates and Probabilities in Economics, Pharmacoeconomics 2007; 25 (1) 3-6
+  tp1 <- 1-exp(-r1*t)
+  tp2 <- 1-exp(-r2*t)
+ 
+  # THIS CONVERSION CAN RESULT IN IMPOSSIBLE VALUES!
+  if(tp1 + tp2 > 1) return(NA)
+  
+  # Mispecify
+  x <- matrix(c(1-tp1-tp2, tp1, tp2, 0, 1, 0, 0, 0, 1), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% x)[,2:3]
+})
+
+par(mfrow=c(1,1))
+abs.error <- Vectorize(function(r1, r2, t=1)
+{
+  misspecify(r1, r2, t) - truth(r1, r2, t)
+})
+
+x <- seq(0.01, 0.7, by = 0.01)
+y <- x
+z <- outer(x, y, FUN=function(x, y) {abs.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="Misspecified Competing Rates",
+        sub="Absolute Error Contour State B, t=1")
+```
+
+## Quantified Relative Error
+
+```{r}
+rel.error <- Vectorize(function(r1, r2, t=1)
+{
+    x <- truth(r1, r2, t)
+    100*(misspecify(r1, r2, t) - x)/x
+})
+
+par(mfrow=c(1,2))
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State B, t=1")
+
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[2,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State C, t=1")
+par(mfrow=c(1,1))
+title(main="Misspecified Competing Rates")
+```
+
+-   For rates \< 0.1 of the chosen time step the error is \<5%.
+- This error will accumulate over each timestep. 
+
+## Comparison
+
+-   Common Economic Statistics are relative to a base or reference case. I.e., $f(\theta_M) - f(\theta_{ref})$
+    -   Net monetary benefit.
+    -   Net health benefit.
+    -   Incremental cost effectiveness ratio.
+    
+
+
+With error it becomes:
+
+$$f(\theta_M) + \epsilon_M - (f(\theta_{ref}) + \epsilon_{ref})$$
+
+## Specification Error
+
+If $\epsilon_M - \epsilon_{ref} \sim 0$ the impact to the decision threshold is
+minimal. 
+    
+-   These decision thresholds are semi-*robust* against this misspecification.
+-   Restated: Single model runs are biased under misspecification, but decision
+threshold comparisons cancel this out. 
+
+## Rate Misspecification Conclusions
+
+-   Existing publications decision thresholds are generally okay if they
+misspecified rates under 3a.
+-   Check the maximum rate of an event as a rough estimate of effect. 
+-   Adjusting the timestep does little. The error still exists. 
+
+## Other
+
+-   Discrete Event Simulation automatically handles competing events.
+-   microsimulation is embedded in a time step and requires Markov Rate conversion.
+-   Published rates from clinical studies are usually adjusted for competing events (survival studies). 
+
 ## So Where Are We Now?
 
 ![](images/paste-EFB5816C.png)
@@ -811,7 +829,7 @@ These two rate matrices can be used to construct the following transition probab
 ::: {style="font-size: 0.7em"}
 ::: columns
 ::: column
-m_P_NH =
+m_P\_NH =
 
 ```{r}
 expm(m_P) %>% kable(digits=4)
@@ -819,7 +837,7 @@ expm(m_P) %>% kable(digits=4)
 :::
 
 ::: column
-m_P_A =
+m_P\_A =
 
 ```{r}
 dimnames(m_P_A) = dimnames(m_P)
@@ -860,7 +878,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 ## 4. Make adjustments to $\mathbf{P}$ as needed.
 
 ::: incremental
--   Constructing our final transition probability matrix---for natural history or more specifically for for a stratgey under consideration--may require further adjustment.
+-   Constructing our final transition probability matrix---for natural history or more specifically for for a strategy under consideration--may require further adjustment.
 -   We must be careful about the *scale* on which these parameters apply.
 -   Odds ratios, relative risks, and risk differences all operate on the *probability* scale.
 :::
@@ -869,7 +887,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 
 ::: {style="font-size: 0.5em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|------------------|---------------------------------------------------------------------------------------------------------|---------------|--------------------|
+|-----------|---------------------------------------|-----------|-----------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Hazard Ratio     | $\frac{\text{Hazard rate of outcome in exposed}}{\text{Hazard rate of outcome in unexposed}}$           | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
@@ -982,8 +1000,8 @@ library(readxl)
 library(janitor)
 
 # Read in Raw Lifetable Data
-deaths.male <- read.table(here::here("gompertz-mortality/data/mltper_1x1.txt"),skip=2,header=T,as.is=TRUE)
-deaths.female <- read.table(here::here("gompertz-mortality/data/fltper_1x1.txt"),skip=2,header=T,as.is=TRUE)
+deaths.male <- read.table(here::here("_sandbox/gompertz-mortality/data/mltper_1x1.txt"),skip=2,header=T,as.is=TRUE)
+deaths.female <- read.table(here::here("_sandbox/gompertz-mortality/data/fltper_1x1.txt"),skip=2,header=T,as.is=TRUE)
 
 # Make Some Edits
 deaths.male[which(deaths.male$Age=="110+"),]$Age <- 110
@@ -1014,7 +1032,7 @@ parameters = data.frame(
   female.rate=rep(NA,111)
 )
 
-parameters <- read.csv(here::here("lectures/media/gompertz-mortality.csv"))
+parameters <- read.csv(here::here("_sandbox/gompertz-mortality/data/gompertz-mortality.csv"))
 ```
 
 ## Background Mortality
