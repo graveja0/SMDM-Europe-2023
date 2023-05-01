@@ -203,7 +203,17 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#schedule" id="toc-schedule" class="nav-link active" data-scroll-target="#schedule">Schedule</a>
+  <ul class="collapse">
+  <li><a href="#morning-bottom-up" id="toc-morning-bottom-up" class="nav-link" data-scroll-target="#morning-bottom-up">Morning: “Bottom Up”</a></li>
+  <li><a href="#afternoon-top-down" id="toc-afternoon-top-down" class="nav-link" data-scroll-target="#afternoon-top-down">Afternoon: “Top Down”</a></li>
+  </ul></li>
+  </ul>
+</nav>
     <div class="quarto-margin-footer"><div class="margin-footer-item">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -232,6 +242,38 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<section id="schedule" class="level1">
+<h1>Schedule</h1>
+<section id="morning-bottom-up" class="level2">
+<h2 class="anchored" data-anchor-id="morning-bottom-up">Morning: “Bottom Up”</h2>
+<ol type="1">
+<li>Mortality modeling
+<ul>
+<li><strong>Exercise</strong>: Alive-Dead Model (Parts 1 and 2 of learnr)</li>
+</ul></li>
+<li>Competing events (e.g., embedding)
+<ul>
+<li><strong>Exercise</strong>: Alive-CVD-Dead Model (Part 3 of learnr)</li>
+</ul></li>
+</ol>
+</section>
+<section id="afternoon-top-down" class="level2">
+<h2 class="anchored" data-anchor-id="afternoon-top-down">Afternoon: “Top Down”</h2>
+<ol type="1">
+<li>Structuring the Markov model
+<ul>
+<li>Embedding is covered earlier in the day.</li>
+<li>Cover accumulators and transition states</li>
+<li><strong>Exercise</strong>: Augment the Green et al.&nbsp;model with accumulators and transition state/</li>
+</ul></li>
+<li>Incorporating new evidence
+<ul>
+<li>Solving for PSA distributions</li>
+<li>PSA copula sampling</li>
+<li><strong>Exercise</strong>: Add a third strategy</li>
+<li><strong>Exercise</strong>: Solve for PSA distributions of third strategy.</li>
+</ul></li>
+</ol>
 <p>This workshop will reinforce and expand advanced techniques not frequently taught in decision modeling&nbsp;courses. The&nbsp;course&nbsp;content centers around an applied exercise whereby a modeler seeks to back-convert an existing discrete-time Markov model, add additional health states and parameters (with uncertainty distributions), and adapt background mortality based on modeled life-table data from a different country, population, or setting. We will demonstrate how the augmented discrete time Markov model can be structured to accurately capture competing events and event dynamics that reflect the underlying continuous-time disease process. The&nbsp;course&nbsp;content will utilize the R programming language, though we will also provide Excel templates for some exercises.</p>
 <p><strong>Course&nbsp;Description and Objectives (max 300 words) (Provide a brief&nbsp;course&nbsp;description and state in bulleted format the objectives of the&nbsp;course.</strong></p>
 <p>This workshop will focus on important-but-infrequently-taught advanced skills and methods to facilitate the timely and efficient construction, execution, and adaptation of Markov models for health technology assessment and health policy decision-making. We will focus on discrete-time Markov models, though much of the&nbsp;course&nbsp;content applies to other modeling types as well. All&nbsp;course&nbsp;content will be taught in the R statistical programming language, though we will provide additional optional material for how the methods could be adapted to an Excel-based model.</p>
@@ -266,6 +308,8 @@ ul.task-list li input[type="checkbox"] {
 </ol>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -516,7 +560,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"loop":true,"closeEffect":"zoom","descPosition":"bottom","selector":".lightbox","openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom","selector":".lightbox","loop":true});</script>
 
 
 
