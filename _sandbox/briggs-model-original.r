@@ -23,8 +23,8 @@ cDrug <- 1000
 cProg <- 3000
 uAsymp <- 0.95
 uProg <- 0.75
-oDr <- 0.06
-cDr <- 0.06
+oDr <- 0#0.06
+cDr <- 0 #0.06
 tpDcm <- 0.15
 tpProg <- 0.01
 tpDn <- 0.0379  # over 65 year old
@@ -205,7 +205,7 @@ c_incr <- total_costs["with_drug"] - total_costs["without_drug"]
 q_incr <- total_QALYs["with_drug"] - total_QALYs["without_drug"]
 
 # Incremental cost-effectiveness ratio
-ICER <- c_incr/q_incr
+ICER <- c_incr/q_incr; ICER
 
 wtp <- 20000
 plot(x = q_incr/n_cohort, y = c_incr/n_cohort,

@@ -1,16 +1,36 @@
 ---
-title: "Replication of Didactic Model"
+title: "Basic Markov Modeling in R"
+subtitle: "Replication of Green et al (2023) Results"
 editor: visual
 editor_options: 
   chunk_output_type: console
+bibliography: ../../../slides/references.bib
 execute: 
   cache: false
 ---
 
 # Introduction
 
+The objective of this posting is to provide R code that replicates the model and results in @green2023health.
+
+@green2023health provide a [link to the Excel file](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/ea65640a064d9d01f56295cbbab90ab4865c38fc/original_Excel_files/Media_343196_smxx.xlsm) as well as [code to execute the same model in R](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/main/Markov_model_realworld.R). The R code is written in base R, meaning that it does not require any loaded packages to execute.  However, the model structure is somewhat complicated--requiring, for example, both state occupancy and transitions out of certain states to be tracked.[More specifically, in the @green2023health model there is an additional cost from transitioning from Progressive disease to death, but this cost does not apply if the cause of death was background mortality. This is straighforward to track when the calculations are done cycle-by-cycle, as in the original Excel file and R code. However, this type of dynamic is not easily captured in a generalized approach to modeling---as we aim to build here---unless the specific health states are separately defined in the model. Our adaptation to the code generalizes the modeling process but does not change the results.]{.aside}
+
+The code provided below replicates the original model, but draws on various capabilities within the (now ubiquitous) `tidyverse` universe to both simplify and generalize the execution process; this will become useful in the workshop when we augment the model with additional health states, new evidence, etc.
+
+The original model is structured as follows:
+
 <div><a href='//sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15'><img src='https://sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15/696391f92d96cd0be0fe09157ba6247d0dd84cc9.sketchy.png' style='max-width: 100%;'></a><br/><span style='font-size: 80%;color:#555;'>Created on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
 
+In this model, individuals can cycle into the death state in one of two ways:
+
+- From the Asymptomatic state, in which case the probability of death is goverened by age-dependent mortality probabilities. 
+- From the Progressive Disease state, in which case the probability of death is govered both by age-dependent mortality, as well as a heightened probability of death from the disease. 
+
+To simplify and generalize the code required to execute the model we will make a slight adaptation to the model structure and seaprate out death from Progressive disease and death from background causes. The adapted model diagram is provided below. 
+
+<div><a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/295cccb1b92d82caab9838e779475eaff93e7461.sketchy.png' style='max-width: 200%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
+
+The only other adaptation to the model we will make is to set the discount rates to 0. 
 
 ```{r setup}
 #| echo: false
@@ -36,79 +56,45 @@ options("scipen" = 100, "digits" = 5)
 ```
 
 
-Here is a footnote reference,[^1] and another.[^longnote]
-
-[^1]: Here is the footnote.
-
-[^longnote]: Here's one with multiple blocks.
-
-    Subsequent paragraphs are indented to show that they
-belong to the previous footnote.
-
-        { some.code }
-
-    The whole paragraph can be indented, or just the first
-    line.  In this way, multi-paragraph footnotes work like
-    multi-paragraph list items.
-
-This paragraph won't be part of the note, because it
-isn't indented.
-
-
-## Cycle Adjustment
-We first define some necessary functions for bookkeeping later. 
-
-```{r}
-alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48 # <1>
-cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x) # <2>
-```
-1. Alternative Simpson's method coefficients
-2. Function to create cycle adjustment values
-
-## Model Parameters
-
-
+# Parameterize
 
 ```{r}
 params = list(
-    t_names = c("without_drug", "with_drug"),
-    n_treatments =2,
-    s_names  =c("Asymptomatic_disease", "Progressive_disease", "DeadCause","Dead"),
-    n_states =4,
-    a_names = c("accProgressive_disease"),
-    tunnel_names = c("trProgressive","trDeadCause"),
+    t_names = c("without_drug", "with_drug"),   # Treatment names
+    n_treatments =2, # Number of treatments
+    s_names  = c("Asympt", "Progressive", "DeadCause","Dead"), # State names
+    n_states = 4, # Number of states
     
-    n_cohort =1000,
-    cycle =1,
+    n_cohort =1000, # Cohort size
+    cycle = 1, # Cycle length
     
-    n_cycles = 46,
-    Initial_age =55,
-    effect =0.5, 
+    n_cycles = 46, # Total number of cycles
+    Initial_age = 55,  # Cohort starting age
+    effect = 0.5,  # Treatment Effect (drug) 
     
-    cAsymp =500,
-    cDeath =1000,
-    cDrug =1000,
-    cProg =3000,
-    uAsymp =0.95,
-    uProg =0.75,
-    oDr = 0,# 0.06,
-    cDr = 0, # 0.06,
-    tpDcm =0.15,
-    tpProg =0.01,
-    tpDn =0.0379 
-    
+    cAsymp =500,   # Cost of asympomatic state
+    cDeath =1000,  # cost of death (progressive disease state only)
+    cDrug =1000,   # Cost of drug
+    cProg =3000,   # Cycle cost of progressive disease
+    uAsymp =0.95, # Asymptomatic state utility
+    uProg =0.75,  # Progressive disease state utility
+    oDr = 0, #0.06,  # Discount rate (QALYs)
+    cDr = 0, #0.06,  # Discount rate (costs)
+    tpDcm =0.15,  # Death from progressive disease trans prob
+    tpProg =0.01, # Transition prob: progressive disease
+    tpDn =0.0379  # Background mortality transition prob
 )
 ```
 
-## Transition Probability Matrices
+
+Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
 
 ```{r}
-m_Pt <- function(t) {
+mPt <- function(t, params) {
     lapply(t, function(tt){
         
-        current_age <- params$Initial_age  + (tt) - 1
-        cycle = tt
-        
+        current_age <- params$Initial_age  + (tt) - 1 
+
         tpDn_lookup <-
             c("(34,44]" = 0.0017,
               "(44,54]" = 0.0044,
@@ -119,9 +105,9 @@ m_Pt <- function(t) {
         
         age_grp <- cut(current_age, 
                        breaks = c(34,44,54,64,74,84,100))
+        
         tpDn <- tpDn_lookup[age_grp]
-
-        tpProg_ <- params$tpProg * (cycle )
+        tpProg_ <- params$tpProg * (tt )
         tpDcm_ <- params$tpDcm 
         effect_ <- params$effect
         n_states_ <- params$n_states
@@ -129,118 +115,226 @@ m_Pt <- function(t) {
         t_names_ <- params$t_names
         n_treatments_ <- params$n_treatments
         
- 
-        m_P_ <- 
+        mP_ <- 
             array(data = c(0, 0, 0,0,
                            tpProg_, 0, 0,0,
-                           0,tpDcm_+tpDn,0,0,
-                           tpDn ,  0, 0,0,
+                           0,tpDcm_,0,0,
+                           tpDn , tpDn, 0,0,
                            
                            0, 0, 0,0,
                            tpProg_*(1-effect_), 0, 0,0,
-                           0,tpDcm_+tpDn,0,0,
-                           tpDn,  0,0, 0),
+                           0,tpDcm_,0,0,
+                           tpDn, tpDn,0, 0),
                   dim = c(n_states_, n_states_, n_treatments_),
                   dimnames = list(from = s_names_,
                                   to = s_names_,
                                   t_names_))
-        diag(m_P_[,,1]) <- 1 - rowSums(m_P_[,,1])
-        diag(m_P_[,,2]) <- 1 - rowSums(m_P_[,,2])
-        m_P <- list()
-        m_P[[1]] <- m_P_[,,1]
-        m_P[[2]] <- m_P_[,,2]
+        diag(mP_[,,1]) <-  # Diagonal of transition probability matrix is 1 minus off-diagonal sum
+            1 - rowSums(mP_[,,1])
+        diag(mP_[,,2]) <- 
+            1 - rowSums(mP_[,,2])
+        
+        mP <- # This turns the named array into a simpler list object
+            apply(mP_,3,function(x) x, simplify = FALSE)
 
-        return(m_P)
+        return(mP)
     })
 }
-
-m_P <- m_Pt(1:(params$n_cycles-1))
 ```
 
+# Cohort Simulation Function
+
+We next define a function that takes as its input the parameters. The function does the 
+```{r sim_cohort}
+sim_cohort <- function(params) {
+    
+    mP <- mPt(1:(params$n_cycles-1),params) # <1>
+    
+    tr <-  # <2>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asymptomatic_disease" = params$n_cohort, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+            }))
+        }))
+    tr <-  
+        tr %>% 
+        map(~({
+            .x <- rbind(t(c(params$n_cohort,0,0,0)),.x)
+        }))
+    
+    arr <-  # <3>
+        mP %>% transpose() %>% 
+        map(~({
+            tr_ <- t(c("Asymptomatic_disease" = params$n_cohort, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0))
+            arr_ <- diag(as.vector(tr_))
+            do.call(rbind,lapply(.x, function(tp) {
+                tr_ <<- tr_ %*% tp
+                arr_ <<- diag(as.vector(tr_)) %*% tp
+                arr_
+            }))
+        }))
+    arr <- 
+        arr %>% 
+        map(~({
+            .x <- rbind(diag(c(params$n_cohort,0,0,0)),.x)
+        }))
+    
+    arr <- arr %>% map(~({
+        .x %>% data.frame() %>% 
+            mutate(cycle = sort(rep(1:params$n_cycles,params$n_states))) %>% 
+            group_by(cycle) %>% 
+            nest()
+    }))
+    
+    return(list(trace = tr, array = arr))
+}
+
+markov_result <- # <4> 
+    sim_cohort(params)
+
+```
+1. Calculate the transition probability matrices. 
+2. Construct the Markov trace
+3. Construct a multidimensional transition array (see @krijkamp2020multidimensional for more). The transition array result isn't used in this particular example, but can provide useful information on transition dynamics for each cycle.
+4. Execute the function to simulate the cohort for the given parameters. 
+
+
 ```{r}
-m_P[[1]]
+lapply(markov_result$trace , function(x) round(x,3))
 ```
 
-## Payoffs
+## Define Payoffs
 
-```{r}
+```{r payoffs}
 u_payoff <- with(params,{
     array(c("Asymptomatic_disease" = uAsymp, "Progressive_disease" = uProg, "DeadCause" = 0, "Dead" = 0, 
             "Asymptomatic_disease" = uAsymp, "Progressive_disease" = uProg,  "DeadCause" = 0, "Dead" = 0 ),
           dim = c(1, n_states, n_treatments),
-          dimnames = list(from = "cost",
+          dimnames = list(from = "qaly",
                           to = c(s_names),
                           t_names))
-})
+    }) %>% 
+         apply(.,3,function(x) t(x), simplify = FALSE)
+u_payoff
 
-c_payoff <- with(params,{
+c_state_payoff <- with(params,{
     array(c("Asymptomatic_disease" = cAsymp, "Progressive_disease" = cProg, "DeadCause" = 0 , "Dead" = 0, 
             "Asymptomatic_disease" = cAsymp+cDrug, "Progressive_disease" = cProg, "DeadCause" = 0 , "Dead" = 0 ),
           dim = c(1, n_states, n_treatments),
           dimnames = list(from = "cost",
                           to = c(s_names),
                           t_names))
-})
+    }) %>% 
+        apply(.,3,function(x) t(x), simplify = FALSE)
+c_state_payoff
 
 c_transition_payoff <- with(params,{
     array(c("Asymptomatic_disease" = 0, "Progressive_disease" = 0, "DeadCause" = cDeath , "Dead" = 0, 
             "Asymptomatic_disease" = 0, "Progressive_disease" = 0, "DeadCause" = cDeath , "Dead" = 0 ),
           dim = c(1, n_states, n_treatments),
-          dimnames = list(from = "cost",
+          dimnames = list(from = "transition_cost",
                           to = c(s_names),
                           t_names))
-})
+    }) %>% 
+        apply(.,3,function(x) t(x), simplify = FALSE)
+c_transition_payoff
 ```
 
 ```{r}
-sim_cohort <- function(params) {
+qaly_unadj <- # .x[-1,] because we don't count the cycle with the full cohort in asymptomatic
+    map2(markov_result$trace, u_payoff,  ~ ({
+        .x[-1,] %*% .y
+    })) %>% 
+    set_names(params$t_names)
+
+cost_state_unadj <- 
+    map2(markov_result$trace, c_state_payoff, ~({
+        .x[-1,] %*% .y
+    })) %>% 
+    set_names(params$t_names)
+
+cost_transition_unadj <- 
+    map2(markov_result$trace, c_state_payoff, ~({
+         matrix(c(0,diff(.x[-1,"DeadCause"]))) * params$cDeath
+    })) %>% 
+    set_names(params$t_names)
     
-    m_P <- m_Pt(1:(params$n_cycles-1))
-    
-    tr <- 
-        m_P %>% transpose() %>% 
-        map(~({
-            tr_ <- t(c("Asymptomatic_disease" = 1000, "Progressive_disease" = 0, "DeadCause" = 0, "Dead" = 0))
-            do.call(rbind,lapply(.x, function(tp) {
-                tr_ <<- tr_ %*% tp
-            }))
-        }))
-    tr <- 
-        tr %>% 
-        map(~({
-            .x <- rbind(t(c(1000,0,0,0)),.x)
-        }))
-    
-    return(tr)
-}
-
-markov_trace <- 
-    markov_trace <- sim_cohort(params)
-
-state_costs_without <- markov_trace[[1]] %*% c_payoff[,,1]
-transition_costs_without <- matrix(c(0,diff(markov_trace[[1]][,"DeadCause"]))) * params$cDeath
-costs_without <- state_costs_without + transition_costs_without
-qalys_without <- markov_trace[[1]] %*% u_payoff[,,1]
-
-state_costs_with <- markov_trace[[2]] %*% c_payoff[,,2]
-transition_costs_with <- matrix(c(0,diff(markov_trace[[2]][,"DeadCause"]))) * params$cDeath
-costs_with <- state_costs_with + transition_costs_with
-qalys_with <- markov_trace[[2]] %*% u_payoff[,,2]
-
-cycle_adj <- alt_simp_coef(params$n_cycles)
-discounting <- 1/(1+params$oDr)^(0:(params$n_cycles-1))
-
-tot_costs_without <- sum(as.vector(costs_without[-1]) * discounting[-1])
-tot_costs_with <- sum(as.vector(costs_with[-1])  * discounting[-1])
-
-tot_qalys_without <- sum(as.vector(qalys_without) *  discounting)
-tot_qalys_with <- sum(as.vector(qalys_with) *  discounting)
-
-#inc_cost <- (tot_costs_with - tot_costs_without) 
-inc_qaly <- (tot_qalys_with - tot_qalys_without); inc_qaly
-inc_cost <- (tot_costs_with - tot_costs_without); inc_cost
-
-icer = inc_cost / inc_qaly ; icer
+cost_unadj <- map2(cost_state_unadj, cost_transition_unadj, ~(.x + .y))
 
 ```
+
+# Summarize
+
+## Discounting
+```{r discounting}
+discounting_cost <- 
+    1/(1+params$cDr)^(0:(params$n_cycles-2))
+discounting_outcome <- 
+    1/(1+params$oDr)^(0:(params$n_cycles-2))
+```
+
+## Total Cost and QALY Calculation (No Cycle Adjustment)
+
+```{r}
+#| tbl-cap: R Model Results
+#| tbl-cap-location: bottom
+tot_cost <- 
+    map(cost_unadj, ~(sum(.x * discounting_cost )/params$n_cohort))  %>% 
+    set_names(params$t_names)
+tot_qaly <- 
+    map(qaly_unadj, ~(sum(.x * discounting_outcome )/params$n_cohort)) %>% 
+    set_names(params$t_names)
+
+diff_cost <- 
+    tot_cost$with_drug - tot_cost$without_drug
+diff_qaly <- 
+    tot_qaly$with_drug - tot_qaly$without_drug
+
+cbind.data.frame(cbind(tot_qaly),cbind(tot_cost))  %>% 
+    set_names(c("Eff","Cost")) %>% 
+    data.frame() %>% 
+    rbind.data.frame("difference" = data.frame(Eff = round(diff_qaly,2), Cost = round(diff_cost,0))) %>% 
+    mutate(ICER = c("","",paste0(round(diff_cost / diff_qaly,0)))) %>% 
+    kable(digits = c(0,0,0)) %>% 
+    kable_styling()
+```
+
+![Excel Model Results](attr/images/excel-icer.png){fig-align="center" height="200px"}
+
+
+## Total Cost and QALY Calculation (With Cycle Adjustment)
+
+```{r}
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48 # <1>
+cycle_adj <- alt_simp_coef(params$n_cycles-1) # <3>
+```
+1. Alternative Simpson's method coefficients
+3. Specify the cycle-specific adjustment factors for the model. 
+
+```{r}
+#| tbl-cap: R Model Results
+#| tbl-cap-location: bottom
+tot_cost_cadj <- 
+    map(cost_unadj, ~(sum(.x * discounting_cost * cycle_adj )/params$n_cohort))  %>% 
+    set_names(params$t_names)
+tot_qaly_cadj <- 
+    map(qaly_unadj, ~(sum(.x * discounting_outcome * cycle_adj )/params$n_cohort)) %>% 
+    set_names(params$t_names)
+
+diff_cost_cadj <- 
+    tot_cost_cadj$with_drug - tot_cost_cadj$without_drug
+diff_qaly_cadj <- 
+    tot_qaly_cadj$with_drug - tot_qaly_cadj$without_drug
+
+cbind.data.frame(cbind(tot_qaly_cadj),cbind(tot_cost_cadj))  %>% 
+    set_names(c("Eff","Cost")) %>% 
+    data.frame() %>% 
+    rbind.data.frame("difference" = data.frame(Eff = round(diff_qaly_cadj,2), Cost = round(diff_cost_cadj,0))) %>% 
+    mutate(ICER = c("","",paste0(round(diff_cost / diff_qaly,0)))) %>% 
+    kable(digits = c(0,0,0)) %>% 
+    kable_styling()
+```
+
 

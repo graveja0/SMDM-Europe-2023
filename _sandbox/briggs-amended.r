@@ -42,8 +42,8 @@ params = list(
     cProg =3000,
     uAsymp =0.95,
     uProg =0.75,
-    oDr = 0.06,
-    cDr = 0.06,
+    oDr = 0, #0.06,
+    cDr = 0, #0.06,
     tpDcm =0.15,
     tpProg =0.01,
     tpDn =0.0379 
@@ -127,7 +127,7 @@ m_Pt <- function(t,h = params$cycle, traditional = FALSE) {
             #x["Asymptomatic_disease","trDead"] = x["Asymptomatic_disease","Dead"]
             x["Asymptomatic_disease","trProgressive"] = x["Asymptomatic_disease","Progressive_disease"]
             # In the original model, everyone in progressive disease who dies of other causes also gets the death costs
-            x["Progressive_disease","trDeadCause"] = x["Progressive_disease","DeadCause"] + x["Progressive_disease","Dead"]
+            x["Progressive_disease","trDeadCause"] = x["Progressive_disease","DeadCause"] 
             x
         })
         
@@ -311,8 +311,8 @@ discounting <- 1/(1+params$oDr)^(0:(params$n_cycles-1))
 tot_costs_without <- sum(as.vector(costs_without[-1]) * discounting[-1])
 tot_costs_with <- sum(as.vector(costs_with[-1])  * discounting[-1])
 
-tot_qalys_without <- sum(as.vector(qalys_without) * cycle_adj * discounting)
-tot_qalys_with <- sum(as.vector(qalys_with) *  cycle_adj * discounting)
+tot_qalys_without <- sum(as.vector(qalys_without) * discounting)
+tot_qalys_with <- sum(as.vector(qalys_with) * discounting)
 
 inc_qaly2 <- (tot_qalys_with - tot_qalys_without); inc_qaly
 inc_cost2 <- (tot_costs_with - tot_costs_without); inc_cost

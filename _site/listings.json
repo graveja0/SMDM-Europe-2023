@@ -2,7 +2,9 @@
   {
     "listing": "/blog/index.html",
     "items": [
-      "/blog/posts/green-et-al-replication/green-et-al-replication.html"
+      "/blog/posts/green-et-al-replication/green-et-al-replication.html",
+      "/blog/posts/extending-the-matrix/extending-the-transition-matrix.html",
+      "/blog/posts/embedding/embedding-a-transition-probability-matrix.html"
     ]
   }
 ]
