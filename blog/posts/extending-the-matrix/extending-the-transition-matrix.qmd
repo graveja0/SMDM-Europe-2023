@@ -1,5 +1,6 @@
 ---
 title: "Extending the Transition Matrix"
+subtitle: "Including Non-Markovian Accumulators and Transition States"
 editor: visual
 editor_options: 
   chunk_output_type: console

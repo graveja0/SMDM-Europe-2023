@@ -9,6 +9,7 @@ execute:
   cache: false
 ---
 
+The objective of this blog post is to demonstrate how state occupancy will differ over different cycle lengths when using standard conversion formulas in the presence of competing risks. In the embedded version, however, changing the cycle length does not affect state occupancy estimates. 
 
 ```{r setup}
 #| echo: false
@@ -63,15 +64,18 @@ params = list(
     cProg =3000,   # Cycle cost of progressive disease
     uAsymp =0.95, # Asymptomatic state utility
     uProg =0.75,  # Progressive disease state utility
-    oDr = 0, #0.06,  # Discount rate (QALYs)
-    cDr = 0, #0.06,  # Discount rate (costs)
+    oDr = 0.06,  # Discount rate (QALYs)
+    cDr = 0.06,  # Discount rate (costs)
     tpDcm =0.15,  # Death from progressive disease trans prob
     tpProg =0.01, # Transition prob: progressive disease
     tpDn =0.0379  # Background mortality transition prob
 )
-params <- modifyList(params,list(    n_cycles = 46/params$cycle))
-params12 <- modifyList(params, list(n_cycles = 46 * 12, cycle = 1/12))
-params365 <- modifyList(params, list(n_cycles = 46 * 365, cycle = 1/365))
+params <- # Yearly cycle
+  modifyList(params,list(    n_cycles = 46/params$cycle))
+params12 <-  # Monthly cycle
+  modifyList(params, list(n_cycles = 46 * 12, cycle = 1/12))
+params365 <-  # Daily cycle
+  modifyList(params, list(n_cycles = 46 * 365, cycle = 1/365))
 
 ```
 1. Accumulators
@@ -253,14 +257,20 @@ mPt_embedded <- function(t,params) {
 
 # Simulate a Cohort of 1,000 Individuals
 
+
 - Construct a Markov trace and plot state occupancy over the simulation time horizon. 
+- Note that with different cycle lengths, the traditional approach yields different state occupancies!
+
+## 1. Using Conversion Formulas
 
 ```{r}
 #| message: false
 #| warning: false
 #| code-fold: true
 #| column: page
-#| fig-width: 10 
+#| fig-width: 10
+#| fig-align: center
+#| fig-height: 7 
 sim_cohort <- function(params) {
     
     mP <- mPt(1:(params$n_cycles-1),params) # <1>
@@ -347,7 +357,9 @@ markov_result$trace %>%
     geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state))
 ```
 
-# Embedding Approach
+As the figure shows, state occupancy differs across the various cycle lengths.
+
+## 2. Using Embedding
 
 ```{r}
 #| message: false
@@ -356,7 +368,7 @@ markov_result$trace %>%
 #| column: page
 #| fig-width: 10
 #| fig-align: center
-#| 
+#| fig-height: 7
 sim_cohort_emb <- function(params) {
     
     mP <- mPt_embedded(1:(params$n_cycles-1),params) # <1>
@@ -447,9 +459,5 @@ markov_result_emb$trace %>%
     geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state))
 ```
 
-
-
-```{r}
-
-```
+The figure clearly shows that changing the cycle length does not affect the state occupancy estimates. 
 
