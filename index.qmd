@@ -12,6 +12,31 @@ lightbox: auto
 bibliography: slides/references.bib
 ---
 
+
+# Schedule
+
+## Morning: "Bottom Up"
+
+1. Mortality modeling
+    - **Exercise**: Alive-Dead Model (Parts 1 and 2 of learnr)
+2. Competing events (e.g., embedding)
+    - **Exercise**: Alive-CVD-Dead Model (Part 3 of learnr)
+
+## Afternoon: "Top Down"
+
+1. Structuring the Markov model
+    - Embedding is covered earlier in the day. 
+    - Cover accumulators and transition states
+    - **Exercise**: Augment the Green et al. model with accumulators and transition state/  
+
+2. Incorporating new evidence
+    - Solving for PSA distributions
+    - PSA copula sampling
+    - **Exercise**: Add a third strategy
+    - **Exercise**: Solve for PSA distributions of third strategy. 
+    
+    
+
 This workshop will reinforce and expand advanced techniques not frequently taught in decision modeling courses. The course content centers around an applied exercise whereby a modeler seeks to back-convert an existing discrete-time Markov model, add additional health states and parameters (with uncertainty distributions), and adapt background mortality based on modeled life-table data from a different country, population, or setting. We will demonstrate how the augmented discrete time Markov model can be structured to accurately capture competing events and event dynamics that reflect the underlying continuous-time disease process. The course content will utilize the R programming language, though we will also provide Excel templates for some exercises.
 
 **Course Description and Objectives (max 300 words) (Provide a brief course description and state in bulleted format the objectives of the course.**

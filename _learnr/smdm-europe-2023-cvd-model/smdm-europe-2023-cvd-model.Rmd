@@ -1287,7 +1287,7 @@ tr_cvd %>%
 
 ### 4a. How Many People Develop CVD?
 
-```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
+```{r 4a, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 
 payoff_cvd_count <- matrix(c(0,1,0,0))
 tr <- radix * tr_cvd_form
