@@ -31,6 +31,14 @@ Graves earned his BA in Economics and English from The University of the South i
 
 # Course Development
 
+### Jinyi Zhu (Vanderbilt University)
+
+[![](https://www.vumc.org/health-policy/sites/default/files/people/Zhu_Jinyi.jpg){height="100" fig-align="left" fig-alt="Info about Jinyi Zhu"}](https://www.vumc.org/health-policy/person/jinyi-zhu-phd-mph)
+
+Jinyi Zhu is an Assistant Professor in the Department of Health Policy. Her research focuses on applications and methods to inform decision-making for resource allocation in public health and health care. Specifically, her research falls into three main areas: 1) resource prioritization for the prevention and treatment of cardiovascular disease, 2) applied model-based cost-effectiveness analysis in other clinical areas including TB and HIV, and 3) methodological advances in disease simulation modeling (e.g., model calibration and validation).
+
+Dr. Zhu received a Ph.D. in Health Policy from Harvard University. She also holds an MPH from Yale University and a BS in Biology and BA in economics from Peking University.
+
 ### Hanxuan Yu (Vanderbilt University Medical Center)
 
 [![](image/head_Astrid.jpg){height="100" fig-align="left" fig-alt="Info about Hanxuan Yu"}](https://www.vumc.org/health-policy/)
