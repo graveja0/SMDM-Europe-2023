@@ -18,6 +18,4 @@ bibliography: references.bib
 source("./manifest.r")
 ```
 
-
 ## Slide
-

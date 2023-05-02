@@ -7,13 +7,13 @@ project:
     - "*.pptx"
 
 website:
-  title: "SMDM Europe 2023: Health Economics Modeling Workshop"
+  title: "SMDM Europe 2023"
   margin-footer: |
     ![](CHEMlogo_white.png)
   sidebar:
     style: "floating"
     search: false
-    collapse-level: 1
+    collapse-level: 2
     contents:
       - index.qmd
       - section: "Slides"

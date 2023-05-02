@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "What They Didn’t Teach You About Decision Modeling",
     "section": "",
-    "text": "Workshop Schedule\n\n\n\n\n\n\n\n\n\nStart\nEnd\nTopic\nApplied Case Study\nLearning Objectives\n\n\n\n\n9:00am\n10:30 am\nMortality Modeling Using Life Tables\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\nLO 1\nLO 2\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\nLO 1\nLO 2\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\nLO 1\nLO 2\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model\n\n\nLO 1\nLO 2"
+    "text": "Workshop Schedule\n\n\nStart\nEnd\nTopic\nApplied Case Study\n\n\n\n\n9:00am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model"
   },
   {
     "objectID": "about.html",
@@ -1810,7 +1810,7 @@
     "href": "slides/01_mortality.html#modeling-mortality-1",
     "title": "Mortality Modeling",
     "section": "Modeling Mortality",
-    "text": "Modeling Mortality\n\n\n\n\nTable 1: Mortality Models in MortalityLaws package\n\n\nYEAR\nNAME\nMODEL\nTYPE\nCODE\nFIT\nSCALE_X\n\n\n\n\n1870\nOpperman\nmu[x] = A/sqrt(x) - B + C*sqrt(x)\n1\nopperman\nmu[x]\nFALSE\n\n\n1939\nWeibull\nmu[x] = 1/sigma * (x/M)^(M/sigma - 1)\n1\nweibull\nmu[x]\nFALSE\n\n\nNA\nInverse-Gompertz\nmu[x] = [1- exp(-(x-M)/sigma)] / [exp(-(x-M)/sigma) - 1]\n2\ninvgompertz\nmu[x]\nTRUE\n\n\nNA\nInverse-Weibull\nmu[x] = 1/sigma * (x/M)^[-M/sigma - 1] / [exp((x/M)^(-M/sigma)) - 1]\n2\ninvweibull\nmu[x]\nTRUE\n\n\n1825\nGompertz\nmu[x] = A exp[Bx]\n3\ngompertz\nmu[x]\nTRUE\n\n\nNA\nGompertz\nmu[x] = 1/sigma * exp[(x-M)/sigma)]\n3\ngompertz0\nmu[x]\nTRUE\n\n\n1860\nMakeham\nmu[x] = A exp[Bx] + C\n3\nmakeham\nmu[x]\nTRUE\n\n\nNA\nMakeham\nmu[x] = 1/sigma * exp[(x-M)/sigma)] + C\n3\nmakeham0\nmu[x]\nTRUE\n\n\n1932\nPerks\nmu[x] = [A + BC^x] / [BC^-x + 1 + DC^x]\n3\nperks\nmu[x]\nTRUE\n\n\n1960\nStrehler-Mildvan\nmu[x] = K * exp[-V0 * (1 - Bx)/D]\n3\nstrehler_mildvan\nmu[x]\nTRUE\n\n\n1943\nVan der Maen\nmu[x] = A + Bx + Cx^2 + I/[N - x]\n4\nvandermaen\nmu[x]\nTRUE\n\n\n1971\nBeard\nmu[x] = A exp(Bx) / [1 + KA exp(Bx)]\n4\nbeard\nmu[x]\nTRUE\n\n\n1971\nBeard-Makeham\nmu[x] = A exp(Bx) / [1 + KA exp(Bx)] + C\n4\nbeard_makeham\nmu[x]\nTRUE\n\n\n1979\nGamma-Gompertz\nmu[x] = A exp(Bx) / (1 + AG/B * [exp(Bx) - 1])\n4\nggompertz\nmu[x]\nTRUE\n\n\n1943\nVan der Maen\nmu[x] = A + Bx + I/[N - x]\n5\nvandermaen2\nmu[x]\nTRUE\n\n\nNA\nQuadratic\nmu[x] = A + Bx + Cx^2\n5\nquadratic\nmu[x]\nTRUE\n\n\n1998\nKannisto\nmu[x] = A exp(Bx) / [1 + A exp(Bx)]\n5\nkannisto\nmu[x]\nTRUE\n\n\n1998\nKannisto-Makeham\nmu[x] = A exp(Bx) / [1 + A exp(Bx)] + C\n5\nkannisto_makeham\nmu[x]\nTRUE\n\n\n1871\nThiele\nmu[x] = A exp(-Bx) + C exp[-.5D (x-E)^2] + F exp(Gx)\n6\nthiele\nmu[x]\nFALSE\n\n\n1883\nWittstein\nq[x] = (1/B) A^-[(Bx)^N] + A^-[(M-x)^N]\n6\nwittstein\nq[x]\nFALSE\n\n\n1979\nSiler\nmu[x] = A exp(-Bx) + C + D exp(Ex)\n6\nsiler\nmu[x]\nFALSE\n\n\n1980\nHeligman-Pollard\nq[x]/p[x] = A^[(x + B)^C] + D exp[-E log(x/F)^2] + G H^x\n6\nHP\nq[x]\nFALSE\n\n\n1980\nHeligman-Pollard\nq[x] = A^[(x + B)^C] + D exp[-E log(x/F)^2] + GH^x / [1 + GH^x]\n6\nHP2\nq[x]\nFALSE\n\n\n1980\nHeligman-Pollard\nq[x] = A^[(x + B)^C] + D exp[-E log(x/F)^2] + GH^x / [1 + KGH^x]\n6\nHP3\nq[x]\nFALSE\n\n\n1980\nHeligman-Pollard\nq[x] = A^[(x + B)^C] + D exp[-E log(x/F)^2] + GH^(x^K) / [1 + GH^(x^K)]\n6\nHP4\nq[x]\nFALSE\n\n\n1983\nRogers-Planck\nq[x] = A0 + A1 exp[-Ax] + A2 exp[B(x - u) - exp(-C(x - u))] + A3 exp[Dx]\n6\nrogersplanck\nq[x]\nFALSE\n\n\n1987\nMartinelle\nmu[x] = [A exp(Bx) + C] / [1 + D exp(Bx)] + K exp(Bx)\n6\nmartinelle\nmu[x]\nFALSE\n\n\n1992\nCarriere\nl[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)\n6\ncarriere1\nq[x]\nTRUE\n\n\n1992\nCarriere\nl[x] = P1 l[x](weibull) + P2 l[x](invgompertz) + P3 l[x](gompertz)\n6\ncarriere2\nq[x]\nTRUE\n\n\n1992\nKostaki\nq[x]/p[x] = A^[(x+B)^C] + D exp[-(E_i log(x/F_))^2] + G H^x\n6\nkostaki\nq[x]\nFALSE\n\n\n\n\n\n\n\n\n\n\nBack to Website"
+    "text": "Modeling Mortality\n\n\nBack to Website"
   },
   {
     "objectID": "slides/00_welcome-and-intros.html#welcome-to-berlin",
@@ -1818,5 +1818,54 @@
     "title": "Welcome and Introductions",
     "section": "Welcome to Berlin!",
     "text": "Welcome to Berlin!\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "",
+    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#slide",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#slide",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Slide",
+    "text": "Slide\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html",
+    "href": "slides/03_advanced-bookkeeping.html",
+    "title": "Advanced Bookkeeping",
+    "section": "",
+    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#slide",
+    "href": "slides/03_advanced-bookkeeping.html#slide",
+    "title": "Advanced Bookkeeping",
+    "section": "Slide",
+    "text": "Slide\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html",
+    "href": "slides/01_mortality.html",
+    "title": "Mortality Modeling",
+    "section": "",
+    "text": "source(\"manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select"
+  },
+  {
+    "objectID": "slides/02_competing-events.html",
+    "href": "slides/02_competing-events.html",
+    "title": "Dealing With Competing Events",
+    "section": "",
+    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#slide",
+    "href": "slides/02_competing-events.html#slide",
+    "title": "Dealing With Competing Events",
+    "section": "Slide",
+    "text": "Slide\n\n\nBack to Website"
   }
 ]

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>SMDM Europe 2023: Health Economics Modeling Workshop - What They Didn’t Teach You About Decision Modeling</title>
+<title>SMDM Europe 2023 - What They Didn’t Teach You About Decision Modeling</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -87,7 +87,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">SMDM Europe 2023: Health Economics Modeling Workshop</a> 
+      <a href="./">SMDM Europe 2023</a> 
     </div>
       </div>
     <div class="sidebar-menu-container"> 
@@ -98,25 +98,19 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">What They Didn’t Teach You About Decision Modeling</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./blog/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Workshop Blog</span></a>
-  </div>
-</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
  <span class="menu-text">Slides</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slides/01_mortality.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Mortality</span></a>
+  <a href="./slides/00_welcome-and-intros.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -147,6 +141,12 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./blog/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Workshop Blog</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./roster.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Instructors</span></a>
   </div>
@@ -171,7 +171,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">What They Didn’t Teach You About Decision Modeling</h1>
-<p class="subtitle lead">Berlin, Germany May 2023</p>
+<p class="subtitle lead">SMDM 2023 European Conference</p>
 </div>
 
 
@@ -188,92 +188,65 @@ ul.task-list li input[type="checkbox"] {
 
 <table class="table">
 <caption>Workshop Schedule</caption>
-<colgroup>
-<col style="width: 5%">
-<col style="width: 5%">
-<col style="width: 45%">
-<col style="width: 30%">
-<col style="width: 11%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Start</th>
 <th>End</th>
 <th>Topic</th>
 <th>Applied Case Study</th>
-<th>Learning Objectives</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>9:00am</td>
 <td>10:30 am</td>
-<td>Mortality Modeling Using Life Tables</td>
+<td><a href="./slides/01_mortality.html">Cause-Specific and Cause-Deleted Mortality</a></td>
 <td><ol type="1">
 <li>Mortality modeling in R</li>
 <li>Constructing an Alive-Dead model</li>
 </ol></td>
-<td><ul>
-<li><p>LO 1</p></li>
-<li><p>LO 2</p></li>
-</ul></td>
 </tr>
 <tr class="even">
 <td>10:30am</td>
 <td>11:00am</td>
 <td>BREAK</td>
 <td></td>
-<td></td>
 </tr>
 <tr class="odd">
 <td>11:00am</td>
 <td>12:30pm</td>
-<td>Embedding and Competing Events</td>
+<td><a href="./slides/02_competing-events.html">Embedding and Competing Events</a></td>
 <td><ol start="3" type="1">
 <li>Natural History Cardiovascular Disease Model</li>
 </ol></td>
-<td><ul>
-<li><p>LO 1</p></li>
-<li><p>LO 2</p></li>
-</ul></td>
 </tr>
 <tr class="even">
 <td>12:30pm</td>
 <td>2:00pm</td>
 <td>LUNCH BREAK</td>
 <td></td>
-<td></td>
 </tr>
 <tr class="odd">
 <td>2:00pm</td>
 <td>3:30pm</td>
-<td>Advanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States</td>
+<td><a href="./slides/03_advanced-bookkeeping.html">Advanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States</a></td>
 <td><ol start="4" type="1">
 <li>Advanced replication of Green et. al (2023) model.</li>
 </ol></td>
-<td><ul>
-<li><p>LO 1</p></li>
-<li><p>LO 2</p></li>
-</ul></td>
 </tr>
 <tr class="even">
 <td>3:30pm</td>
 <td>4:00pm</td>
 <td>BREAK</td>
 <td></td>
-<td></td>
 </tr>
 <tr class="odd">
 <td>4:00pm</td>
 <td>5:30pm</td>
-<td>Incorporating New Evidence</td>
+<td><a href="./slides/04_incorporating-new-evidence-and-uncertainty.html">Incorporating New Evidence</a></td>
 <td><ol start="5" type="1">
 <li>Expand Green et. al (2023) model</li>
 </ol></td>
-<td><ul>
-<li><p>LO 1</p></li>
-<li><p>LO 2</p></li>
-</ul></td>
 </tr>
 </tbody>
 </table>
@@ -529,7 +502,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","selector":".lightbox","closeEffect":"zoom","loop":true,"openEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":true,"selector":".lightbox","closeEffect":"zoom","descPosition":"bottom"});</script>
 
 
 
