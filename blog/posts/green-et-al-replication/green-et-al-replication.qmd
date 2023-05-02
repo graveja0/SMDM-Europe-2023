@@ -13,24 +13,27 @@ execute:
 
 The objective of this posting is to provide R code that replicates the model and results in @green2023health.
 
-@green2023health provide a [link to the Excel file](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/ea65640a064d9d01f56295cbbab90ab4865c38fc/original_Excel_files/Media_343196_smxx.xlsm) as well as [code to execute the same model in R](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/main/Markov_model_realworld.R). The R code is written in base R, meaning that it does not require any loaded packages to execute.  However, the model structure is somewhat complicated--requiring, for example, both state occupancy and transitions out of certain states to be tracked.[More specifically, in the @green2023health model there is an additional cost from transitioning from Progressive disease to death, but this cost does not apply if the cause of death was background mortality. This is straighforward to track when the calculations are done cycle-by-cycle, as in the original Excel file and R code. However, this type of dynamic is not easily captured in a generalized approach to modeling---as we aim to build here---unless the specific health states are separately defined in the model. Our adaptation to the code generalizes the modeling process but does not change the results.]{.aside}
+@green2023health provide a [link to the Excel file](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/ea65640a064d9d01f56295cbbab90ab4865c38fc/original_Excel_files/Media_343196_smxx.xlsm) as well as [code to execute the same model in R](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/main/Markov_model_realworld.R). The R code is written in base R, meaning that it does not require any loaded packages to execute. However, the model structure is somewhat complicated--requiring, for example, both state occupancy and transitions out of certain states to be tracked.[More specifically, in the @green2023health model there is an additional cost from transitioning from Progressive disease to death, but this cost does not apply if the cause of death was background mortality. This is straighforward to track when the calculations are done cycle-by-cycle, as in the original Excel file and R code. However, this type of dynamic is not easily captured in a generalized approach to modeling---as we aim to build here---unless the specific health states are separately defined in the model. Our adaptation to the code generalizes the modeling process but does not change the results.]{.aside}
 
 The code provided below replicates the original model, but draws on various capabilities within the (now ubiquitous) `tidyverse` universe to both simplify and generalize the execution process; this will become useful in the workshop when we augment the model with additional health states, new evidence, etc.
 
 The original model is structured as follows:
 
-<div><a href='//sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15'><img src='https://sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15/696391f92d96cd0be0fe09157ba6247d0dd84cc9.sketchy.png' style='max-width: 100%;'></a><br/><span style='font-size: 80%;color:#555;'>Created on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
+<div>
+
+<a href='//sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15'><img src="https://sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15/696391f92d96cd0be0fe09157ba6247d0dd84cc9.sketchy.png" style="max-width: 100%;"/></a><br/>[Created on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
+
+</div>
 
 In this model, individuals can cycle into the death state in one of two ways:
 
-- From the Asymptomatic state, in which case the probability of death is goverened by age-dependent mortality probabilities. 
-- From the Progressive Disease state, in which case the probability of death is govered both by age-dependent mortality, as well as a heightened probability of death from the disease. 
+-   From the Asymptomatic state, in which case the probability of death is goverened by age-dependent mortality probabilities.
+-   From the Progressive Disease state, in which case the probability of death is govered both by age-dependent mortality, as well as a heightened probability of death from the disease.
 
-To simplify and generalize the code required to execute the model we will make a slight adaptation to the model structure and seaprate out death from Progressive disease and death from background causes. The adapted model diagram is provided below. 
+To simplify and generalize the code required to execute the model we will make a slight adaptation to the model structure and seaprate out death from Progressive disease and death from background causes. The adapted model diagram is provided below.
 
-<div><a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/295cccb1b92d82caab9838e779475eaff93e7461.sketchy.png' style='max-width: 200%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
-
-The only other adaptation to the model we will make is to set the discount rates to 0. 
+<div><a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/9a3873291c108c030b908711a4c353aa9deb0a38.sketchy.png' style='max-width: 100%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
+The only other adaptation to the model we will make is to set the discount rates to 0.
 
 ```{r setup}
 #| echo: false
@@ -54,7 +57,6 @@ library(glue)
 select =dplyr::select
 options("scipen" = 100, "digits" = 5)
 ```
-
 
 # Parameterize
 
@@ -90,9 +92,7 @@ params = list(
 params <- modifyList(params,list(    n_cycles = 46/params$cycle))
 ```
 
-
-
-Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
+Our next objective is to define a function that constructs the time-dependent transition probability matrices.
 
 ```{r}
 t = 1:params$n_cycles
@@ -161,7 +161,8 @@ mPt <- function(t, params) {
 
 # Cohort Simulation Function
 
-We next define a function that takes as its input the parameters. The function does the 
+We next define a function that takes as its input the parameters. The function does the
+
 ```{r sim_cohort}
 sim_cohort <- function(params) {
     
@@ -212,11 +213,11 @@ markov_result <- # <4>
     sim_cohort(params)
 
 ```
-1. Calculate the transition probability matrices. 
-2. Construct the Markov trace
-3. Construct a multidimensional transition array (see @krijkamp2020multidimensional for more). The transition array result isn't used in this particular example, but can provide useful information on transition dynamics for each cycle.
-4. Execute the function to simulate the cohort for the given parameters. 
 
+1.  Calculate the transition probability matrices.
+2.  Construct the Markov trace
+3.  Construct a multidimensional transition array (see @krijkamp2020multidimensional for more). The transition array result isn't used in this particular example, but can provide useful information on transition dynamics for each cycle.
+4.  Execute the function to simulate the cohort for the given parameters.
 
 ```{r}
 lapply(markov_result$trace , function(x) round(x,3))
@@ -285,6 +286,7 @@ cost_unadj <- map2(cost_state_unadj, cost_transition_unadj, ~(.x + .y))
 # Summarize
 
 ## Discounting
+
 ```{r discounting}
 discounting_cost <- 
     1/(1+params$cDr)^(0:(params$n_cycles-2))
@@ -320,15 +322,15 @@ cbind.data.frame(cbind(tot_qaly),cbind(tot_cost))  %>%
 
 ![Excel Model Results](attr/images/excel-icer.png){fig-align="center" height="200px"}
 
-
 ## Total Cost and QALY Calculation (With Cycle Adjustment)
 
 ```{r}
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48 # <1>
 cycle_adj <- alt_simp_coef(params$n_cycles-1) # <3>
 ```
-1. Alternative Simpson's method coefficients
-3. Specify the cycle-specific adjustment factors for the model. 
+
+1.  Alternative Simpson's method coefficients
+2.  Specify the cycle-specific adjustment factors for the model.
 
 ```{r}
 #| tbl-cap: R Model Results
@@ -353,5 +355,3 @@ cbind.data.frame(cbind(tot_qaly_cadj),cbind(tot_cost_cadj))  %>%
     kable(digits = c(0,0,0)) %>% 
     kable_styling()
 ```
-
-

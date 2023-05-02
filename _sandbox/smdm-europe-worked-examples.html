@@ -3296,8 +3296,8 @@ border: 0;
   </ul></li>
   <li><a href="#backwards-conversion" id="toc-backwards-conversion" class="nav-link" data-scroll-target="#backwards-conversion">5. Backwards Conversion</a>
   <ul class="collapse">
-  <li><a href="#take-the-hiv-model-and-use-eigenvalue-decomposition-to-obtain-the-continuous-generator-matrix." id="toc-take-the-hiv-model-and-use-eigenvalue-decomposition-to-obtain-the-continuous-generator-matrix." class="nav-link" data-scroll-target="#take-the-hiv-model-and-use-eigenvalue-decomposition-to-obtain-the-continuous-generator-matrix.">Take the HIV model and use eigenvalue decomposition to obtain the continuous generator matrix.</a></li>
   <li><a href="#demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results." id="toc-demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results." class="nav-link" data-scroll-target="#demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results.">Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.</a></li>
+  <li><a href="#an-assumed-model" id="toc-an-assumed-model" class="nav-link" data-scroll-target="#an-assumed-model">An assumed model</a></li>
   </ul></li>
   <li><a href="#changing-countries-or-contexts" id="toc-changing-countries-or-contexts" class="nav-link" data-scroll-target="#changing-countries-or-contexts">6. Changing Countries or Contexts</a>
   <ul class="collapse">
@@ -3371,7 +3371,6 @@ border: 0;
 <h1>Questions and To-Do</h1>
 <ul>
 <li><p>[Shawn] In our appendix example, we have a two-cycle tunnel state (T1 and T2) once you become ill. We allow for exits to background mortality from T1, but everyone in T2 exits to the receiving bucket “N”. I assume we don’t need exits to background mortality because we’re only using these for accounting purposes – but if it’s for a transient utility decrement, don’t we only need to apply the utility decrement to the non-decedents within T2?</p></li>
-<li><p>[Shawn] Interestingly, in the HIV model, when I add in background mortality for Germany (based on modeled life table data), the resulting transition probability matrix (for an initial cohort of 40 year olds) results in a negative probability for transitions to secular death. I had to add in a parameter which is a hazard ratio for the HIV population (essentially multiplying the background mortality rate by 2) to get positive probabilities. But could use this as an example to show that embedding from the solved generator matrix doesn’t guarantee non-zero probabilities?</p></li>
 <li><p>[Shawn] Need the optimization algorithm to solve for PSA parameters that minimizes:</p></li>
 </ul>
 <p><span class="math display">
@@ -4904,14 +4903,15 @@ $Sx
 </section>
 <section id="backwards-conversion" class="level1">
 <h1>5. Backwards Conversion</h1>
+<p>Using the model in Table 2.2 pg.32, from “Decision Modelling for Health Economic Evaluation” by A Briggs, K Claxton and M Sculpher. Oxford, 2006.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>m_P <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">0.721</span>, <span class="fl">0.202</span>, <span class="fl">0.067</span>, <span class="fl">0.010</span>,</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                               <span class="fl">0.000</span>, <span class="fl">0.581</span>, <span class="fl">0.407</span>, <span class="fl">0.012</span>,</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                               <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">0.750</span>, <span class="fl">0.250</span>,</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                               <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">1.000</span>), </span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nrow=</span><span class="dv">4</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>,</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>                               <span class="at">dimnames=</span><span class="fu">list</span>(<span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>),</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                                             <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)))</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                <span class="fl">0.000</span>, <span class="fl">0.581</span>, <span class="fl">0.407</span>, <span class="fl">0.012</span>,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">0.750</span>, <span class="fl">0.250</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>                <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">0.000</span>, <span class="fl">1.000</span>), </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">nrow=</span><span class="dv">4</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">dimnames=</span><span class="fu">list</span>(<span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>),</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)))</span>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>m_P  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      A     B     C     D
@@ -4921,68 +4921,28 @@ C 0.000 0.000 0.750 0.250
 D 0.000 0.000 0.000 1.000</code></pre>
 </div>
 </div>
-<p>The bottom diagonal was corrected to be a Markov absorbing state by having 1 on the diagonal. For the purposes of example, we’ll assume we wish to add an additional state “E”, which has a continuous rate of 0.2 that competes with other transitions.</p>
-<section id="take-the-hiv-model-and-use-eigenvalue-decomposition-to-obtain-the-continuous-generator-matrix." class="level2">
-<h2 class="anchored" data-anchor-id="take-the-hiv-model-and-use-eigenvalue-decomposition-to-obtain-the-continuous-generator-matrix.">Take the HIV model and use eigenvalue decomposition to obtain the continuous generator matrix.</h2>
-<p>To accomplish this we must find the continuous generator.</p>
+<p>The theoretical approach requires computation of the eigenvalues of the matrix, and then correction along the way for various numerical errors to derive the generator matrix of rates. The observed statistical error from a stochastic process in general create a situation in which the Q-matrix is not derivable theoretically resulting in negative probabilities. Finding the closest generator matrix can be done using Higham’s 2008 method from `Functions of Matrices: Theory and Computation’ with extra balancing options from Stadelmann’s thesis.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>V  <span class="ot">&lt;-</span> <span class="fu">eigen</span>(m_P)<span class="sc">$</span>vectors</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>iV <span class="ot">&lt;-</span> <span class="fu">solve</span>(V)</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>Ap <span class="ot">&lt;-</span> iV <span class="sc">%*%</span> m_P <span class="sc">%*%</span> V</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>Ap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(markovchain)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> <span class="fu">transition2Generator</span>(m_P)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(R) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(R) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>R</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                         [,1]                     [,2]
-[1,]  1.000000000000000000000 -0.000000000000000011388
-[2,]  0.000000000000000172422  0.750000000000000111022
-[3,] -0.000000000000001054209 -0.000000000000000197747
-[4,] -0.000000000000000062574 -0.000000000000000018793
-                          [,3]                     [,4]
-[1,]  0.0000000000000000000000  0.000000000000000016253
-[2,]  0.0000000000000000000000 -0.000000000000000156542
-[3,]  0.7209999999999999742428  0.000000000000000036544
-[4,] -0.0000000000000000059637  0.580999999999999960920</code></pre>
+<pre><code>         A       B          C         D
+A -0.32712  0.3115  0.0024395  0.013181
+B  0.00000 -0.5430  0.6148890 -0.071884
+C  0.00000  0.0000 -0.2876821  0.287682
+D  0.00000  0.0000  0.0000000  0.000000</code></pre>
 </div>
 </div>
-<p>Due to the numeric probabilities not being exactly correct, the off-diagonal elements of <span class="math inline">A&#39;</span> are not zero, but they are quite close. We will zero these off diagonal elements and assume that the non-zero elements are numerical error. Then continue by taking the log of the diagonal.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>lAp <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">log</span>(<span class="fu">diag</span>(Ap)), <span class="fu">nrow</span>(Ap), <span class="fu">ncol</span>(Ap))</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>R  <span class="ot">&lt;-</span> V <span class="sc">%*%</span> lAp <span class="sc">%*%</span> iV</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>R </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                          [,1]                      [,2]       [,3]      [,4]
-[1,] -0.3271161416971880009363  0.3114960917676688478828  0.0024395  0.013181
-[2,]  0.0000000000000000025585 -0.5430045221302257640872  0.6148890 -0.071884
-[3,]  0.0000000000000000000000  0.0000000000000000070641 -0.2876821  0.287682
-[4,]  0.0000000000000000000000  0.0000000000000000000000  0.0000000  0.000000</code></pre>
-</div>
-</div>
-<p>An now we have the continuous time rate generator for the Markov Model. There is still some numerical error—for example the bottom row, has values very near to zero, and the diagonal is not exactly the negative sum of the rest of the row. We can clean this up by tweaking the numbers numerical towards their constraints.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>R[<span class="fu">abs</span>(R) <span class="sc">&lt;</span> <span class="fl">1e-6</span> ] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(R) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(R) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;B&quot;</span>, <span class="st">&quot;C&quot;</span>, <span class="st">&quot;D&quot;</span>)</span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(R, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>       A      B      C      D
-A -0.327  0.311  0.002  0.013
-B  0.000 -0.543  0.615 -0.072
-C  0.000  0.000 -0.288  0.288
-D  0.000  0.000  0.000  0.000</code></pre>
-</div>
-</div>
-<p>Some numerical error is inevitable in this process and cannot be avoided. However, even cleaning up the small and obvious errors, the transition from B -&gt; D is impossible since it’s negative. Rates are relative to the occupancy of the source state, in this case B. Having a negative rate implies that B would have some transitions in which the dead come alive into B based upon the occupancy of B. Obviously, this is not possible. The problem now is how to adjust the model’s rates to be physically possible, while as faithful to the original data as possible. B is a sicker state, so it should have a higher death rate.</p>
-</section>
+<p>Note: this is the closest Markov model allowing any transition. There are still transitions from A-&gt;C and A-&gt;D. Notably B-&gt;D occurs at a negative rate. If D were representing an absorbing state, e.g. Death, then this would represent a physical impossibility, as this negative rate represents D -&gt; B.</p>
 <section id="demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results." class="level2">
 <h2 class="anchored" data-anchor-id="demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results.">Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.</h2>
 <p>Let’s double check it recapitulates the original rates.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">expm</span>(R)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">expm</span>(R),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>4 x 4 Matrix of class &quot;dgeMatrix&quot;
       A     B     C     D
@@ -4990,6 +4950,42 @@ A 0.721 0.202 0.067 0.010
 B 0.000 0.581 0.407 0.012
 C 0.000 0.000 0.750 0.250
 D 0.000 0.000 0.000 1.000</code></pre>
+</div>
+</div>
+</section>
+<section id="an-assumed-model" class="level2">
+<h2 class="anchored" data-anchor-id="an-assumed-model">An assumed model</h2>
+<p>If one were to assume that all transitions were forward , i.e. A-&gt;B-&gt;C-&gt;D the best approach would be to fit the generator matrix directly from raw data (there are many statistical Markov and ordinal data fitting models). Without the raw data available, an ad-hoc method to minimize squared error against the original under the 3 rate constraint does a decent job of recapitulating the original transition probabilities.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>init  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="dv">0</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>step1 <span class="ot">&lt;-</span> init <span class="sc">%*%</span> m_P</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>m_3r <span class="ot">&lt;-</span> <span class="cf">function</span>(r)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="sc">-</span>r[<span class="dv">1</span>],  r[<span class="dv">1</span>],      <span class="dv">0</span>,    <span class="dv">0</span>,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>                 <span class="dv">0</span>, <span class="sc">-</span>r[<span class="dv">2</span>],   r[<span class="dv">2</span>],    <span class="dv">0</span>,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>                 <span class="dv">0</span>,     <span class="dv">0</span>,  <span class="sc">-</span>r[<span class="dv">3</span>], r[<span class="dv">3</span>],</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>                 <span class="dv">0</span>,     <span class="dv">0</span>,      <span class="dv">0</span>,   <span class="dv">0</span>), <span class="at">nrow=</span><span class="dv">4</span>, <span class="at">byrow=</span><span class="cn">TRUE</span>)</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>r.est <span class="ot">&lt;-</span> <span class="fu">optim</span>((<span class="sc">-</span><span class="fu">diag</span>(R))[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>],</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">lower=</span><span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>),</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">method=</span><span class="st">&quot;L-BFGS-B&quot;</span>,</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">function</span>(r) {</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">sum</span>( ((init <span class="sc">%*%</span> <span class="fu">expm</span>(<span class="fu">m_3r</span>(r))) <span class="sc">-</span> step1)<span class="sc">^</span><span class="dv">2</span> )</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>})<span class="sc">$</span>par</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="fu">m_3r</span>(r.est)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         [,1]     [,2]     [,3]    [,4]
+[1,] -0.32708  0.32708  0.00000 0.00000
+[2,]  0.00000 -0.55796  0.55796 0.00000
+[3,]  0.00000  0.00000 -0.24145 0.24145
+[4,]  0.00000  0.00000  0.00000 0.00000</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">expm</span>(<span class="fu">m_3r</span>(r.est)),<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>4 x 4 Matrix of class &quot;dgeMatrix&quot;
+      [,1]  [,2]  [,3]  [,4]
+[1,] 0.721 0.211 0.063 0.006
+[2,] 0.000 0.572 0.376 0.052
+[3,] 0.000 0.000 0.785 0.215
+[4,] 0.000 0.000 0.000 1.000</code></pre>
 </div>
 </div>
 <p>Now let’s replicate the monotherapy strategy results from the original.</p>
@@ -5632,7 +5628,7 @@ D 0.000 0.000 0.000 1.000</code></pre>
 <span id="cb65-29"><a href="#cb65-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Confirm the correct correlation </span></span>
 <span id="cb65-30"><a href="#cb65-30" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(Y[,<span class="dv">1</span>],Y[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.59461</code></pre>
+<pre><code>[1] 0.59305</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -5646,7 +5642,7 @@ D 0.000 0.000 0.000 1.000</code></pre>
 <span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(Y_[,<span class="dv">1</span>],Y_[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.59436</code></pre>
+<pre><code>[1] 0.59456</code></pre>
 </div>
 </div>
 <section id="simulate-direct-medical-care-and-community-care-costs-for-each-state-using-copulas." class="level2">
@@ -5662,7 +5658,7 @@ D 0.000 0.000 0.000 1.000</code></pre>
 <span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(Y_[,<span class="dv">1</span>],Y_[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.58777</code></pre>
+<pre><code>[1] 0.56706</code></pre>
 </div>
 </div>
 </section>
