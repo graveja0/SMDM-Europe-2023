@@ -1574,7 +1574,9 @@ end
 
 # 5. Backwards Conversion
 
-Using the model in Table 2.2 pg.32, from "Decision Modelling for Health Economic Evaluation" by A Briggs, K Claxton and M Sculpher. Oxford, 2006. 
+Using the model in Table 2.2 pg.32, from "Decision Modelling for Health
+Economic Evaluation" by A Briggs, K Claxton and M Sculpher. Oxford,
+2006.
 
 ```{r}
 m_P <- matrix(c(0.721, 0.202, 0.067, 0.010,
@@ -1588,14 +1590,13 @@ m_P
 ```
 
 The theoretical approach requires computation of the eigenvalues of the
-matrix, and then correction along the way for various numerical errors to
-derive the generator matrix of rates. The observed statistical
-error from a stochastic process in general create a situation in which the 
-Q-matrix is not derivable theoretically resulting in negative probabilities.
-Finding the closest generator matrix can be
-done using Higham's 2008 method from `Functions of Matrices: Theory and
-Computation' with extra balancing options from Stadelmann's thesis. 
-
+matrix, and then correction along the way for various numerical errors
+to derive the generator matrix of rates. The observed statistical error
+from a stochastic process in general create a situation in which the
+Q-matrix is not derivable theoretically resulting in negative
+probabilities. Finding the closest generator matrix can be done using
+Higham's 2008 method from \`Functions of Matrices: Theory and
+Computation' with extra balancing options from Stadelmann's thesis.
 
 ```{r}
 library(markovchain)
@@ -1607,10 +1608,10 @@ R
 ```
 
 Note: this is the closest Markov model allowing any transition. There
-are still transitions from A->C and A->D. Notably B->D occurs at a 
+are still transitions from A-\>C and A-\>D. Notably B-\>D occurs at a
 negative rate. If D were representing an absorbing state, e.g. Death,
-then this would represent a physical impossibility, as this negative 
-rate represents D -> B. 
+then this would represent a physical impossibility, as this negative
+rate represents D -\> B.
 
 ## Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.
 
@@ -1622,13 +1623,13 @@ round(expm(R),3)
 
 ## An assumed model
 
-If one were to assume that all transitions were forward , i.e. A->B->C->D
-the best approach would be to fit the generator matrix directly from raw
-data (there are many statistical Markov and ordinal data fitting models).
-Without the raw data
-available, an ad-hoc method to minimize squared error
-against the original under the 3 rate constraint does a decent job
-of recapitulating the original transition probabilities.
+If one were to assume that all transitions were forward , i.e.
+A-\>B-\>C-\>D the best approach would be to fit the generator matrix
+directly from raw data (there are many statistical Markov and ordinal
+data fitting models). Without the raw data available, an ad-hoc method
+to minimize squared error against the original under the 3 rate
+constraint does a decent job of recapitulating the original transition
+probabilities.
 
 ```{r}
 init  <- c(1/3, 1/3, 1/3, 0)

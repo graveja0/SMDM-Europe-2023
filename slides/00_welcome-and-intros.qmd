@@ -1,0 +1,17 @@
+---
+title: "Welcome and Introductions"
+format:
+  revealjs:
+    transition: fade
+    background-transition: fade
+    incremental: true 
+    footer: |
+      [Back to Website](../index.html)
+editor_options: 
+  chunk_output_type: console
+self-contained: true
+bibliography: references.bib
+---
+
+## Welcome to Berlin!
+

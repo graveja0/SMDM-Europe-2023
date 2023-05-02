@@ -16,33 +16,20 @@ website:
     collapse-level: 1
     contents:
       - index.qmd
-      - text: "Workshop Blog"
-        href: blog/index.qmd
       - section: "Slides"
         contents:
-          - lectures/lec_welcome.qmd
-          - lectures/lec_structure.qmd
-          - text: Group Exercise - Populating a Markov Model
-            href: lectures/exercise_structure.qmd
-          - text: Group Exercise Answer - Populating a Markov Model
-            href: lectures/exercise_ANS_structure.qmd
-      - section: "Case Studies"
-      - section: "Tools and Applications"
-        contents:
-          - text: Workshop CEA Shiny Application
-            href: https://mhorta.shinyapps.io/shinycea3/
-          - text: Gompertz Mortality Parameters Fit to UN Life Table Data
-            href: https://mhorta.shinyapps.io/gomp/
-          - text: Decision Tree Drawing Tool
-            href: https://dare.shinyapps.io/tree/
-          - text: Mermaid Live Editor (Facilitates easy model diagram drawing)
-            href: https://mermaid.live/
-          - text: Graphviz Visual Editor
-            href: http://magjac.com/graphviz-visual-editor//
-          - text: Markov Modeling in R (YouTube Video Series)
-            href: https://www.youtube.com/playlist?list=PLIT7NqYN7YT0TypPdKdN4qTomBp2aqt_C
-          - text: Markov Modeling in R
-            href: https://darth-git.github.io/darthpack/articles/darthpack.html
+          - text: Introduction 
+            href: slides/00_welcome-and-intros.qmd
+          - text: Mortality 
+            href: slides/01_mortality.qmd
+          - text: Embedding the Transition Matrix
+            href: slides/02_competing-events.qmd
+          - text: Advanced Bookkeeping
+            href: slides/03_advanced-bookkeeping.qmd
+          - text: Incorporating New Evidence
+            href: slides/04_incorporating-new-evidence-and-uncertainty.qmd            
+      - text: "Workshop Blog"
+        href: blog/index.qmd            
       - text: Instructors 
         href: roster.qmd
 

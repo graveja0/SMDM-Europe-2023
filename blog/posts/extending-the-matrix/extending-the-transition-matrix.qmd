@@ -11,7 +11,11 @@ execute:
 
 # Introduction
 
-<div><a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/295cccb1b92d82caab9838e779475eaff93e7461.sketchy.png' style='max-width: 200%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
+<div>
+
+<a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src="https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/295cccb1b92d82caab9838e779475eaff93e7461.sketchy.png" style="max-width: 200%;"/></a><br/>[Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
+
+</div>
 
 ```{r setup}
 #| echo: false
@@ -35,7 +39,6 @@ library(glue)
 select =dplyr::select
 options("scipen" = 100, "digits" = 5)
 ```
-
 
 # Parameterize
 
@@ -69,10 +72,11 @@ params = list(
     tpDn =0.0379  # Background mortality transition prob
 )
 ```
-1. Accumulators
-2. Transition tracker
 
-Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
+1.  Accumulators
+2.  Transition tracker
+
+Our next objective is to define a function that constructs the time-dependent transition probability matrices.
 
 ```{r}
 t = 1:params$n_cycles
@@ -219,12 +223,9 @@ markov_result <- # <4>
     sim_cohort(params)
 ```
 
-
 ```{r}
 lapply(markov_result$trace , function(x) round(x,2))
 ```
-
-
 
 ## Define Payoffs
 
@@ -273,6 +274,7 @@ cost_unadj <-
 # Summarize
 
 ## Discounting
+
 ```{r discounting}
 discounting_cost <- 
     1/(1+params$cDr)^(0:(params$n_cycles-2))
@@ -286,8 +288,9 @@ discounting_outcome <-
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48 # <1>
 cycle_adj <- alt_simp_coef(params$n_cycles-1) # <3>
 ```
-1. Alternative Simpson's method coefficients
-3. Specify the cycle-specific adjustment factors for the model. 
+
+1.  Alternative Simpson's method coefficients
+2.  Specify the cycle-specific adjustment factors for the model.
 
 ```{r}
 #| tbl-cap: R Model Results
@@ -312,4 +315,3 @@ cbind.data.frame(cbind(tot_qaly),cbind(tot_cost))  %>%
     kable(digits = c(0,0,0)) %>% 
     kable_styling()
 ```
-

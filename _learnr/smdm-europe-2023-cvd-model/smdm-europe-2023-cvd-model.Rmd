@@ -503,6 +503,10 @@ As we see above, we have successfully replicated life expectancy for a 40 year o
 
 ## Part 3: Cardiovascular Disease Model
 
+```{r}
+
+```
+
 ```{r setup3}
 #| echo: false
 #| warning: false
@@ -651,12 +655,12 @@ m_Pt_formula <- function(t,h = params$time_step) {
             # Get background and CVD mortality rates
       r_death = HP2(current_age, params$background_mortality)$hx
       r_death_cvd = params$cause_specific_mortality(current_age) 
-      
+
       # Convert to probabilities using standard conversion formulas. 
       p_death = 1 - exp(-r_death * params$time_step)
       p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
       p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
-      
+    
       m_P <- 
           matrix(c(
           0, p_cvd , 0, r_death ,
@@ -881,6 +885,8 @@ tr_cvd_acc_tunn <-
 life_exp <- 
     cycle_adj(tr_cvd_embedded[,c("healthy","cvd","cvddeath","dead")] %*% params$payoff_qaly, 1)
 
+life_exp_formula <- 
+    cycle_adj(tr_cvd_formula %*% params$payoff_qaly,1)
 # life_exp
 # lt %>% filter(age==params$cohort_starting_age) %>% pull(ex)
 

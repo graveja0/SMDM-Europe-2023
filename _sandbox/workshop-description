@@ -1,0 +1,55 @@
+This workshop will reinforce and expand advanced techniques not frequently taught in decision modeling courses. The course content centers around an applied exercise whereby a modeler seeks to back-convert an existing discrete-time Markov model, add additional health states and parameters (with uncertainty distributions), and adapt background mortality based on modeled life-table data from a different country, population, or setting. We will demonstrate how the augmented discrete time Markov model can be structured to accurately capture competing events and event dynamics that reflect the underlying continuous-time disease process. The course content will utilize the R programming language, though we will also provide Excel templates for some exercises.
+
+Course Description and Objectives (max 300 words) (Provide a brief course description and state in bulleted format the objectives of the course.
+
+This workshop will focus on important-but-infrequently-taught advanced skills and methods to facilitate the timely and efficient construction, execution, and adaptation of Markov models for health technology assessment and health policy decision-making. We will focus on discrete-time Markov models, though much of the course content applies to other modeling types as well. All course content will be taught in the R statistical programming language, though we will provide additional optional material for how the methods could be adapted to an Excel-based model.
+
+The workshop will center around an applied exercise with the following objectives:
+
+Back-convert an existing discrete time Markov model to accommodate the inclusion of additional health states and literature-based parameters.
+
+Adapt background mortality based on modeled life-table data from a different country, population, or setting.
+
+Inclusion of event accumulators in the embedded transition probability matrix to accurately capture competing events and event dynamics that reflect the underlying continuous-time process.
+
+Match probabilistic sensitivity analysis (PSA) uncertainty distribution parameters for the augmented model (e.g., parameters governing a normal, lognormal, beta, gamma, etc. distribution) to match values and quantiles ascertained through expert opinion surveys, prior research, etc.
+
+To execute the above objectives, the workshop will provide didactic content, case-studies, and web-based (Shiny) tools for the following topics and methods:
+
+A. Back-converting a discrete-time Markov model into an underlying generator rate matrix using eigenvalue decomposition.
+
+B. Augmenting an underlying rate matrix with new parameters and health states.
+
+C. Including accumulators within an embedded transition probability matrix to accurately account for "jumpover" states that occur when a continuous time process is captured in a discrete-time model.
+
+D. Fitting and characterizing background mortality using a Gompertz model fit to life-table data.
+
+E. Algorithms to solve for uncertainty distribution parameters that match values and quantiles ascertained through expert opinions, prior research, etc.
+
+F. Capturing correlation among uncertain model parameters using PSA sampling via copulas.
+
+Course Background: In 150 words or less, please provide a brief background on the skills taught in this course and how they are used.
+
+Participants should have some experience designing and executing discrete-time Markov models. This workshop will build and extend upon these skills so that participants can efficiently adapt expand existing models to (a) include new health states and/or parameters (with associated uncertainty distributions); (b) convert the model to match population characteristics in alternative countries, settings, or contexts; (c) properly structure discrete-time models so that the transition probabilities and modeled outcomes accurately reflect an underlying continuous-time process.
+
+Format and Requirements: In 150 words or less, describe the format of the class and include any prerequisites for participation, especially for intermediate and advanced level courses.
+
+Participants should have some experience designing and executing discrete-time Markov models, including experience (a) converting rates to probabilities; (b) constructing a Markov trace from an underlying transition probability matrix; (c) structuring and executing a probabilistic sensitivity analysis (PSA). As the course content will be taught almost exclusively in R, prior experience with Markov models, microsimulation, or discrete event simulation in R is strongly encouraged.
+
+AM:
+
+Stucturing the Markov model (from Bangkok and blend in content from blog posting)
+
+Group Exercise (from Bangkok)
+
+Indivdiual/Small Group Case study (from appendix) — incorporate new evidence.
+
+PM:
+
+Adapting background mortality
+
+Individual / Small Group Case Study (adapt background mortality)
+
+Solving for uncertainty distributions (put PSA distribution around new parameters in earlier case study)
+
+Correlated PSA distributions via copula sampling

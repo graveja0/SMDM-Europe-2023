@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.340">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Parameters for Distributions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Parameters for Distributions</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p><a href="https://www.johndcook.com/quantiles_parameters.pdf">Source</a> <a href="https://forum.effectivealtruism.org/posts/tvTqRtMLnJiiuAep5/how-to-determine-distribution-parameters-from-quantiles">Another source</a> <a href="https://docs.google.com/spreadsheets/d/1noozmyQvdqVXB8lH1JP1P7e6g-0FSV-9Q1EZS3Gh220/edit#gid=0">Excel Functions</a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.1     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.1     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+</div>
+<section id="normal-distribution" class="level1">
+<h1>Normal Distribution</h1>
+<p><span id="eq-norm.sigma"><span class="math display">\[
+\sigma = \frac{x_2 - x_1}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+\tag{1}\]</span></span></p>
+<p><span class="math display">\[
+\mu = \frac{x_1\Phi^{-1}(p_2)-x_2\Phi^{-1}(p_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+\]</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(<span class="fl">0.1</span>,<span class="fl">1.3</span>,.<span class="dv">2</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(<span class="fl">0.9</span>,<span class="fl">1.3</span>,.<span class="dv">2</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>param_normal <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,x2,p1,p2) {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">=</span> (x2 <span class="sc">-</span> x1) <span class="sc">/</span> (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); sigma</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    mu <span class="ot">&lt;-</span> (x1<span class="sc">*</span><span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span>x2<span class="sc">*</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>))<span class="sc">/</span>(<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); mu</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"mu"</span> <span class="ot">=</span> mu, <span class="st">"sigma"</span> <span class="ot">=</span> sigma)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="gamma" class="level1">
+<h1>Gamma</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fl">0.8</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>gamma_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(alpha) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    x1<span class="sc">*</span><span class="fu">qgamma</span>(p2,<span class="at">shape =</span> alpha, <span class="at">scale =</span><span class="dv">1</span>) <span class="sc">-</span> x2 <span class="sc">*</span> <span class="fu">qgamma</span>(p1, <span class="at">shape =</span> alpha, <span class="at">scale =</span> <span class="dv">1</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>calc_beta <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,p1,alpha) {</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    x1 <span class="sc">/</span> <span class="fu">qgamma</span>(p1,alpha,<span class="dv">1</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(gamma_fn, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">100</span>), <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">lwd =</span> <span class="fl">1.5</span>, <span class="at">lty=</span><span class="dv">2</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a=</span><span class="dv">0</span>,<span class="at">b=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>alpha_ <span class="ot">&lt;-</span> <span class="fu">uniroot</span>(gamma_fn,<span class="fu">c</span>(<span class="dv">70</span>,<span class="dv">85</span>))<span class="sc">$</span>root; alpha_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 79.74756</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>beta_ <span class="ot">&lt;-</span> <span class="fu">calc_beta</span>(<span class="at">x1 =</span> x1,  <span class="at">p1 =</span> p1, <span class="at">alpha =</span> alpha_); beta_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.008754199</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check the answer</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">qgamma</span>(<span class="fl">0.1</span>,<span class="at">shape =</span> alpha_, <span class="at">scale =</span> beta_)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qgamma</span>(<span class="fl">0.9</span>,<span class="at">shape =</span> alpha_, <span class="at">scale =</span> beta_)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>param_gamma <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,x2,p1,p2,range) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    alpha_ <span class="ot">&lt;-</span> <span class="fu">uniroot</span>(gamma_fn,range)<span class="sc">$</span>root; alpha_</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    beta_ <span class="ot">&lt;-</span> <span class="fu">calc_beta</span>(<span class="at">x1 =</span> x1,  <span class="at">p1 =</span> p1, <span class="at">alpha =</span> alpha_); beta_</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"alpha"</span> <span class="ot">=</span> alpha_, <span class="st">"beta"</span> <span class="ot">=</span> beta_)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">param_gamma</span>(<span class="at">x1=</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2, <span class="at">range =</span> <span class="fu">c</span>(<span class="dv">60</span>,<span class="dv">100</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       alpha         beta 
+79.747557736  0.008754199 </code></pre>
+</div>
+</div>
+</section>
+<section id="beta-distribution" class="level1">
+<h1>Beta Distribution</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source: https://stats.stackexchange.com/questions/112614/determining-beta-distribution-parameters-alpha-and-beta-from-two-arbitrary</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fl">0.8</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Logistic transformation of the Beta CDF.</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>f.beta <span class="ot">&lt;-</span> <span class="cf">function</span>(alpha, beta, x, <span class="at">lower=</span><span class="dv">0</span>, <span class="at">upper=</span><span class="dv">1</span>) {</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">pbeta</span>((x<span class="sc">-</span>lower)<span class="sc">/</span>(upper<span class="sc">-</span>lower), alpha, beta)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">log</span>(p<span class="sc">/</span>(<span class="dv">1</span><span class="sc">-</span>p))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Sums of squares.</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>delta <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, actual) <span class="fu">sum</span>((fit<span class="sc">-</span>actual)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># The objective function handles the transformed parameters `theta` and</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># uses `f.beta` and `delta` to fit the values and measure their discrepancies.</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>objective <span class="ot">&lt;-</span> <span class="cf">function</span>(theta, x, prob, ...) {</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  ab <span class="ot">&lt;-</span> <span class="fu">exp</span>(theta) <span class="co"># Parameters are the *logs* of alpha and beta</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">f.beta</span>(ab[<span class="dv">1</span>], ab[<span class="dv">2</span>], x, ...)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> (<span class="fu">delta</span>(fit, prob))</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>x.p <span class="ot">&lt;-</span> (<span class="cf">function</span>(p) <span class="fu">log</span>(p<span class="sc">/</span>(<span class="dv">1</span><span class="sc">-</span>p)))(<span class="fu">c</span>(p1, p2))</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>start <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fu">c</span>(<span class="fl">1e1</span>, <span class="fl">1e1</span>))</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>sol <span class="ot">&lt;-</span> <span class="fu">nlm</span>(objective, start, <span class="at">x=</span><span class="fu">c</span>(x1,x2), <span class="at">prob=</span>x.p, <span class="at">lower=</span><span class="dv">0</span>, <span class="at">upper=</span><span class="dv">1</span>, <span class="at">typsize=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">fscale=</span><span class="fl">1e-12</span>, <span class="at">gradtol=</span><span class="fl">1e-12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in nlm(objective, start, x = c(x1, x2), prob = x.p, lower = 0, upper =
+1, : NA/Inf replaced by maximum positive value
+
+Warning in nlm(objective, start, x = c(x1, x2), prob = x.p, lower = 0, upper =
+1, : NA/Inf replaced by maximum positive value</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">exp</span>(sol<span class="sc">$</span>estimate); params</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 23.70741 10.03106</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qbeta</span>(<span class="at">p =</span> <span class="fu">c</span>(p1, p2), params[<span class="dv">1</span>], params[<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6000000 0.8000001</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Define the parameters and uncertainty distributions.</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>w1 <span class="ot">=</span> <span class="dv">2</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>w1.low <span class="ot">=</span> <span class="fl">1.75</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>w1.hi <span class="ot">=</span> <span class="fl">2.25</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>p1.low <span class="ot">=</span> <span class="fl">0.1</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>p1.hi <span class="ot">=</span> <span class="fl">0.9</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>c1 <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>c1.low <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>c1.hi <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>p1.low <span class="ot">=</span> <span class="fl">0.1</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>p1.hi <span class="ot">=</span> <span class="fl">0.9</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>w2 <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>w2.low <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>w2.hi <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>c2 <span class="ot">=</span> <span class="fl">0.85</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>c2.low <span class="ot">=</span> <span class="fl">0.75</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>c2.hi <span class="ot">=</span> <span class="fl">0.95</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>p2.low <span class="ot">=</span> <span class="fl">0.1</span></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>p2.hi <span class="ot">=</span> <span class="fl">0.9</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">=</span> c2.low</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">=</span> c2.hi</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">=</span> p2.low</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">=</span> p2.hi</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>dist <span class="ot">=</span> <span class="st">"unif"</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>get_dist_params <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1, p2, <span class="at">dist =</span> <span class="st">"unif"</span>, <span class="at">range =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (dist<span class="sc">==</span><span class="st">"unif"</span>) {</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>        get_min_unif <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1, p2) {</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>            (p2<span class="sc">*</span>x1<span class="sc">-</span>p1<span class="sc">*</span>x2) <span class="sc">/</span> (p2 <span class="sc">-</span> p1) </span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>        get_max_unif <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1 , p2) {</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>            ((<span class="dv">1</span><span class="sc">-</span>p1)<span class="sc">*</span>x2<span class="sc">-</span>(<span class="dv">1</span><span class="sc">-</span>p2)<span class="sc">*</span>x1)<span class="sc">/</span>(p2<span class="sc">-</span>p1)</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a>        get_avg_unif <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1, p2) {</span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(<span class="fu">c</span>(<span class="fu">get_min_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2),</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">get_max_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2)))</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-45"><a href="#cb21-45" aria-hidden="true" tabindex="-1"></a>        params <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">mean =</span> <span class="fu">get_avg_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2), </span>
+<span id="cb21-46"><a href="#cb21-46" aria-hidden="true" tabindex="-1"></a>                    <span class="at">median =</span> <span class="fu">get_avg_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2),</span>
+<span id="cb21-47"><a href="#cb21-47" aria-hidden="true" tabindex="-1"></a>                    <span class="at">min =</span> <span class="fu">get_min_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2),</span>
+<span id="cb21-48"><a href="#cb21-48" aria-hidden="true" tabindex="-1"></a>                    <span class="at">max =</span> <span class="fu">get_max_unif</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2))</span>
+<span id="cb21-49"><a href="#cb21-49" aria-hidden="true" tabindex="-1"></a>        <span class="fu">attr</span>(params,<span class="st">"dist"</span>) <span class="ot">=</span> <span class="st">"uniform"</span></span>
+<span id="cb21-50"><a href="#cb21-50" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-51"><a href="#cb21-51" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (dist <span class="sc">==</span> <span class="st">"norm"</span>) {</span>
+<span id="cb21-53"><a href="#cb21-53" aria-hidden="true" tabindex="-1"></a>        param_norm <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,x2,p1,p2) {</span>
+<span id="cb21-54"><a href="#cb21-54" aria-hidden="true" tabindex="-1"></a>            sigma <span class="ot">=</span> (x2 <span class="sc">-</span> x1) <span class="sc">/</span> (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); sigma</span>
+<span id="cb21-55"><a href="#cb21-55" aria-hidden="true" tabindex="-1"></a>            mu <span class="ot">&lt;-</span> (x1<span class="sc">*</span><span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span>x2<span class="sc">*</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>))<span class="sc">/</span>(<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); mu</span>
+<span id="cb21-56"><a href="#cb21-56" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb21-57"><a href="#cb21-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">c</span>(<span class="st">"mean"</span> <span class="ot">=</span> mu, <span class="st">"sd"</span> <span class="ot">=</span> sigma)</span>
+<span id="cb21-58"><a href="#cb21-58" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-59"><a href="#cb21-59" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-60"><a href="#cb21-60" aria-hidden="true" tabindex="-1"></a>        params <span class="ot">=</span> <span class="fu">param_norm</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2)</span>
+<span id="cb21-61"><a href="#cb21-61" aria-hidden="true" tabindex="-1"></a>        <span class="fu">attr</span>(params,<span class="st">"dist"</span>) <span class="ot">=</span> <span class="st">"normal"</span></span>
+<span id="cb21-62"><a href="#cb21-62" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-63"><a href="#cb21-63" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-64"><a href="#cb21-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (dist <span class="sc">==</span> <span class="st">"lognorm"</span>) {</span>
+<span id="cb21-65"><a href="#cb21-65" aria-hidden="true" tabindex="-1"></a>        get_mean_of_log <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1, p2) {</span>
+<span id="cb21-66"><a href="#cb21-66" aria-hidden="true" tabindex="-1"></a>            (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">*</span><span class="fu">log</span>(x1)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">*</span><span class="fu">log</span>(x2)) <span class="sc">/</span> (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>))</span>
+<span id="cb21-67"><a href="#cb21-67" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-68"><a href="#cb21-68" aria-hidden="true" tabindex="-1"></a>        mean_of_log <span class="ot">&lt;-</span> <span class="fu">get_mean_of_log</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2)</span>
+<span id="cb21-69"><a href="#cb21-69" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-70"><a href="#cb21-70" aria-hidden="true" tabindex="-1"></a>        get_sd_of_log <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, p1 , p2) {</span>
+<span id="cb21-71"><a href="#cb21-71" aria-hidden="true" tabindex="-1"></a>            (<span class="fu">log</span>(x2) <span class="sc">-</span> <span class="fu">log</span>(x1)) <span class="sc">/</span> (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>) <span class="sc">-</span> <span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>))</span>
+<span id="cb21-72"><a href="#cb21-72" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-73"><a href="#cb21-73" aria-hidden="true" tabindex="-1"></a>        sd_of_log <span class="ot">&lt;-</span> <span class="fu">get_sd_of_log</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2)</span>
+<span id="cb21-74"><a href="#cb21-74" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-75"><a href="#cb21-75" aria-hidden="true" tabindex="-1"></a>        <span class="co"># params &lt;- c("mean" = exp(get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2) + 0.5 * get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2),</span></span>
+<span id="cb21-76"><a href="#cb21-76" aria-hidden="true" tabindex="-1"></a>        <span class="co">#   "median" = exp(get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)),</span></span>
+<span id="cb21-77"><a href="#cb21-77" aria-hidden="true" tabindex="-1"></a>        <span class="co">#   "sd" = sqrt((exp(get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2)-1) * exp(2 * get_mean_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2) + </span></span>
+<span id="cb21-78"><a href="#cb21-78" aria-hidden="true" tabindex="-1"></a>        <span class="co">#                                                                                      get_sd_of_log(x1 = x1, x2 = x2, p1 = p1, p2 = p2)^2)))</span></span>
+<span id="cb21-79"><a href="#cb21-79" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-80"><a href="#cb21-80" aria-hidden="true" tabindex="-1"></a>        params <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"mean_log"</span> <span class="ot">=</span> <span class="fu">get_mean_of_log</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2), </span>
+<span id="cb21-81"><a href="#cb21-81" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"sd_log"</span> <span class="ot">=</span> <span class="fu">get_sd_of_log</span>(<span class="at">x1 =</span> x1, <span class="at">x2 =</span> x2, <span class="at">p1 =</span> p1, <span class="at">p2 =</span> p2))</span>
+<span id="cb21-82"><a href="#cb21-82" aria-hidden="true" tabindex="-1"></a>        <span class="fu">attr</span>(params,<span class="st">"dist"</span>) <span class="ot">=</span> <span class="st">"lognormal"</span></span>
+<span id="cb21-83"><a href="#cb21-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-84"><a href="#cb21-84" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-85"><a href="#cb21-85" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-86"><a href="#cb21-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (dist <span class="sc">==</span> <span class="st">"gamma"</span>) {</span>
+<span id="cb21-87"><a href="#cb21-87" aria-hidden="true" tabindex="-1"></a>        gamma_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(alpha) {</span>
+<span id="cb21-88"><a href="#cb21-88" aria-hidden="true" tabindex="-1"></a>            x1<span class="sc">*</span><span class="fu">qgamma</span>(p2,<span class="at">shape =</span> alpha, <span class="at">scale =</span><span class="dv">1</span>) <span class="sc">-</span> x2 <span class="sc">*</span> <span class="fu">qgamma</span>(p1, <span class="at">shape =</span> alpha, <span class="at">scale =</span> <span class="dv">1</span>)</span>
+<span id="cb21-89"><a href="#cb21-89" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-90"><a href="#cb21-90" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-91"><a href="#cb21-91" aria-hidden="true" tabindex="-1"></a>        calc_beta <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,p1,alpha) {</span>
+<span id="cb21-92"><a href="#cb21-92" aria-hidden="true" tabindex="-1"></a>            x1 <span class="sc">/</span> <span class="fu">qgamma</span>(p1,alpha,<span class="dv">1</span>)</span>
+<span id="cb21-93"><a href="#cb21-93" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb21-94"><a href="#cb21-94" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-95"><a href="#cb21-95" aria-hidden="true" tabindex="-1"></a>        <span class="co">#curve(gamma_fn, xlim = c(1,100), col = "blue", lwd = 1.5, lty=2)</span></span>
+<span id="cb21-96"><a href="#cb21-96" aria-hidden="true" tabindex="-1"></a>        <span class="co">#abline(a=0,b=0)</span></span>
+<span id="cb21-97"><a href="#cb21-97" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb21-98"><a href="#cb21-98" aria-hidden="true" tabindex="-1"></a>        alpha_ <span class="ot">&lt;-</span> <span class="fu">uniroot</span>(gamma_fn,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">100</span>))<span class="sc">$</span>root; alpha_</span>
+<span id="cb21-99"><a href="#cb21-99" aria-hidden="true" tabindex="-1"></a>        beta_ <span class="ot">&lt;-</span> <span class="fu">calc_beta</span>(<span class="at">x1 =</span> x1,  <span class="at">p1 =</span> p1, <span class="at">alpha =</span> alpha_); beta_</span>
+<span id="cb21-100"><a href="#cb21-100" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb21-101"><a href="#cb21-101" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(params)</span>
+<span id="cb21-102"><a href="#cb21-102" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-103"><a href="#cb21-103" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-104"><a href="#cb21-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-105"><a href="#cb21-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-106"><a href="#cb21-106" aria-hidden="true" tabindex="-1"></a><span class="fu">get_dist_params</span>(<span class="at">x1 =</span> w1.low, <span class="at">x2 =</span> w1.hi, <span class="at">p1 =</span> p1.low, <span class="at">p2 =</span> p1.hi, <span class="at">dist =</span> <span class="st">"lognorm"</span> )</span>
+<span id="cb21-107"><a href="#cb21-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-108"><a href="#cb21-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-109"><a href="#cb21-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-110"><a href="#cb21-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-111"><a href="#cb21-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-112"><a href="#cb21-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-113"><a href="#cb21-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-114"><a href="#cb21-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-115"><a href="#cb21-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-116"><a href="#cb21-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-117"><a href="#cb21-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-118"><a href="#cb21-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-119"><a href="#cb21-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-120"><a href="#cb21-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-121"><a href="#cb21-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-122"><a href="#cb21-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-123"><a href="#cb21-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-124"><a href="#cb21-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-125"><a href="#cb21-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-126"><a href="#cb21-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-127"><a href="#cb21-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-128"><a href="#cb21-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-129"><a href="#cb21-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-130"><a href="#cb21-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-131"><a href="#cb21-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-132"><a href="#cb21-132" aria-hidden="true" tabindex="-1"></a>disc_power <span class="ot">&lt;-</span> <span class="cf">function</span>(fit) {</span>
+<span id="cb21-133"><a href="#cb21-133" aria-hidden="true" tabindex="-1"></a>    beta.hat <span class="ot">&lt;-</span> fit[<span class="st">"W"</span>,]</span>
+<span id="cb21-134"><a href="#cb21-134" aria-hidden="true" tabindex="-1"></a>    accept <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">-</span><span class="fu">as.integer</span>(dplyr<span class="sc">::</span><span class="fu">between</span>(<span class="dv">0</span>,beta.hat[,<span class="dv">2</span>],beta.hat[,<span class="dv">3</span>]))</span>
+<span id="cb21-135"><a href="#cb21-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(accept)</span>
+<span id="cb21-136"><a href="#cb21-136" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-137"><a href="#cb21-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-138"><a href="#cb21-138" aria-hidden="true" tabindex="-1"></a><span class="fu">X_W</span>(<span class="at">n_=</span><span class="dv">1000</span>, <span class="at">p_treat=</span><span class="fl">0.5</span>, <span class="at">tau=</span><span class="dv">60</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb21-139"><a href="#cb21-139" aria-hidden="true" tabindex="-1"></a>    <span class="fu">est</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb21-140"><a href="#cb21-140" aria-hidden="true" tabindex="-1"></a>    <span class="fu">disc_power</span>()</span>
+<span id="cb21-141"><a href="#cb21-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-142"><a href="#cb21-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-143"><a href="#cb21-143" aria-hidden="true" tabindex="-1"></a>val.stat.life <span class="ot">=</span> <span class="dv">9600000</span></span>
+<span id="cb21-144"><a href="#cb21-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-145"><a href="#cb21-145" aria-hidden="true" tabindex="-1"></a>surv<span class="fl">.1</span> <span class="ot">&lt;-</span> <span class="fl">0.987</span></span>
+<span id="cb21-146"><a href="#cb21-146" aria-hidden="true" tabindex="-1"></a>surv<span class="fl">.0</span> <span class="ot">&lt;-</span> <span class="fl">0.97</span></span>
+<span id="cb21-147"><a href="#cb21-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-148"><a href="#cb21-148" aria-hidden="true" tabindex="-1"></a>val.stat.life<span class="sc">*</span>(surv<span class="fl">.1</span><span class="sc">-</span>surv<span class="fl">.0</span>)</span>
+<span id="cb21-149"><a href="#cb21-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-150"><a href="#cb21-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-151"><a href="#cb21-151" aria-hidden="true" tabindex="-1"></a>w.eitc <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb21-152"><a href="#cb21-152" aria-hidden="true" tabindex="-1"></a>c.eitc <span class="ot">&lt;-</span> <span class="fu">rgamma</span>(<span class="fl">1e3</span>,<span class="at">rate =</span> <span class="dv">89</span>,<span class="at">shape=</span><span class="dv">1</span>); <span class="fu">mean</span>(c.eitc)</span>
+<span id="cb21-153"><a href="#cb21-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-154"><a href="#cb21-154" aria-hidden="true" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>www.johndcook.com<span class="sc">/</span>quantiles_parameters.pdf</span>
+<span id="cb21-155"><a href="#cb21-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-156"><a href="#cb21-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-157"><a href="#cb21-157" aria-hidden="true" tabindex="-1"></a><span class="fu">qnorm</span>(<span class="fl">0.1</span>, <span class="at">mean =</span> <span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb21-158"><a href="#cb21-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-159"><a href="#cb21-159" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(<span class="fl">0.1</span>,<span class="fl">1.3</span>,.<span class="dv">2</span>)</span>
+<span id="cb21-160"><a href="#cb21-160" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb21-161"><a href="#cb21-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-162"><a href="#cb21-162" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">qnorm</span>(<span class="fl">0.9</span>,<span class="fl">1.3</span>,.<span class="dv">2</span>)</span>
+<span id="cb21-163"><a href="#cb21-163" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
+<span id="cb21-164"><a href="#cb21-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-165"><a href="#cb21-165" aria-hidden="true" tabindex="-1"></a>param_normal <span class="ot">&lt;-</span> <span class="cf">function</span>(x1,x2,p1,p2) {</span>
+<span id="cb21-166"><a href="#cb21-166" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">=</span> (x2 <span class="sc">-</span> x1) <span class="sc">/</span> (<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); sigma</span>
+<span id="cb21-167"><a href="#cb21-167" aria-hidden="true" tabindex="-1"></a>    mu <span class="ot">&lt;-</span> (x1<span class="sc">*</span><span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span>x2<span class="sc">*</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>))<span class="sc">/</span>(<span class="fu">qnorm</span>(p2,<span class="dv">0</span>,<span class="dv">1</span>)<span class="sc">-</span><span class="fu">qnorm</span>(p1,<span class="dv">0</span>,<span class="dv">1</span>)); mu</span>
+<span id="cb21-168"><a href="#cb21-168" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb21-169"><a href="#cb21-169" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="st">"mu"</span> <span class="ot">=</span> mu, <span class="st">"sigma"</span> <span class="ot">=</span> sigma)</span>
+<span id="cb21-170"><a href="#cb21-170" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-171"><a href="#cb21-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-172"><a href="#cb21-172" aria-hidden="true" tabindex="-1"></a><span class="fu">param_normal</span>(<span class="at">x1 =</span> <span class="dv">3</span>, <span class="at">p1 =</span> .<span class="dv">1</span>, <span class="at">x2 =</span> <span class="dv">5</span>, <span class="at">p2 =</span> .<span class="dv">9</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

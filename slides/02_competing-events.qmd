@@ -1,0 +1,21 @@
+---
+title: "Dealing With Competing Events"
+format:
+  revealjs:
+    transition: fade
+    background-transition: fade
+    incremental: true 
+    footer: |
+      [Back to Website](../index.html)
+editor_options: 
+  chunk_output_type: console
+self-contained: true
+bibliography: references.bib
+---
+
+```{r setup}
+source("./manifest.r")
+```
+
+## Slide
+

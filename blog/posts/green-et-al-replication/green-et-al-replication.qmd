@@ -32,7 +32,12 @@ In this model, individuals can cycle into the death state in one of two ways:
 
 To simplify and generalize the code required to execute the model we will make a slight adaptation to the model structure and seaprate out death from Progressive disease and death from background causes. The adapted model diagram is provided below.
 
-<div><a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/9a3873291c108c030b908711a4c353aa9deb0a38.sketchy.png' style='max-width: 100%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span></div>
+<div>
+
+<a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src="https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/9a3873291c108c030b908711a4c353aa9deb0a38.sketchy.png" style="max-width: 100%;"/></a><br/>[Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
+
+</div>
+
 The only other adaptation to the model we will make is to set the discount rates to 0.
 
 ```{r setup}
@@ -161,7 +166,7 @@ mPt <- function(t, params) {
 
 # Cohort Simulation Function
 
-We next define a function that takes as its input the parameters. 
+We next define a function that takes as its input the parameters.
 
 ```{r sim_cohort}
 sim_cohort <- function(params) {

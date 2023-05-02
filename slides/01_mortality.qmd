@@ -1,0 +1,125 @@
+---
+title: "Mortality Modeling"
+format:
+  revealjs:
+    transition: fade
+    background-transition: fade
+    incremental: true 
+    footer: |
+      [Back to Website](../index.html)
+editor_options: 
+  chunk_output_type: console
+self-contained: true
+bibliography: references.bib
+---
+
+```{r setup}
+source("manifest.r")
+```
+
+
+## Learning Objectives
+
+- Understand options for modeling background mortality based on life tables and parametric mortality models.
+- Construct a cause-deleted life table to model cause-specific and non-cause-specific death. 
+
+
+## Approaches to Modeling Mortality
+
+- Standard approach is to draw from life table data 
+    - `qx` is the probability of death within an interval. 
+    - `mx` is the death rate within the interval. 
+
+## Life Table Data
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| code-fold: false
+#############################################
+# Define Parameters for Life Table Modeling
+#############################################
+mort_year =  # Year to obtain from Human Mortality Database
+  2019
+N = # Population basis for life table
+  100000
+max_age =  # Max age in life table
+  99
+min_age =  # Min age in life table
+  0
+n_cycles =  # Number of discrete time (annual) cycles in Markov
+  100
+
+###############################
+# Underlying Life-Table Data
+###############################
+
+lt <-  # Read in the U.S. life table data from the human mortality database.
+  read_rds(here("_sandbox/mortality/usa-life-table.rds")) %>% 
+  lifetable(.,series = "total", years = mort_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x*N) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+```
+
+```{r}
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(age,lx,dx,mx,qx) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+## Life Table Data
+::: nonincremental
+- Death probabilities are useful for discrete time Markov models.
+:::
+
+```{r}
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(age,lx,dx,mx,qx) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling() %>% 
+    column_spec(5, background = "#c6e6f5")
+
+```
+
+## Life Table Data
+
+::: nonincremental
+- Death rates are useful for discrete event simulation (DES) models. 
+:::
+
+```{r}
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(age,lx,dx,mx,qx) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling() %>% 
+  column_spec(4, background = "#e8c6f5")
+
+```
+
+## Life Table Data
+
+- What if age bins are more coarse (e.g., 0, 5, 10,... vs. 0,1,2,3,...)?
+- We may also want to simplify the parameterization of our model to summarize background mortality in just a few parameters, not one for every age or age group in the model. 
+
+
+## Modeling Mortality
+
+- We can fit a parametric mortality model to the life table data to capture background mortality in terms of a few parameters.
+
+- The R package `MortalityLaws` facilitates this. 
+
+## Modeling Mortality
+

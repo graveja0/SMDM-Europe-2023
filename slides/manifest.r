@@ -1,0 +1,20 @@
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(survival)
+library(flexsurv)
+library(haven)
+library(dampack)
+library(Matrix)
+library(here)
+library(glue)
+library(demography)
+library(glue)
+library(MortalityLaws)
+library(demography)
+library(MASS)
+library(directlabels)
+
+options("scipen" = 100, "digits" = 5)
+
+select <- dplyr::select

@@ -1,0 +1,61 @@
+flowchart LR
+    A[" "] --> mt_micro[Microsimulation]
+    A --> mt_markov[Markov]
+    A --> mt_des[Discrete Event Simulation]
+    mt_micro --> s_micro_r[R]
+    mt_micro --> s_micro_o["Other\n(C++, Python, Treeage)"]
+    mt_markov --> s_markov_r[R]
+    mt_markov --> s_markov_e[Excel]
+    mt_markov --> s_markov_o["Other\n(C++, Treeage)"]
+    mt_des --> s_des_r[R]
+    mt_des --> s_des_o["Other\n(C++, Python)"]
+    s_micro_r --> p_micro_r>Parameterize]
+    s_micro_o --> p_micro_o>Parameterize]
+    s_markov_r --> p_markov_r>Parameterize]
+    s_markov_e --> p_markov_e>Parameterize]
+    s_markov_o --> p_markov_o>Parameterize]
+    s_des_r --> p_des_r>Parameterize]
+    s_des_o --> p_des_o>Parameterize]
+    p_micro_r --> run_micro_r>Run]
+    p_micro_o --> run_micro_o>Run]
+    p_markov_r --> run_markov_r>Run]
+    p_markov_e --> run_markov_e>Run]
+    p_markov_o --> run_markov_o>Run]
+    p_des_r --> run_des_r>Run]
+    p_des_o --> run_des_o>Run]
+    run_micro_r --> sum_micro_r>Summarize]
+    run_micro_o --> sum_micro_o>Summarize]
+    run_markov_r --> sum_markov_r>Summarize]
+    run_markov_e --> sum_markov_e>Summarize]
+    run_markov_o --> sum_markov_o>Summarize]
+    run_des_r --> sum_des_r>Summarize]
+    run_des_o --> sum_des_o>Summarize]
+
+subgraph Model Type
+A & mt_micro & mt_markov & mt_des
+end
+subgraph Software
+s_micro_r & s_micro_o & s_markov_r & s_markov_o & s_markov_e & s_des_r & s_des_o & s_markov_e
+end
+subgraph " "
+p_micro_r & run_micro_r & sum_micro_r
+end
+subgraph " "
+p_micro_o & run_micro_o & sum_micro_o
+end
+subgraph " "
+p_markov_r & run_markov_r & sum_markov_r
+end
+subgraph " "
+p_markov_e & run_markov_e & sum_markov_e
+end
+subgraph " "
+p_markov_o & run_markov_o & sum_markov_o
+end
+subgraph " "
+p_des_r & run_des_r & sum_des_r
+end
+subgraph " "
+p_des_o & run_des_o & sum_des_o
+end   
+    
