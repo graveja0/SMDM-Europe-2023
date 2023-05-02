@@ -161,7 +161,7 @@ mPt <- function(t, params) {
 
 # Cohort Simulation Function
 
-We next define a function that takes as its input the parameters. The function does the
+We next define a function that takes as its input the parameters. 
 
 ```{r sim_cohort}
 sim_cohort <- function(params) {
