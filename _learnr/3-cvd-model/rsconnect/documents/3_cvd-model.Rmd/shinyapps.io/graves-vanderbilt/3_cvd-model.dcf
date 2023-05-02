@@ -1,0 +1,13 @@
+name: 3_cvd-model
+title: 3_cvd-model
+username:
+account: graves-vanderbilt
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9013001
+bundleId: 7165749
+url: https://graves-vanderbilt.shinyapps.io/3_cvd-model/
+when: 1683061755.28735
+lastSyncTime: 1683061755.28736
+asMultiple: FALSE
+asStatic: FALSE

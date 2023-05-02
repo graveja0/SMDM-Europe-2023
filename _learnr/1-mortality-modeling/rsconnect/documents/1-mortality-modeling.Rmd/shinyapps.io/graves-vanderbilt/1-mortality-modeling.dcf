@@ -1,0 +1,13 @@
+name: 1-mortality-modeling
+title: 1-mortality-modeling
+username:
+account: graves-vanderbilt
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9012844
+bundleId: 7165683
+url: https://graves-vanderbilt.shinyapps.io/1-mortality-modeling/
+when: 1683060379.4313
+lastSyncTime: 1683060379.43131
+asMultiple: FALSE
+asStatic: FALSE

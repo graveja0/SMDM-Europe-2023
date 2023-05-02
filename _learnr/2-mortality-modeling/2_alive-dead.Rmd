@@ -1,0 +1,295 @@
+---
+title: "2. Constructing an Alive-Dead Model"
+output:
+  learnr::tutorial:
+    progressive: true
+    theme: united
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  This tutorial will cover background mortality modeling".
+---
+
+```{r setup, include=FALSE}
+# ("rstudio", default", "cerulean", "journal", "flatly", "readable",
+# "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", or
+# "yeti").
+
+    # ace_theme: github
+    # theme: united
+library(learnr)
+library(tidyverse)
+library(demography)
+library(MortalityLaws)
+library(directlabels)
+library(ggsci)
+library(hrbrthemes)
+library(MASS)
+library(mgcv)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+library(here)
+library(ggsci)
+library(expm)
+select <- dplyr::select
+options("scipen" = 100, "digits" = 5)
+
+knitr::opts_chunk$set(echo = FALSE)
+options("scipen" = 100, "digits" = 5)
+#knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+#set_here(here::here("_learnr/smdm-europe-2023-cvd-model/"))
+```
+
+With background mortality fit we can construct a simple alive-dead model that is governed by a single transition rate ($r\_AD(t)$): the transition from alive to dead at time $t$:
+
+```{r setup2}
+#| echo: false
+#| warning: false
+#| messages: false
+#| eval: true
+mortality_year = 2019
+radix = 100000
+
+edit.na <- function(x, value) { x[is.na(x)] <- value; x}
+
+lt_usa_file <- "https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"
+
+lt <- 
+  readRDS(url(lt_usa_file)) %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) %>% 
+  mutate(country = "USA") %>% 
+  mutate(age = x)
+
+min_age = 40
+max_age = 99
+
+ages     <- lt$x[lt$x<=max_age & lt$x>=min_age]
+deaths   <- lt$dx[lt$x<=max_age & lt$x>=min_age]
+exposure <- lt$lx[lt$x<=max_age & lt$x>=min_age]
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP2",
+                opt.method = "LF2")
+
+params <- list(n_cycles = 100, 
+               time_step = 1, 
+               background_mortality = coef(mort_fit),
+               payoff_qaly = c("alive" = 1, "dead" = 0),
+               payoff_cost = c("alive" = 0, "dead" = 0))
+
+
+m_Pt_fn <- function(t, h = 1)
+{
+    lapply(t, function(tt){
+        current_age <- min_age  + (tt)*h - 1
+        r_death<- HP2(current_age, params$background_mortality)$hx
+        p_death <- 1 - exp(-r_death * h)
+        
+        matrix(c(1-p_death,p_death,0,0), 
+               byrow = TRUE,
+               nrow=2,
+               dimnames = list(c("alive","dead"),c("alive","dead")))
+        
+    })
+}
+
+params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
+
+
+sim_alive_dead <- function(params) {
+    tr_ <- t(c("alive" = 1, "dead" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0)),tr)
+    return(tr)
+}
+
+tr_alive_dead <- sim_alive_dead(params)
+
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+life_exp <- 
+    cycle_adj(tr_alive_dead %*% params$payoff_qaly, 1)
+
+life_exp_life_table <- 
+  lt %>% filter(x==min_age) %>% pull(ex)
+
+
+```
+
+![](images/digraph-alive-dead.png){fig-align="right" height="200px"}
+
+### 2a. Parameterize the Model
+
+Our first step is to define a parameter object with several components:
+
+-   The total number of cycles
+-   The time step for the discrete time Markov (1 = one year)
+-   Background mortality parameters (i.e., the coefficients from a fitted mortality model object)
+-   Utility payoffs for each health state. For life expectancy we can just set these to 1.0 for the alive state, and 0 for dead.
+-   Cost payoffs for each health state. Irrelevant for this exercise but we'll include for the sake of completeness.
+
+In the exercise below, parametrize a model with an **annual time step**, **100 total cycles**, and background mortality based on the estimated coefficients from a **Heligman-Pollard** model fit to the underlying life table data (i.e., `HP`). You should also include "payoffs" of 1 for alive and 0 otherwise, and \$0 in costs for each health state.
+
+```{r 2a_1, exercise = TRUE, exercise.eval = FALSE, exercise.setup = "setup2"}
+#| exercise.lines: 20
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "",
+                opt.method = "LF2")
+
+params <-
+  list(
+    n_cycles = ,
+    time_step = ,
+    background_mortality = ,
+    payoff_qaly = c("alive" = , "dead" = ),
+    payoff_cost = c("alive" = , "dead" = )
+  )
+```
+
+```{r 2a_1-solution}
+
+mort_fit <- MortalityLaw(
+                x  = ages,
+                Dx  = deaths,   # vector with death counts
+                Ex  = exposure, # vector containing exposures
+                law = "HP",
+                opt.method = "LF2")
+
+params <-
+  list(
+    n_cycles = 100,
+    time_step = 1,
+    background_mortality = coef(mort_fit),
+    payoff_qaly = c("alive" = 1, "dead" = 0),
+    payoff_cost = c("alive" = 0, "dead" = 0)
+  )
+
+```
+
+We next need to define a function that returns the transition probability matrix for each time cycle in our model.
+
+-   Each transtition probability matrix is a $2 \times 2$ matrix with two health states: alive and dead.
+-   Each has a transition probability from alive to dead based on converting the mortality rate at that time step into a probability.
+    -   Beacuse there are no other competing events in this exercise, it's fine to use the standard conversion formula (i.e., $1 - \exp(rh)$, where $r$ is the rate and $h$ is the time step).
+-   The primary input into the function below is a vector that starts at 1 and runs through the final cycle number (i.e., 1, 2, ... , params\$n_cycles), as well as a time step (h=1 for annual, h = 1/12 for monthly, etc.).
+
+```{r 2a_2, exercise = TRUE, exercise.eval = TRUE, exercise.setup = "setup2"}
+#| exercise.lines: 25
+
+m_Pt_fn <- function(t, h = 1)
+{
+    lapply(t, function(tt){
+        current_age <- min_age  + (tt)*h - 1
+        r_death<- HP2(current_age, params$background_mortality)$hx
+        p_death <- 1 - exp(-r_death * h)
+        
+        matrix(c(1-p_death,p_death,0,0), 
+               byrow = TRUE,
+               nrow=2,
+               dimnames = list(c("alive","dead"),c("alive","dead")))
+        
+    })
+}
+
+params$m_P <- m_Pt_fn(1:params$n_cycles, h = params$time_step)
+# Look at the transition probability matrix for the 100th time step. 
+params$m_P[[100]]
+```
+
+### 2b. Construct a Markov Trace
+
+We will next construct a markov trace by, essentially, looping over the list object with transition probability matrices at each time step (i.e., `m_P`).
+
+The code below draws on the "super assignment" operator `<<-`, which allows for assignment in the global environment outside the function call itself. That is, the code below will continuously update the Markov trace object `tr` until the total number of cycles is reached.
+
+For life expectancy we will simulate a single "cohort" of one indiviudal.
+
+```{r 2b, exercise = TRUE, exercise.setup = "setup2"}
+#| exercise.lines: 15
+
+sim_alive_dead <- function(params) {
+    tr_ <- t(c("alive" = 1, "dead" = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0)),tr)
+    return(tr)
+}
+
+tr_alive_dead <- sim_alive_dead(params)
+
+tr_alive_dead %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+
+```
+
+### 2c. Calculate Life Expectancy
+
+Let's first examine how the mortality Markov model does against observed life table data.
+
+We can first use the Markov trace to construct a "Markov Life Table" , and then plot the age-specific death rate calculated from the Markov model against the age-specific rate directly from the life table data.
+
+We see in this exercise that the two are very similar, suggesting that we are approximately matching the mortality dynamics in the population throughout our model.
+
+```{r 2c1, exercise = TRUE, exercise.eval = TRUE, exercise.setup = "setup2"}
+lt_markov <- 
+  tr_alive_dead %>% 
+  as_tibble() %>%
+  mutate(lx = radix * alive) %>%
+  mutate(q = edit.na(1 - lead(lx)/lx, 1)) %>%
+  mutate(age = min_age + (row_number()-1)/1) %>% 
+  inner_join(lt %>% filter(age>=min_age & age <max_age),"age") %>% 
+  select(age, q, qx) %>% 
+  gather(source,value,-age) %>% 
+  mutate(source = factor(source,levels = c("q","qx"), labels = c("Markov","Life Table")))
+
+lt_markov %>% 
+  ggplot(aes(x = age, y = log(value), colour = source)) + 
+  geom_point() +
+  theme_ipsum_pub(base_family = "Arial") + 
+  scale_colour_aaas(name="") + 
+  theme(legend.position = "top") + 
+  labs(x = "Age" , y = "log(Death Rate)")
+```
+
+We will next calculate life expectancy for our modeled cohort of 40 year old's and compare that value to the life expectancy for a 40 year old in the life table data.
+
+To calculate life expectancy from the Markov trace we need to do a few things:
+
+1.  Use a payoff of 1 for "alive" and 0 for dead.
+2.  We won't use discounting.
+3.  Because we're calculating a cumulative outcome, we need to apply a cycle adjustment. We'll use the alternative Simpson's method for this, but we could just as easily apply a half cycle adjustment, or [some other method](https://journals.sagepub.com/doi/10.1177/0272989X15585121).
+
+```{r 2c, exercise = TRUE, exercise.setup = "setup2"}
+#| exercise.lines: 15
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+life_exp_markov <- 
+    cycle_adj(tr_alive_dead %*% params$payoff_qaly, 1)
+
+life_exp_life_table <- 
+  lt %>% filter(x==min_age) %>% pull(ex)
+
+life_exp_markov
+life_exp_life_table
+```
+
+As we see above, we have successfully replicated life expectancy for a 40 year old cohort!
