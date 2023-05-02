@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "What They Didn’t Teach You About Decision Modeling",
     "section": "",
-    "text": "Workshop Schedule\n\n\nStart\nEnd\nTopic\nApplied Case Study\n\n\n\n\n9:00am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model"
+    "text": "Workshop Schedule\n\n\nStart\nEnd\nTopic\nApplied Case Study\n\n\n\n\n9:00am\n9:20am\nIntroductions and Welcome\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model"
   },
   {
     "objectID": "about.html",
