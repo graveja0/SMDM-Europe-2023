@@ -5,6 +5,7 @@ format:
     transition: fade
     background-transition: fade
     incremental: true 
+    code-annotations: below
     footer: |
       [Back to Website](../index.html)
 editor_options: 
@@ -17,18 +18,16 @@ bibliography: references.bib
 source("manifest.r")
 ```
 
-
 ## Learning Objectives
 
-- Understand options for modeling background mortality based on life tables and parametric mortality models.
-- Construct a cause-deleted life table to model cause-specific and non-cause-specific death. 
-
+-   Understand options for modeling background mortality based on life tables and parametric mortality models.
+-   Construct a cause-deleted life table to model cause-specific and non-cause-specific death.
 
 ## Approaches to Modeling Mortality
 
-- Standard approach is to draw from life table data 
-    - `qx` is the probability of death within an interval. 
-    - `mx` is the death rate within the interval. 
+-   Standard approach is to draw from life table data
+    -   `qx` is the probability of death within an interval.
+    -   `mx` is the death rate within the interval.
 
 ## Life Table Data
 
@@ -75,8 +74,9 @@ lt %>%
 ```
 
 ## Life Table Data
+
 ::: nonincremental
-- Death probabilities are useful for discrete time Markov models.
+-   Death probabilities are useful for discrete time Markov models.
 :::
 
 ```{r}
@@ -94,7 +94,7 @@ lt %>%
 ## Life Table Data
 
 ::: nonincremental
-- Death rates are useful for discrete event simulation (DES) models. 
+-   Death rates are useful for discrete event simulation (DES) models.
 :::
 
 ```{r}
@@ -109,17 +109,93 @@ lt %>%
 
 ```
 
-## Life Table Data
+## Life Table-Based Mortality
 
-- What if age bins are more coarse (e.g., 0, 5, 10,... vs. 0,1,2,3,...)?
-- We may also want to simplify the parameterization of our model to summarize background mortality in just a few parameters, not one for every age or age group in the model. 
+::: nonincremental
+-   A common approach is to use a life table-based lookup table in the model:
+:::
 
+```{r}
+#| echo: TRUE
+#| eval: FALSE
+#| code-line-numbers: "2"
+tpDn_lookup <-
+        c("(34,44]" = 0.0017,  
+          "(44,54]" = 0.0044,
+          "(54,64]" = 0.0138,
+          "(64,74]" = 0.0379,
+          "(74,84]" = 0.0912,
+          "(84,100]" = 0.1958)
+```
+
+-   Highlighted row: annual probability of death for 35-44 year old.
+
+## Life Table-Basd Mortality
+
+-   What if age bins are coarse (e.g., 0, 5, 10,... vs. 0,1,2,3,...)?
+    -   Assume death probability/rate is constant within age bins (and cycles)?
+-   In a DES model, we need to sample a time to death.
+    -   Can sample from survival function in underlying life table.
+-   Alternative: summarize/sample from background mortality using modeling.
 
 ## Modeling Mortality
 
-- We can fit a parametric mortality model to the life table data to capture background mortality in terms of a few parameters.
-
-- The R package `MortalityLaws` facilitates this. 
+-   Fit a parametric mortality model to the life table data.
+-   Reduces dimensionality to a few parameters.
+-   Use these parameters to sample time of death, obtain mortality rate/probability at any arbitrary time, etc.
 
 ## Modeling Mortality
+
+::: {.callout-tip appearance="simple"}
+The R packages `MortalityLaws` and `demography` facilitate life table data aquisition and modeling.
+:::
+
+## Obtaining Life Table Data
+
+-   Human Mortality Database
+-   Global Burden of Disease
+
+## Processing Life Table Data
+
+```{r}
+#| echo: true
+#| eval: false
+hmd_usa <- demography::hmd.mx(
+  "USA",
+  username = "<<your user name>>", 
+  password = "<<your password>>", "USA")
+```
+
+## Processing Life Table Data
+
+```{r}
+hmd_usa <- 
+  readRDS(url("https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"))
+```
+
+```{r}
+#| echo: true
+
+mortality_year = 2019 # <1>
+radix = 100000. # <2>
+
+lt = 
+  hmd_usa %>% 
+  demography::lifetable(.,series = "total", years = mortality_year) %>% 
+  as_tibble() %>% 
+  rename(age = x) %>% 
+  mutate_at(vars(lx,dx), function(x) x * radix) # <3> 
+```
+1. Define the mortality year to extract.
+2. Define the number of individuals in a hypothetical cohort at the beginning of the life table.
+3. `lx` and `dx` are originally specified in terms of a cohort of 1. We multiply by the radix to get the number living dying based on the specified radix.  
+
+## Processing Life Table Data
+
+```{r}
+lt %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+```
 

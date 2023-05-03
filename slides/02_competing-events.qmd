@@ -17,4 +17,13 @@ bibliography: references.bib
 source("./manifest.r")
 ```
 
-## Slide
+1. Healthy-CVD
+2. Estimate life expectancy.
+3. Add background mortality and then calculate life expectancy. 
+4. Intuition of embedding
+5. Demonstrate how changing cycle lengths won't help.
+
+
+
+
+

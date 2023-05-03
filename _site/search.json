@@ -1803,14 +1803,14 @@
     "href": "slides/01_mortality.html#modeling-mortality",
     "title": "Mortality Modeling",
     "section": "Modeling Mortality",
-    "text": "Modeling Mortality\n\nWe can fit a parametric mortality model to the life table data to capture background mortality in terms of a few parameters.\nThe R package MortalityLaws facilitates this."
+    "text": "Modeling Mortality\n\nFit a parametric mortality model to the life table data.\nReduces dimensionality to a few parameters.\nUse these parameters to sample time of death, obtain mortality rate/probability at any arbitrary time, etc."
   },
   {
     "objectID": "slides/01_mortality.html#modeling-mortality-1",
     "href": "slides/01_mortality.html#modeling-mortality-1",
     "title": "Mortality Modeling",
     "section": "Modeling Mortality",
-    "text": "Modeling Mortality\n\n\nBack to Website"
+    "text": "Modeling Mortality\n\n\n\n\n\n\nThe R packages MortalityLaws and demography facilitate life table data aquisition and modeling."
   },
   {
     "objectID": "slides/00_welcome-and-intros.html#welcome-to-berlin",
@@ -1867,5 +1867,54 @@
     "title": "Dealing With Competing Events",
     "section": "Slide",
     "text": "Slide\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#life-table-basd-mortality",
+    "href": "slides/01_mortality.html#life-table-basd-mortality",
+    "title": "Mortality Modeling",
+    "section": "Life Table-Basd Mortality",
+    "text": "Life Table-Basd Mortality\n\nWhat if age bins are coarse (e.g., 0, 5, 10,… vs. 0,1,2,3,…)?\n\nAssume death probability/rate is constant within age bins (and cycles)?\n\nIn a DES model, we need to sample a time to death.\n\nCan sample from survival function in underlying life table.\n\nAlternative: summarize/sample from background mortality using modeling."
+  },
+  {
+    "objectID": "slides/01_mortality.html#life-table-basd-mortality-1",
+    "href": "slides/01_mortality.html#life-table-basd-mortality-1",
+    "title": "Mortality Modeling",
+    "section": "Life Table-Basd Mortality",
+    "text": "Life Table-Basd Mortality\n\nWhat if age bins are more coarse (e.g., 0, 5, 10,… vs. 0,1,2,3,…)?\nWe may also want to simplify the parameterization of our model to summarize background mortality in just a few parameters, not one for every age or age group in the model."
+  },
+  {
+    "objectID": "slides/01_mortality.html#life-table-based-mortality",
+    "href": "slides/01_mortality.html#life-table-based-mortality",
+    "title": "Mortality Modeling",
+    "section": "Life Table-Based Mortality",
+    "text": "Life Table-Based Mortality\n\n\nA common approach is to use a life table-based lookup table in the model:\n\n\n\ntpDn_lookup &lt;-\n        c(\"(34,44]\" = 0.0017,  \n          \"(44,54]\" = 0.0044,\n          \"(54,64]\" = 0.0138,\n          \"(64,74]\" = 0.0379,\n          \"(74,84]\" = 0.0912,\n          \"(84,100]\" = 0.1958)\n\n\nHighlighted row: annual probability of death for 35-44 year old."
+  },
+  {
+    "objectID": "slides/01_mortality.html#obtaining-life-table-data",
+    "href": "slides/01_mortality.html#obtaining-life-table-data",
+    "title": "Mortality Modeling",
+    "section": "Obtaining Life Table Data",
+    "text": "Obtaining Life Table Data\n\nHuman Mortality Database\nGlobal Burden of Disease"
+  },
+  {
+    "objectID": "slides/01_mortality.html#processing-life-table-data",
+    "href": "slides/01_mortality.html#processing-life-table-data",
+    "title": "Mortality Modeling",
+    "section": "Processing Life Table Data",
+    "text": "Processing Life Table Data\n\nhmd_usa &lt;- demography::hmd.mx(\n  \"USA\",\n  username = \"&lt;&lt;your user name&gt;&gt;\", \n  password = \"&lt;&lt;your password&gt;&gt;\", \"USA\")"
+  },
+  {
+    "objectID": "slides/01_mortality.html#processing-life-table-data-1",
+    "href": "slides/01_mortality.html#processing-life-table-data-1",
+    "title": "Mortality Modeling",
+    "section": "Processing Life Table Data",
+    "text": "Processing Life Table Data\n\n1mortality_year = 2019\n2radix = 100000.\n\nlt = \n  hmd_usa %&gt;% \n  demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n  as_tibble() %&gt;% \n  rename(age = x) %&gt;% \n3  mutate_at(vars(lx,dx), function(x) x * radix)\n\n\n1\n\nDefine the mortality year to extract.\n\n2\n\nDefine the number of individuals in a hypothetical cohort at the beginning of the life table.\n\n3\n\nlx and dx are originally specified in terms of a cohort of 1. We multiply by the radix to get the number living dying based on the specified radix."
+  },
+  {
+    "objectID": "slides/01_mortality.html#processing-life-table-data-2",
+    "href": "slides/01_mortality.html#processing-life-table-data-2",
+    "title": "Mortality Modeling",
+    "section": "Processing Life Table Data",
+    "text": "Processing Life Table Data\n\n\n\n\n\nyear\nage\nmx\nqx\nlx\ndx\nLx\nTx\nex\n\n\n\n\n2019\n0\n0.00556\n0.00553\n100000\n553.221\n0.99482\n78.963\n78.963\n\n\n2019\n1\n0.00038\n0.00038\n99447\n38.180\n0.99428\n77.968\n78.402\n\n\n2019\n2\n0.00023\n0.00023\n99409\n23.160\n0.99397\n76.974\n77.432\n\n\n2019\n3\n0.00018\n0.00018\n99385\n17.689\n0.99377\n75.980\n76.450\n\n\n2019\n4\n0.00014\n0.00014\n99368\n14.209\n0.99361\n74.986\n75.463\n\n\n2019\n5\n0.00013\n0.00013\n99354\n13.213\n0.99347\n73.993\n74.474\n\n\n\n\n\n\n\n\n\nBack to Website"
   }
 ]
