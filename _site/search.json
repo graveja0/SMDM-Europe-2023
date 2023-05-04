@@ -2048,7 +2048,7 @@
     "href": "slides/02_competing-events.html#summary",
     "title": "Competing Events and Embedding",
     "section": "Summary",
-    "text": "Summary\n\nAt 2 years, 259 individuals have developed CVD.\nBecause there is no death, after 100 cycles life expectancy is 100 years.\nWe verified that the above results hold exactly when we convert to a daily cycle length."
+    "text": "Summary\n\nAfter 2 years, 259 individuals are in the CVD health state.\nBecause there is no death, after 100 cycles life expectancy is 100 years.\nWe verified that the above results hold exactly when we convert to a daily cycle length."
   },
   {
     "objectID": "slides/02_competing-events.html#markov-trace-at-2-years-1",
@@ -2272,14 +2272,14 @@
     "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years",
     "title": "Competing Events and Embedding",
     "section": "1. CVD State Occupancy at Two Years",
-    "text": "1. CVD State Occupancy at Two Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?"
+    "text": "1. CVD State Occupancy at Two Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many are in the CVD health state at year 2?"
   },
   {
     "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
     "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
     "title": "Competing Events and Embedding",
     "section": "1. CVD State Occupancy at Two Years",
-    "text": "1. CVD State Occupancy at Two Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\n\n\n\n\n740.82\n259.18"
+    "text": "1. CVD State Occupancy at Two Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many are in the CVD health state at year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\n\n\n\n\n740.82\n259.18"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length",
@@ -2356,7 +2356,7 @@
     "href": "slides/02_competing-events.html#summary-1",
     "title": "Competing Events and Embedding",
     "section": "Summary",
-    "text": "Summary\n\n\n\n\n\n\n\ntest \n\n\n\nNo Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624\n\n\n\n\n\n\n\n\n\nBack to Website"
+    "text": "Summary\n\n\n  \n  \n\n\n\n\nNo Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624\n\n\n\n\n\n\n\n\n\n\n\n\nIn the presence of competing events (mortality), we obtain different results for different cycle lengths!"
   },
   {
     "objectID": "slides/02_competing-events.html#summary-2",
@@ -2370,7 +2370,7 @@
     "href": "slides/02_competing-events.html#section-2",
     "title": "Competing Events and Embedding",
     "section": "",
-    "text": "No Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624"
+    "text": "params_mort2$mP &lt;- \n  with(params_mort2,{\n    \n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0,0,  \n                 tp_H_CVD,1-tp_CVD_D, 0,0,\n                 0,tp_CVD_D,1,0,\n                 tp_H_D, 0,0, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#section-3",
@@ -2385,5 +2385,152 @@
     "title": "Competing Events and Embedding",
     "section": "In the presence of competing risks,",
     "text": "In the presence of competing risks,\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#signs-of-trouble",
+    "href": "slides/02_competing-events.html#signs-of-trouble",
+    "title": "Competing Events and Embedding",
+    "section": "Signs of Trouble",
+    "text": "Signs of Trouble\n\n\n\n\n\n\nIn the presence of competing events (mortality), we obtain different results for different cycle lengths!"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#what-went-wrong-1",
+    "href": "slides/02_competing-events.html#what-went-wrong-1",
+    "title": "Competing Events and Embedding",
+    "section": "What Went Wrong?",
+    "text": "What Went Wrong?\n\n\nTo gain intuition for what is going on, let’s split out death for those with vs. without CVD:\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVD-&gt;CVD\n\n    \n\nCVDDeath\n\n CVDDeath   \n\nCVD-&gt;CVDDeath\n\n    hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n    \n\nCVDDeath-&gt;CVDDeath"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#parameterize-the-model-2",
+    "href": "slides/02_competing-events.html#parameterize-the-model-2",
+    "title": "Competing Events and Embedding",
+    "section": "Parameterize the model",
+    "text": "Parameterize the model\n\nparams_mort2 = \n  list(\n    t_names = c(\"natural_history\"),                       \n    n_treatments = 1,                                     \n    s_names  = c(\"Healthy\", \"CVD\", \"CVDDeath\", \"Dead\"),   \n    n_states = 4,                                         \n    n_cohort = 1,                                         \n    n_cycles = 100,                                        \n    cycle = 1,                                            \n    initial_age = 55,                                     \n    r_H_CVD = 0.15,                                       \n    hr_CVD = 10,                                          \n    r_H_D = 0.01                                          \n  )"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-6",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-6",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams_mort2$mP\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#who-can-spot-the-problem-annual-cycle",
+    "href": "slides/02_competing-events.html#who-can-spot-the-problem-annual-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Who Can Spot the Problem? (Annual Cycle)",
+    "text": "Who Can Spot the Problem? (Annual Cycle)\n\nparams_mort2$mP\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#who-can-spot-the-problem-10-year-cycle",
+    "href": "slides/02_competing-events.html#who-can-spot-the-problem-10-year-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Who Can Spot the Problem? (10-Year Cycle)",
+    "text": "Who Can Spot the Problem? (10-Year Cycle)\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#who-can-spot-the-problem-1y-cycle",
+    "href": "slides/02_competing-events.html#who-can-spot-the-problem-1y-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Who Can Spot the Problem? (1Y Cycle)",
+    "text": "Who Can Spot the Problem? (1Y Cycle)\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#who-can-spot-the-problem-10y-cycle",
+    "href": "slides/02_competing-events.html#who-can-spot-the-problem-10y-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Who Can Spot the Problem? (10Y Cycle)",
+    "text": "Who Can Spot the Problem? (10Y Cycle)\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#discretizing-a-continuous-time-process",
+    "href": "slides/02_competing-events.html#discretizing-a-continuous-time-process",
+    "title": "Competing Events and Embedding",
+    "section": "Discretizing a Continuous Time Process",
+    "text": "Discretizing a Continuous Time Process\n\nWe “hold” some deaths in each cycle because the probability matrix rules out “compound transitions”\nCompound transition: Healthy  CVD  Dead in a single cycle."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#wheres-the-problem-1yr-cycle",
+    "href": "slides/02_competing-events.html#wheres-the-problem-1yr-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Where’s the Problem? (1yr Cycle)",
+    "text": "Where’s the Problem? (1yr Cycle)\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#wheres-the-problem-10yr-cycle",
+    "href": "slides/02_competing-events.html#wheres-the-problem-10yr-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "Where’s the Problem? (10yr Cycle)",
+    "text": "Where’s the Problem? (10yr Cycle)\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#discretizing-a-continuous-time-process-1",
+    "href": "slides/02_competing-events.html#discretizing-a-continuous-time-process-1",
+    "title": "Competing Events and Embedding",
+    "section": "Discretizing a Continuous Time Process",
+    "text": "Discretizing a Continuous Time Process\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#discretizing-a-continuous-time-process-2",
+    "href": "slides/02_competing-events.html#discretizing-a-continuous-time-process-2",
+    "title": "Competing Events and Embedding",
+    "section": "Discretizing a Continuous Time Process",
+    "text": "Discretizing a Continuous Time Process\n\nWhen we use the standard rate-to-probability conversion formula (i.e., \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\)) we obtain the marginal transition probability.\nThis marginal probability reflects the union of all possible transitions that start Healthy and then transition to and from the CVD state in the cycle."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#discretizing-a-continuous-time-process-3",
+    "href": "slides/02_competing-events.html#discretizing-a-continuous-time-process-3",
+    "title": "Competing Events and Embedding",
+    "section": "Discretizing a Continuous Time Process",
+    "text": "Discretizing a Continuous Time Process\nThat is, \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\) captures the probability of following scenarios occurring in a cycle:\n\nIndividual transitions from healthy to CVD.\nIndividual transitions from healthy to CVD to CVD Death."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#discretizing-a-continuous-time-process-4",
+    "href": "slides/02_competing-events.html#discretizing-a-continuous-time-process-4",
+    "title": "Competing Events and Embedding",
+    "section": "Discretizing a Continuous Time Process",
+    "text": "Discretizing a Continuous Time Process\n\nThe same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)\nChanging cycle lengths does not get us out of this problem.\nRather than use the conversion formulas, we need to properly “embed” the transition probability matrix."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#year-cycle",
+    "href": "slides/02_competing-events.html#year-cycle",
+    "title": "Competing Events and Embedding",
+    "section": "10 Year Cycle",
+    "text": "10 Year Cycle\n\n\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy   CVD CVDDeath  Dead\n  Healthy    0.128 0.777    0.000 0.095\n  CVD        0.000 0.368    0.632 0.000\n  CVDDeath   0.000 0.000    1.000 0.000\n  Dead       0.000 0.000    0.000 1.000\n\n\n\n\nThis matrix “captures” all transitions from Healthy  CVD in a single transition probability 0.777."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#year-cycle-1",
+    "href": "slides/02_competing-events.html#year-cycle-1",
+    "title": "Competing Events and Embedding",
+    "section": "10 Year Cycle",
+    "text": "10 Year Cycle\n\n\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy   CVD CVDDeath  Dead\n  Healthy    0.128 0.777    0.000 0.095\n  CVD        0.000 0.368    0.632 0.000\n  CVDDeath   0.000 0.000    1.000 0.000\n  Dead       0.000 0.000    0.000 1.000\n\n\n\n\nIn other words, we rule out the possibility of a compound (Healthy  CVD  CVDDeath) in a single cycle."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#year-cycle-2",
+    "href": "slides/02_competing-events.html#year-cycle-2",
+    "title": "Competing Events and Embedding",
+    "section": "10 Year Cycle",
+    "text": "10 Year Cycle\n\n\n\n\n, ,  = natural_history\n\n          to\nfrom       Healthy   CVD CVDDeath  Dead\n  Healthy    0.128 0.777    0.000 0.095\n  CVD        0.000 0.368    0.632 0.000\n  CVDDeath   0.000 0.000    1.000 0.000\n  Dead       0.000 0.000    0.000 1.000\n\n\n\n\nIn doing so, our model no longer captures a continuous-time disease progression process."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#takeaway",
+    "href": "slides/02_competing-events.html#takeaway",
+    "title": "Competing Events and Embedding",
+    "section": "Takeaway",
+    "text": "Takeaway\n\n\n\n\n\n\nIn the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#year-cycle-3",
+    "href": "slides/02_competing-events.html#year-cycle-3",
+    "title": "Competing Events and Embedding",
+    "section": "10 Year Cycle",
+    "text": "10 Year Cycle\n\n\n\n\n         Healthy   CVD CVDDeath Dead\nHealthy    0.202 0.415    0.333 0.05\nCVD        0.000 0.368    0.632 0.00\nCVDDeath   0.000 0.000    1.000 0.00\nDead       0.000 0.000    0.000 1.00\n\n\n        Healthy   CVD  Dead\nHealthy   0.202 0.415 0.383\nCVD       0.000 0.368 0.632\nDead      0.000 0.000 1.000\n\n\n\n\nThe correct transition probability matrix includes a seemingly impossible transition: Healthy  CVDDeath"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#takeaway-1",
+    "href": "slides/02_competing-events.html#takeaway-1",
+    "title": "Competing Events and Embedding",
+    "section": "Takeaway",
+    "text": "Takeaway\n\n\n\n\n\n\nIn the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices.\n\n\n\n\n\n\n\n\n\nDepending on context, embedding error may be decision relevant (i.e., change optimal decisions)"
   }
 ]

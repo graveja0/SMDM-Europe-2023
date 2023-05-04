@@ -13,11 +13,14 @@ self-contained: true
 bibliography: references.bib
 ---
 
-
 <!-- 1. Healthy-CVD -->
+
 <!-- 2. Estimate life expectancy. -->
+
 <!-- 3. Add background mortality and then calculate life expectancy.  -->
+
 <!-- 4. Intuition of embedding -->
+
 <!-- 5. Demonstrate how changing cycle lengths won't help. -->
 
 ```{r setup}
@@ -96,7 +99,7 @@ source("./manifest.r")
 ## 
 
 ::: nonincremental
-- We will first construct a very simple CVD model with only two states: Healthy and CVD. 
+-   We will first construct a very simple CVD model with only two states: Healthy and CVD.
 :::
 
 ```{dot}
@@ -117,7 +120,7 @@ digraph G {
   }
 ```
 
-## Parameterize the model 
+## Parameterize the model
 
 ```{r}
 #| echo: true
@@ -142,8 +145,7 @@ We'll next construct a transition probability matrix using the standard rate-to-
 
 $$
 p = 1 - \exp(-rt)
-$$
-where $r$ is the rate, $t$ is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.). 
+$$ where $r$ is the rate, $t$ is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.).
 
 ## Transition Probability Matrix Array
 
@@ -180,9 +182,10 @@ params$mP <-
 ```
 
 ::: nonincremental
-- Next, place these probabilities within the transition probability matrix array. 
+-   Next, place these probabilities within the transition probability matrix array.
 :::
-- Outer array dimensions goverened by the number of strategies under consideration. 
+
+-   Outer array dimensions goverened by the number of strategies under consideration.
 
 ## Transition Probability Matrix Array
 
@@ -200,14 +203,15 @@ params$mP <-
                                   t_names))
   })
 ```
-::: nonincremental
-- Remaining code simply names the various dimensions of the array. 
-:::
 
+::: nonincremental
+-   Remaining code simply names the various dimensions of the array.
+:::
 
 ## Transition Probability Matrix Array
 
 Final result:
+
 ```{r, echo = TRUE}
 params$mP
 ```
@@ -230,7 +234,7 @@ sim_cohort <- function(params) {
 ```
 
 ::: nonincremental
-- `sim_cohort(params)` is a function that constructs a Markov trace from the supplied parameters. 
+-   `sim_cohort(params)` is a function that constructs a Markov trace from the supplied parameters.
 :::
 
 ## Construct the Markov Trace
@@ -251,7 +255,7 @@ sim_cohort <- function(params) {
 ```
 
 ::: nonincremental
-- Specify the initial state occupancy.
+-   Specify the initial state occupancy.
 :::
 
 ## Construct the Markov Trace
@@ -272,7 +276,7 @@ sim_cohort <- function(params) {
 ```
 
 ::: nonincremental
-- Iterate over the cycles in the model. 
+-   Iterate over the cycles in the model.
 :::
 
 ## Construct the Markov Trace
@@ -293,12 +297,12 @@ sim_cohort <- function(params) {
 ```
 
 ::: nonincremental
-- Within a cycle, iterate over the strategies under consideration. 
+-   Within a cycle, iterate over the strategies under consideration.
 :::
 
 ## Construct the Markov Trace
 
-The markov trace tells us the fraction of the population in each state in any cycle: 
+The markov trace tells us the fraction of the population in each state in any cycle:
 
 ```{r}
 #| echo: true
@@ -310,16 +314,17 @@ trace[1:5,]
 
 ## 1. CVD State Occupancy at Two Years
 
-- Suppose we start off with a cohort of 1000 healthy individuals. 
-- How many will have transitioned to the CVD state by year 2?
+-   Suppose we start off with a cohort of 1000 healthy individuals.
+-   How many are in the CVD health state at year 2?
 
 ## 1. CVD State Occupancy at Two Years
 
 ::: nonincremental
-- Suppose we start off with a cohort of 1000 healthy individuals. 
-- How many will have transitioned to the CVD state by year 2?
+-   Suppose we start off with a cohort of 1000 healthy individuals.
+-   How many are in the CVD health state at year 2?
 :::
-- Pin this number to your brain for a few minutes!
+
+-   Pin this number to your brain for a few minutes!
 
 ```{r}
 (1000*trace[3,]) %>% t() %>% 
@@ -332,15 +337,14 @@ trace[1:5,]
 
 ## 2. Life Expectancy
 
-- We have a model with `r params$n_cycles` annual cycles and no death.
-- Let's verify that life expectancy is `r params$n_cycles`
+-   We have a model with `r params$n_cycles` annual cycles and no death.
+-   Let's verify that life expectancy is `r params$n_cycles`
 
 ## 2. Life Expectancy
 
 ::: nonincremental
-- We have a model with `r params$n_cycles` annual cycles and no death.
-- Let's verify that life expectancy is `r params$n_cycles`
-
+-   We have a model with `r params$n_cycles` annual cycles and no death.
+-   Let's verify that life expectancy is `r params$n_cycles`
 
 ```{r}
 #| echo: true
@@ -348,16 +352,17 @@ payoff_life_exp = c("Healthy" = 1, "CVD" = 1) # <1>
 life_exp_cycle = trace[-1,] %*% payoff_life_exp  # <2>
 total_life_exp = sum(life_exp_cycle) # <3>
 ```
-1. Life expectancy payoff is 1 for every state where someone remains alive.
-2. Total life-years alive in each state is the markov trace multiplied by the payoff vector. 
-3. Total life expectancy is the sum of cycle values. 
+
+1.  Life expectancy payoff is 1 for every state where someone remains alive.
+2.  Total life-years alive in each state is the markov trace multiplied by the payoff vector.
+3.  Total life expectancy is the sum of cycle values.
 :::
 
 ## 2. Life Expectancy
 
 ::: nonincremental
-- We have a model with `r params$n_cycles` annual cycles and no death.
-- Let's verify that life expectancy is `r params$n_cycles`
+-   We have a model with `r params$n_cycles` annual cycles and no death.
+-   Let's verify that life expectancy is `r params$n_cycles`
 :::
 
 ```{r}
@@ -373,7 +378,7 @@ total_life_exp * params$cycle
 
 ## 3. Daily Cycle Length
 
-- We will next switch to a *daily* cycle length and verify that we can recapitulate these numbers.
+-   We will next switch to a *daily* cycle length and verify that we can recapitulate these numbers.
 
 ```{r}
 #| echo: true
@@ -422,11 +427,11 @@ total_life_exp_daily = sum(life_exp_cycle_daily)
 total_life_exp_daily * params_daily$cycle
 ```
 
-## Summary 
+## Summary
 
-1. At 2 years, `r round(1000*trace[3,2])` individuals have developed CVD.
-2. Because there is no death, after 100 cycles life expectancy is 100 years. 
-3. We verified that the above results hold exactly when we convert to a daily cycle length. 
+1.  After 2 years, `r round(1000*trace[3,2])` individuals are in the CVD health state.
+2.  Because there is no death, after 100 cycles life expectancy is 100 years.
+3.  We verified that the above results hold exactly when we convert to a daily cycle length.
 
 # Part 2: Include Background Mortality
 
@@ -451,10 +456,10 @@ digraph G {
 ```
 
 ::: nonincremental
-- We next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD. 
+-   We next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD.
 :::
 
-## Parameterize the model 
+## Parameterize the model
 
 ```{r}
 #| echo: true
@@ -496,7 +501,6 @@ params_mort$mP <-
                                   t_names))
   })
 ```
-
 
 ## Transition Probability Matrix Array
 
@@ -603,8 +607,9 @@ total_life_exp_mort_daily = sum(life_exp_mort_daily)
 total_life_exp_mort_daily * params_mort_daily$cycle
 ```
 
+## Summary 
 
-## 
+
 
 ```{r, results = 'asis'}
 
@@ -639,11 +644,20 @@ tibble(measure = c("1. CVD State Occupancy at Two Years", "2. Life Expectancy"),
 
 ```
 
-## In the presence of competing risks, 
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), we obtain different results for different cycle lengths!
+:::
+
+## Signs of Trouble
+
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), we obtain different results for different cycle lengths!
+:::
 
 ```{r}
-#| fig-height: 7
+#| fig-height: 6
 #| fig-width: 10
+#| fig-align: center
 df_res <- 
     data.frame(trace) %>% 
         mutate(cycle = (row_number()-1)) %>% 
@@ -688,4 +702,303 @@ df_res %>%
     guides(color = "none") + 
   scale_linetype_discrete(name="Cycle Length")
 ```
+
+
+# What Went Wrong?
+
+## What Went Wrong?
+
+::: nonincremental
+- To gain intuition for what is going on, let's split out death for those with vs. without CVD:
+:::
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    CVDDeath [pos="3,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    Healthy -> CVD [label="r_H_CVD = 0.15"]; 
+    CVD -> CVDDeath [label="  hr_CVD * r_HD\nhr_CVD=10" ];
+    CVDDeath -> CVDDeath;
+    Healthy -> Dead [label="r_HD=0.01"];
+    Dead -> Dead;
+  }
+```
+
+## Parameterize the model
+
+```{r}
+#| echo: true
+params_mort2 = 
+  list(
+    t_names = c("natural_history"),                       
+    n_treatments = 1,                                     
+    s_names  = c("Healthy", "CVD", "CVDDeath", "Dead"),   
+    n_states = 4,                                         
+    n_cohort = 1,                                         
+    n_cycles = 100,                                        
+    cycle = 1,                                            
+    initial_age = 55,                                     
+    r_H_CVD = 0.15,                                       
+    hr_CVD = 10,                                          
+    r_H_D = 0.01                                          
+  )
+
+```
+
+## 
+
+```{r}
+#| echo: true
+params_mort2$mP <- 
+  with(params_mort2,{
+    
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    tp_H_D = 1 - exp(-r_H_D * cycle)
+    tp_CVD_D <- 1 - exp(-(hr_CVD * r_H_D) * cycle)
+    
+    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0,0,  
+                 tp_H_CVD,1-tp_CVD_D, 0,0,
+                 0,tp_CVD_D,1,0,
+                 tp_H_D, 0,0, 1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+```
+
+## Where's the Problem? (1yr Cycle)
+
+```{r}
+params_mort2$mP
+```
+
+## Where's the Problem?  (10yr Cycle)
+
+```{r}
+params_mort2_10y = 
+  list(
+    t_names = c("natural_history"),                       # Strategy names. 
+    n_treatments = 1,                                     # Number of treatments
+    s_names  = c("Healthy", "CVD", "CVDDeath", "Dead"),   # State names
+    n_states = 4,                                         # Number of states
+    n_cohort = 1,                                         # Cohort size
+    n_cycles = 10,                                       # Number of cycles in model.  
+    cycle = 10,                                            # Cycle length
+    initial_age = 55,                                     # Cohort starting age
+    r_H_CVD = 0.15,                                       # Rate of healthy -> CVD
+    hr_CVD = 10,                                          # Hazard Ratio: CVD Death
+    r_H_D = 0.01                                          # Rate of healthy -> dead
+  )
+
+params_mort2_10y$mP <- 
+  with(params_mort2_10y,{
+    
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    tp_H_D = 1 - exp(-r_H_D * cycle)
+    tp_CVD_D <- 1 - exp(-(hr_CVD * r_H_D) * cycle)
+    
+    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0,0,  
+                 tp_H_CVD,1-tp_CVD_D, 0,0,
+                 0,tp_CVD_D,1,0,
+                 tp_H_D, 0,0, 1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+params_mort2_10y$mP
+```
+
+## Discretizing a Continuous Time Process
+
+- We "hold" some deaths in each cycle because the probability matrix rules out "compound transitions"
+- Compound transition: Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} Dead in a single cycle. 
+
+## Discretizing a Continuous Time Process
+
+```{r}
+params_mort2_10y$mP
+```
+
+## Discretizing a Continuous Time Process
+
+- When we use the standard rate-to-probability conversion formula (i.e., $p_{HS}= 1 - e^{-r_{HS}\Delta t}$) we obtain the *marginal* transition probability. 
+- This marginal probability reflects the union of *all possible transitions* that start Healthy and then transition to and from the CVD state in the cycle.
+
+
+## Discretizing a Continuous Time Process
+
+That is, $p_{HS}= 1 - e^{-r_{HS}\Delta t}$ captures the probability of following scenarios occurring in a cycle:
+
+1.  Individual transitions from healthy to CVD.
+2.  Individual transitions from healthy to CVD to CVD Death.
+
+## 10 Year Cycle
+
+::: columns
+
+::: {.column width="60%"}
+```{r}
+tmp_ <- unname(params_mort2_10y$mP)
+dimnames(tmp_) <- list(params_mort2_10y$s_names,params_mort2_10y$s_names)
+round(params_mort2_10y$mP,3)
+```
+:::
+
+::: {.column width="40%"}
+
+- This matrix "captures" all transitions from Healthy {{< fa arrow-right >}} CVD in a single transition probability `r round(params_mort2_10y$mP[1,2,1],3)`. 
+<!-- By including case 2 in the healthy {{< fa arrow-right >}} sick transition probability, we effectively rule out the possibility of becoming sick and dying within the same cycle. This implicit assumption means that we are no longer modeling a continuous time process, since we effectively "hide" some (quick) deaths that occur within a cycle due to the disease: -->
+
+:::
+
+:::
+
+## 10 Year Cycle
+
+::: columns
+
+::: {.column width="60%"}
+```{r}
+tmp_ <- unname(params_mort2_10y$mP)
+dimnames(tmp_) <- list(params_mort2_10y$s_names,params_mort2_10y$s_names)
+round(params_mort2_10y$mP,3)
+```
+:::
+
+::: {.column width="40%"}
+
+- In other words, we rule out the possibility of a compound (Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} CVDDeath) in a single cycle.
+
+:::
+
+:::
+
+
+## 10 Year Cycle
+
+::: columns
+
+::: {.column width="60%"}
+```{r}
+tmp_ <- unname(params_mort2_10y$mP)
+dimnames(tmp_) <- list(params_mort2_10y$s_names,params_mort2_10y$s_names)
+round(params_mort2_10y$mP,3)
+```
+:::
+
+::: {.column width="40%"}
+
+- In doing so, our model no longer captures a continuous-time disease progression process. 
+
+:::
+
+:::
+
+## Discretizing a Continuous Time Process
+
+- The same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)
+- Changing cycle lengths does not get us out of this problem. 
+- Rather than use the conversion formulas, we need to properly "embed" the transition probability matrix.
+
+
+## Takeaway
+
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices. 
+:::
+
+
+## Takeaway
+
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices. 
+:::
+
+::: {.callout-important appearance="simple"}
+Depending on context, embedding error *may* be decision relevant (i.e., change optimal decisions)
+:::
+
+
+## 10 Year Cycle 
+
+::: columns
+
+::: {.column width="60%"}
+```{r}
+params_mort2_10y_emb <- params_mort2_10y
+
+params_mort2_10y_emb$mR <- 
+  with(params_mort2_10y,{
+
+    r_CVD_D <- hr_CVD * r_H_D
+    
+    R_ <- 
+      array(data = c(0, 0, 0,0,  
+                 r_H_CVD,0, 0,0,
+                 0,r_CVD_D,0,0,
+                 r_H_D, 0,0, 0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+    R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      x * cycle
+    })
+  R    
+  })
+params_mort2_10y_emb$mP <- lapply(params_mort2_10y_emb$mR,expm)
+
+round(params_mort2_10y_emb$mP[[1]],3)
+
+
+params_mort_10y_emb <- modifyList(params_mort,list(cycle = 10, n_cycles=10))
+
+params_mort_10y_emb$mR <- 
+  with(params_mort_10y_emb,{
+
+    r_CVD_D <- hr_CVD * r_H_D
+    
+    R_ <- 
+      array(data = c(0, 0, 0,  
+                 r_H_CVD,0, 0,
+                 r_H_D, r_CVD_D, 0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+    R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      x * cycle
+    })
+  R    
+  })
+params_mort_10y_emb$mP <- lapply(params_mort_10y_emb$mR,expm)
+
+round(params_mort_10y_emb$mP[[1]],3)
+
+```
+:::
+
+::: {.column width="40%"}
+
+- The correct transition probability matrix includes a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
+
+:::
+
+:::
+
+# So How Do We Obtain the Correct Transition Matrix?
+
+
 
