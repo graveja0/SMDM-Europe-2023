@@ -1,5 +1,5 @@
 ---
-title: "Dealing With Competing Events"
+title: "Competing Events and Embedding"
 format:
   revealjs:
     transition: fade
@@ -13,17 +13,679 @@ self-contained: true
 bibliography: references.bib
 ---
 
+
+<!-- 1. Healthy-CVD -->
+<!-- 2. Estimate life expectancy. -->
+<!-- 3. Add background mortality and then calculate life expectancy.  -->
+<!-- 4. Intuition of embedding -->
+<!-- 5. Demonstrate how changing cycle lengths won't help. -->
+
 ```{r setup}
+#| message: false
+#| warning: false
+#| code-fold: true
+
 source("./manifest.r")
+
+# # Better accuracy that "life-table" aka trapezoidal method
+# alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+# alt_simp      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+# 
+# r_H_CVD <- 0.15
+# r_HD <- .006
+# hr_S <- 10
+# r_SD <- hr_S*r_HD
+# cycle <- 1
+# 
+# # 1-exp(-r_H_CVD*cycle)
+# # 1-exp(-r_HD*cycle)
+# 
+# get_P <- function(r_H_CVD,r_HD,r_SD,cycle) {
+#   P_st <- 
+#   matrix(
+#   c(exp(-r_H_CVD*cycle) + exp(-r_HD*cycle) -1 ,  (1-exp(-r_H_CVD*cycle)) ,  1-exp(-r_HD*cycle), 
+#   0, exp(-r_SD*cycle), 1-exp(-r_SD*cycle),
+#   0,0,1),
+#   nrow = 3, 
+#   ncol = 3,
+#   byrow=TRUE,
+#   dimnames = list(c("Healthy","Sick","Dead"), c("Healthy","Sick","Dead"))
+#   ) %>% 
+#     data.frame() %>% 
+#     rownames_to_column(var = "from") %>% 
+#     mutate(name = "P_st")
+# 
+#   P_eQ <- matrix(
+#     c(-(r_H_CVD*cycle+r_HD*cycle),r_H_CVD*cycle,r_HD*cycle,
+#       0,-r_SD*cycle,r_SD*cycle,
+#       0,0,0),
+#       nrow=3,
+#       ncol=3,
+#       byrow=TRUE,
+#     dimnames = list(c("Healthy","Sick","Dead"), c("Healthy","Sick","Dead"))
+#   ) %>% expm() %>% as.matrix() %>% 
+#     data.frame() %>% 
+#     rownames_to_column(var = "from") %>% 
+#     mutate(name = "P_eQ")
+# 
+# 
+#   P_cr <- 
+#     matrix(
+#     c(exp(-(r_H_CVD+r_HD)*cycle) , (r_H_CVD/(r_H_CVD+r_HD)) * (1-exp(-(r_H_CVD+r_HD)*cycle))   ,(r_HD/(r_H_CVD+r_HD)) * (1-exp(-(r_H_CVD+r_HD)*cycle))   , 
+#     0, exp(-r_SD*cycle), 1-exp(-r_SD*cycle),
+#     0,0,1),
+#     nrow = 3, 
+#     ncol = 3,
+#     byrow=TRUE,
+#     dimnames = list(c("Healthy","Sick","Dead"), c("Healthy","Sick","Dead"))
+#   ) %>% 
+#     data.frame() %>% 
+#     rownames_to_column(var = "from") %>% mutate(name = "P_cr")
+#   
+#   
+#   
+#   out <- bind_rows( P_st, P_cr , P_eQ)
+#   return(out)
+# }
+
+
 ```
 
-1. Healthy-CVD
-2. Estimate life expectancy.
-3. Add background mortality and then calculate life expectancy. 
-4. Intuition of embedding
-5. Demonstrate how changing cycle lengths won't help.
+# Part 1: A World Without Death
+
+## 
+
+::: nonincremental
+- We will first construct a very simple CVD model with only two states: Healthy and CVD. 
+:::
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!" color="white" fontcolor="white"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    Healthy -> CVD [label="r_H_CVD = 0.15"]; 
+    CVD -> Dead [label="hr_S * r_HD\nhr_S=10" color="white" fontcolor="white"];
+    Healthy -> Dead [label="r_HD=0.006" color="white" fontcolor="white"];
+    Dead -> Dead [color="white"];
+  }
+```
+
+## Parameterize the model 
+
+```{r}
+#| echo: true
+params = 
+  list(
+    t_names = c("natural_history"),   # Strategy names. 
+    n_treatments = 1,                 # Number of treatments
+    s_names  = c("Healthy", "CVD"),   # State names
+    n_states = 2,                     # Number of states
+    n_cohort = 1,                     # Cohort size
+    n_cycles = 100,                   # Number of cycles in model.  
+    cycle = 1,                        # Cycle length
+    initial_age = 55,                 # Cohort starting age
+    r_H_CVD = 0.15                    # Rate of healthy -> CVD
+  )
+
+```
+
+## Transition Probability Matrix
+
+We'll next construct a transition probability matrix using the standard rate-to-probability conversion formula:
+
+$$
+p = 1 - \exp(-rt)
+$$
+where $r$ is the rate, $t$ is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.). 
+
+## Transition Probability Matrix Array
+
+```{r}
+#| echo: true
+#| code-line-numbers: "3"
+params$mP <- 
+  with(params,{
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    array(data = c(1 - tp_H_CVD, 0, 
+                 tp_H_CVD,1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+```
+
+## Transition Probability Matrix Array
+
+```{r}
+#| echo: true
+#| code-line-numbers: "4-5"
+params$mP <- 
+  with(params,{
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    array(data = c(1 - tp_H_CVD, 0, 
+                 tp_H_CVD,1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+```
+
+::: nonincremental
+- Next, place these probabilities within the transition probability matrix array. 
+:::
+- Outer array dimensions goverened by the number of strategies under consideration. 
+
+## Transition Probability Matrix Array
+
+```{r}
+#| echo: true
+#| code-line-numbers: "6-9"
+params$mP <- 
+  with(params,{
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    array(data = c(1 - tp_H_CVD, 0, 
+                 tp_H_CVD,1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+```
+::: nonincremental
+- Remaining code simply names the various dimensions of the array. 
+:::
 
 
+## Transition Probability Matrix Array
+
+Final result:
+```{r, echo = TRUE}
+params$mP
+```
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+#| code-line-numbers: "1"
+sim_cohort <- function(params) {
+  tr_ <- t(c("Healthy" = params$n_cohort, "CVD" = 0)) 
+  trace <- 
+    0:params$n_cycles %>% map_df(~({ 
+        apply(params$mP,3, simplify=FALSE, function(tp) {  
+          (tr_ %*% (tp %^% .x)) %>% data.frame()
+        })
+    })) %>% 
+    as.matrix() 
+}
+```
+
+::: nonincremental
+- `sim_cohort(params)` is a function that constructs a Markov trace from the supplied parameters. 
+:::
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+#| code-line-numbers: "2"
+sim_cohort <- function(params) {
+  tr_ <- t(c("Healthy" = params$n_cohort, "CVD" = 0)) 
+  trace <- 
+    0:params$n_cycles %>% map_df(~({  
+        apply(params$mP,3, simplify=FALSE, function(tp) {  
+          (tr_ %*% (tp %^% .x)) %>% data.frame()
+        })
+    })) %>% 
+    as.matrix() 
+}
+```
+
+::: nonincremental
+- Specify the initial state occupancy.
+:::
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+#| code-line-numbers: "4"
+sim_cohort <- function(params) {
+  tr_ <- t(c("Healthy" = params$n_cohort, "CVD" = 0)) 
+  trace <- 
+    0:params$n_cycles %>% map_df(~({  
+        apply(params$mP,3, simplify=FALSE, function(tp) {  
+          (tr_ %*% (tp %^% .x)) %>% data.frame()
+        })
+    })) %>% 
+    as.matrix() 
+}
+```
+
+::: nonincremental
+- Iterate over the cycles in the model. 
+:::
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+#| code-line-numbers: "5"
+sim_cohort <- function(params) {
+  tr_ <- t(c("Healthy" = params$n_cohort, "CVD" = 0)) 
+  trace <- 
+    0:params$n_cycles %>% map_df(~({  
+        apply(params$mP,3, simplify=FALSE, function(tp) {  
+          (tr_ %*% (tp %^% .x)) %>% data.frame()
+        })
+    })) %>% 
+    as.matrix() 
+}
+```
+
+::: nonincremental
+- Within a cycle, iterate over the strategies under consideration. 
+:::
+
+## Construct the Markov Trace
+
+The markov trace tells us the fraction of the population in each state in any cycle: 
+
+```{r}
+#| echo: true
+trace <- sim_cohort(params)
+trace[1:5,]
+```
+
+# Checkpoint 1: CVD State Occupancy at Two Years
+
+## 1. CVD State Occupancy at Two Years
+
+- Suppose we start off with a cohort of 1000 healthy individuals. 
+- How many will have transitioned to the CVD state by year 2?
+
+## 1. CVD State Occupancy at Two Years
+
+::: nonincremental
+- Suppose we start off with a cohort of 1000 healthy individuals. 
+- How many will have transitioned to the CVD state by year 2?
+:::
+- Pin this number to your brain for a few minutes!
+
+```{r}
+(1000*trace[3,]) %>% t() %>% 
+  data.frame() %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+# Checkpoint 2: Life Expectancy
+
+## 2. Life Expectancy
+
+- We have a model with `r params$n_cycles` annual cycles and no death.
+- Let's verify that life expectancy is `r params$n_cycles`
+
+## 2. Life Expectancy
+
+::: nonincremental
+- We have a model with `r params$n_cycles` annual cycles and no death.
+- Let's verify that life expectancy is `r params$n_cycles`
 
 
+```{r}
+#| echo: true
+payoff_life_exp = c("Healthy" = 1, "CVD" = 1) # <1>
+life_exp_cycle = trace[-1,] %*% payoff_life_exp  # <2>
+total_life_exp = sum(life_exp_cycle) # <3>
+```
+1. Life expectancy payoff is 1 for every state where someone remains alive.
+2. Total life-years alive in each state is the markov trace multiplied by the payoff vector. 
+3. Total life expectancy is the sum of cycle values. 
+:::
+
+## 2. Life Expectancy
+
+::: nonincremental
+- We have a model with `r params$n_cycles` annual cycles and no death.
+- Let's verify that life expectancy is `r params$n_cycles`
+:::
+
+```{r}
+#| echo: true
+#| code-line-numbers: "4"
+payoff_life_exp = c("Healthy" = 1, "CVD" = 1) # <1>
+life_exp_cycle = trace[-1,] %*% payoff_life_exp  # <2>
+total_life_exp = sum(life_exp_cycle) # <3>
+total_life_exp * params$cycle
+```
+
+# Checkpoint 3: Changing Cycle Lengths
+
+## 3. Daily Cycle Length
+
+- We will next switch to a *daily* cycle length and verify that we can recapitulate these numbers.
+
+```{r}
+#| echo: true
+params_daily <- modifyList(params,list(
+  cycle = 1/365,
+  n_cycles = params$n_cycles * 365))
+```
+
+## 3. Daily Cycle Length
+
+```{r}
+#| echo: true
+params_daily$mP <- 
+  with(params_daily,{
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    array(data = c(1 - tp_H_CVD, 0, 
+                 tp_H_CVD,1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+params_daily$mP
+```
+
+## 3. Daily Cycle Length
+
+```{r}
+#| echo: true
+# Markov Trace (Daily Cycle)
+trace_daily <- sim_cohort(params_daily)
+```
+
+```{r, echo = TRUE}
+# State Occupancy at 2 Years
+1000 * trace_daily[365 * 2 + 1,]
+```
+
+## 3. Daily Cycle Length
+
+```{r, echo = TRUE}
+# Life Expectancy
+payoff_life_exp = c("Healthy" = 1, "CVD" = 1) 
+life_exp_cycle_daily = trace_daily[-1,] %*% payoff_life_exp  
+total_life_exp_daily = sum(life_exp_cycle_daily) 
+total_life_exp_daily * params_daily$cycle
+```
+
+## Summary 
+
+1. At 2 years, `r round(1000*trace[3,2])` individuals have developed CVD.
+2. Because there is no death, after 100 cycles life expectancy is 100 years. 
+3. We verified that the above results hold exactly when we convert to a daily cycle length. 
+
+# Part 2: Include Background Mortality
+
+## 
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    Healthy -> CVD [label="r_H_CVD = 0.15"]; 
+    CVD -> Dead [label=" hr_CVD * r_HD\nhr_CVD=10" ];
+    Healthy -> Dead [label="r_HD=0.01"];
+    Dead -> Dead;
+  }
+```
+
+::: nonincremental
+- We next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD. 
+:::
+
+## Parameterize the model 
+
+```{r}
+#| echo: true
+params_mort = 
+  list(
+    t_names = c("natural_history"),           # Strategy names. 
+    n_treatments = 1,                         # Number of treatments
+    s_names  = c("Healthy", "CVD", "Dead"),   # State names
+    n_states = 3,                             # Number of states
+    n_cohort = 1,                             # Cohort size
+    n_cycles = 100,                           # Number of cycles in model.  
+    cycle = 1,                                # Cycle length
+    initial_age = 55,                         # Cohort starting age
+    r_H_CVD = 0.15,                           # Rate of healthy -> CVD
+    hr_CVD = 10,                              # Hazard Ratio: CVD Death
+    r_H_D = 0.01                              # Rate of healthy -> dead
+  )
+
+```
+
+## Transition Probability Matrix Array
+
+```{r}
+#| echo: true
+#| code-line-numbers: "4-6"
+params_mort$mP <- 
+  with(params_mort,{
+    
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    tp_H_D = 1 - exp(-r_H_D * cycle)
+    tp_CVD_D <- 1 - exp(-(hr_CVD * r_H_D) * cycle)
+    
+    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, 
+                 tp_H_CVD,1-tp_CVD_D, 0,
+                 tp_H_D, tp_CVD_D, 1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+```
+
+
+## Transition Probability Matrix Array
+
+```{r, echo = TRUE}
+params_mort$mP
+```
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+
+sim_cohort <- function(params) {
+  tr_ <- c(1,rep(0,params$n_states-1))
+  trace <- 
+    0:params$n_cycles %>% map_df(~({ 
+        apply(params$mP,3, simplify=FALSE, function(tp) {  
+          (tr_ %*% (tp %^% .x)) %>% data.frame()
+        })
+    })) %>% 
+    as.matrix() 
+}
+
+trace_mort <- 
+  sim_cohort(params_mort)
+```
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+trace_mort[1:5,]
+```
+
+## 1. CVD State Occupancy at 2 Years
+
+```{r}
+(1000*trace_mort[3,]) %>% t() %>% 
+  data.frame() %>% 
+  kable(digits = 1) %>% 
+  kable_styling()
+```
+
+## 2. Life Expectancy
+
+```{r}
+#| echo: true
+payoff_life_exp_mort = c("Healthy" = 1, "CVD" = 1, "Dead" = 0) 
+life_exp_cycle_mort = trace_mort[-1,] %*% payoff_life_exp_mort 
+total_life_exp_mort = sum(life_exp_cycle_mort) # <3>
+total_life_exp_mort
+```
+
+## 3. Daily Cycle Length
+
+```{r}
+#| echo: true
+params_mort_daily <- modifyList(params_mort,list(
+  cycle = 1/365,
+  n_cycles = params$n_cycles * 365))
+```
+
+## 3. Daily Cycle Length
+
+```{r}
+#| echo: true
+params_mort_daily$mP <- 
+  with(params_mort_daily,{
+    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) 
+    tp_H_D = 1 - exp(-r_H_D * cycle)
+    tp_CVD_D <- 1 - exp(-(hr_CVD * r_H_D) * cycle)
+    
+    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, 
+                 tp_H_CVD,1-tp_CVD_D, 0,
+                 tp_H_D, tp_CVD_D, 1),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+  })
+params_mort_daily$mP
+```
+
+## 3. Daily Cycle Length
+
+```{r}
+#| echo: true
+# Markov Trace (Daily Cycle)
+trace_mort_daily <- sim_cohort(params_mort_daily)
+```
+
+```{r, echo = TRUE}
+# State Occupancy at 2 Years
+1000 * trace_mort_daily[365 * 2 + 1,]
+```
+
+## 3. Daily Cycle Length
+
+```{r, echo = TRUE}
+# Life Expectancy
+payoff_mort_life_exp = c("Healthy" = 1, "CVD" = 1, "Death" = 0) 
+life_exp_mort_daily = trace_mort_daily[-1,] %*% payoff_mort_life_exp  
+total_life_exp_mort_daily = sum(life_exp_mort_daily) 
+total_life_exp_mort_daily * params_mort_daily$cycle
+```
+
+
+## 
+
+```{r, results = 'asis'}
+
+cvd2_ann <- unname((1000*trace[3,2]))
+cvd2_day <- unname((1000*trace_daily[365*2+1,2]))
+cvd2_ann_mort <- 1000*trace_mort[3,2]
+cvd2_day_mort <- 1000*trace_mort_daily[365*2+1,2]
+
+le_ann <- total_life_exp * params$cycle
+le_day <- total_life_exp_daily * params_daily$cycle
+le_mort_ann <- total_life_exp_mort * params_mort$cycle
+le_mort_day <- total_life_exp_mort_daily * params_mort_daily$cycle 
+
+tibble(measure = c("1. CVD State Occupancy at Two Years", "2. Life Expectancy"), 
+       annual = c(cvd2_ann, le_ann),
+       daily = c(cvd2_day, le_day),
+       annual_mort= c(cvd2_ann_mort,le_mort_ann),
+       daily_mort = c(cvd2_day_mort, le_mort_day)) %>% 
+  gt()  %>% 
+  tab_spanner(label = "No Mortality", columns = c(annual,daily)) %>% 
+  tab_spanner(label = "With Mortality", columns = c(annual_mort, daily_mort)) %>% 
+  cols_label(
+    annual = "Yearly Cycle",
+    daily = "Daily Cycle",
+    annual_mort = "Yearly Cycle", 
+    daily_mort = "Daily Cycle",
+    measure = ""
+  ) %>% 
+  rm_stubhead() %>% 
+  as_raw_html()
+  
+
+```
+
+## In the presence of competing risks, 
+
+```{r}
+#| fig-height: 7
+#| fig-width: 10
+df_res <- 
+    data.frame(trace) %>% 
+        mutate(cycle = (row_number()-1)) %>% 
+        mutate(strategy = "No Mortality") %>% 
+        mutate(cycle = cycle * params$cycle) %>% 
+        mutate(cycle_length = paste0(params$cycle)) %>% 
+    bind_rows(
+        data.frame(trace_daily) %>% 
+        mutate(cycle = (row_number()-1)) %>% 
+        mutate(strategy = "No Mortality") %>% 
+        mutate(cycle = cycle * params_daily$cycle) %>% 
+        mutate(cycle_length = paste0(params_daily$cycle))
+    ) %>% 
+    bind_rows(
+        data.frame(trace_mort) %>% 
+        mutate(cycle = (row_number()-1)) %>% 
+        mutate(strategy = "Mortality") %>% 
+        mutate(cycle = cycle * params_mort$cycle) %>% 
+        mutate(cycle_length = paste0(params_mort$cycle))
+    ) %>%  
+    bind_rows(
+        data.frame(trace_mort_daily) %>% 
+        mutate(cycle = (row_number()-1)) %>% 
+        mutate(strategy = "Mortality") %>% 
+        mutate(cycle = cycle * params_mort_daily$cycle) %>% 
+        mutate(cycle_length = paste0(params_mort_daily$cycle))
+    ) %>%  
+    mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c("Day","Year"))) %>% 
+    gather(state,value,-strategy,-cycle,-cycle_length)  %>% 
+    mutate(state = gsub("natural_history.","",state)) %>% 
+   mutate(strategy = factor(strategy, levels = c("No Mortality","Mortality")))
+
+df_res %>% 
+    ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + 
+    geom_line() +
+    facet_grid(~strategy) +
+    hrbrthemes::theme_ipsum(base_family = "Arial") + 
+    ggsci::scale_color_aaas(name="") + 
+    theme(legend.position = "top") +
+    geom_dl(method = list("last.bumpup",hjust=1,vjust=-1),aes(label = state)) +
+    geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state)) + 
+    guides(color = "none") + 
+  scale_linetype_discrete(name="Cycle Length")
+```
 

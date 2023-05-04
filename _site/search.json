@@ -1859,7 +1859,7 @@
     "href": "slides/02_competing-events.html",
     "title": "Dealing With Competing Events",
     "section": "",
-    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select"
+    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select\n\n\n\nHealthy-CVD\nEstimate life expectancy.\nAdd background mortality and then calculate life expectancy.\nIntuition of embedding\nDemonstrate how changing cycle lengths won’t help."
   },
   {
     "objectID": "slides/02_competing-events.html#slide",
@@ -1916,5 +1916,474 @@
     "title": "Mortality Modeling",
     "section": "Processing Life Table Data",
     "text": "Processing Life Table Data\n\n\n\n\n\nyear\nage\nmx\nqx\nlx\ndx\nLx\nTx\nex\n\n\n\n\n2019\n0\n0.00556\n0.00553\n100000\n553.221\n0.99482\n78.963\n78.963\n\n\n2019\n1\n0.00038\n0.00038\n99447\n38.180\n0.99428\n77.968\n78.402\n\n\n2019\n2\n0.00023\n0.00023\n99409\n23.160\n0.99397\n76.974\n77.432\n\n\n2019\n3\n0.00018\n0.00018\n99385\n17.689\n0.99377\n75.980\n76.450\n\n\n2019\n4\n0.00014\n0.00014\n99368\n14.209\n0.99361\n74.986\n75.463\n\n\n2019\n5\n0.00013\n0.00013\n99354\n13.213\n0.99347\n73.993\n74.474\n\n\n\n\n\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#a-world-without-death",
+    "href": "slides/02_competing-events.html#a-world-without-death",
+    "title": "Competing Events and Embedding",
+    "section": "A World Without Death",
+    "text": "A World Without Death\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nSick\n\n Sick   \n\nHealthy-&gt;Sick\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.006   \n\nSick-&gt;Sick\n\n    \n\nSick-&gt;Dead\n\n  hr_S * r_HD hr_S=10   \n\nDead-&gt;Dead\n\n   \n\n\n\n\n\n\nWe will first construct a very simple CVD model with only two states: Healthy and CVD."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nSick\n\n Sick   \n\nHealthy-&gt;Sick\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.006   \n\nSick-&gt;Sick\n\n    \n\nSick-&gt;Dead\n\n  hr_S * r_HD hr_S=10   \n\nDead-&gt;Dead\n\n   \n\n\n\n\n\n\nWe will first construct a very simple CVD model with only two states: Healthy and CVD."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-1",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-1",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nNext, place these probabilities within the transition probability matrix array.\n\n\n\nOuter array dimensions goverened by the number of strategies under consideration."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-2",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-2",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-3",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-3",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array.\n\n\nFinal result:\n\n\n, ,  = natural_history\n\n         to\nfrom      Healthy     CVD\n  Healthy 0.86071 0.13929\n  CVD     0.00000 1.00000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-4",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-4",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nNext, place these probabilities within the transition probability matrix array.\n\n\n\nOuter array dimensions goverened by the number of strategies under consideration."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-5",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-5",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-6",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-6",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array.\n\n\nFinal result:\n\n\n, ,  = natural_history\n\n         to\nfrom      Healthy     CVD\n  Healthy 0.86071 0.13929\n  CVD     0.00000 1.00000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-1-a-world-without-death-7",
+    "href": "slides/02_competing-events.html#part-1-a-world-without-death-7",
+    "title": "Competing Events and Embedding",
+    "section": "Part 1: A World Without Death",
+    "text": "Part 1: A World Without Death\nNext, construct the markov trace\n\nsim_cohort &lt;- function(params) {\n1  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0))\n  trace &lt;- \n2    0:params$n_cycles %&gt;% map_df(~({\n3        apply(params$mP,3, simplify=FALSE, function(tp) {\n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n4    as.matrix()\n}\ntr &lt;- sim_cohort(params)\ntr[1:5,]\n\n\n1\n\nInitial state occupancy.\n\n2\n\nIterate through all cycles specified for the model.\n\n3\n\nApply the transition probability separately by strategy.\n\n4\n\nPull it all together.\n\n\n\n\n     natural_history.Healthy natural_history.CVD\n[1,]                 1000.00                0.00\n[2,]                  860.71              139.29\n[3,]                  740.82              259.18\n[4,]                  637.63              362.37\n[5,]                  548.81              451.19\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#next-construct-the-markov-trace",
+    "href": "slides/02_competing-events.html#next-construct-the-markov-trace",
+    "title": "Competing Events and Embedding",
+    "section": "Next, construct the markov trace",
+    "text": "Next, construct the markov trace\nSpecify the initial state occupancy\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#next-construct-the-markov-trace-1",
+    "href": "slides/02_competing-events.html#next-construct-the-markov-trace-1",
+    "title": "Competing Events and Embedding",
+    "section": "Next, construct the markov trace",
+    "text": "Next, construct the markov trace\nIterate over the cycles in the model.\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#next-construct-the-markov-trace-2",
+    "href": "slides/02_competing-events.html#next-construct-the-markov-trace-2",
+    "title": "Competing Events and Embedding",
+    "section": "Next, construct the markov trace",
+    "text": "Next, construct the markov trace\nWithin a cycle, iterate over the strategies under consideration.\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#next-construct-the-markov-trace-3",
+    "href": "slides/02_competing-events.html#next-construct-the-markov-trace-3",
+    "title": "Competing Events and Embedding",
+    "section": "Next, construct the markov trace",
+    "text": "Next, construct the markov trace\nThe markov trace tells us the fraction of the population in each state in any cycle:\n\ntr &lt;- sim_cohort(params)\ntr[1:5,]\n\n     natural_history.Healthy natural_history.CVD\n[1,]                 1.00000             0.00000\n[2,]                 0.86071             0.13929\n[3,]                 0.74082             0.25918\n[4,]                 0.63763             0.36237\n[5,]                 0.54881             0.45119"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#next-construct-the-markov-trace-4",
+    "href": "slides/02_competing-events.html#next-construct-the-markov-trace-4",
+    "title": "Competing Events and Embedding",
+    "section": "Next, construct the markov trace",
+    "text": "Next, construct the markov trace\nThe markov trace tells us the fraction of the population in each state in any cycle:\n\ntr &lt;- sim_cohort(params)\ntr[1:5,]\n\n     natural_history.Healthy natural_history.CVD\n[1,]                 1.00000             0.00000\n[2,]                 0.86071             0.13929\n[3,]                 0.74082             0.25918\n[4,]                 0.63763             0.36237\n[5,]                 0.54881             0.45119"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#life-expectancy",
+    "href": "slides/02_competing-events.html#life-expectancy",
+    "title": "Competing Events and Embedding",
+    "section": "2. Life Expectancy",
+    "text": "2. Life Expectancy\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#life-expectancy-1",
+    "href": "slides/02_competing-events.html#life-expectancy-1",
+    "title": "Competing Events and Embedding",
+    "section": "2. Life Expectancy",
+    "text": "2. Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n1payoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\n2life_exp_cycle = trace[-1,] %*% payoff_life_exp\n3total_life_exp = sum(life_exp_cycle)\n\n\n1\n\nLife expectancy payoff is 1 for every state where someone remains alive.\n\n2\n\nTotal life-years alive in each state is the markov trace multiplied by the payoff vector.\n\n3\n\nTotal life expectancy is the sum of cycle values."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#life-expectancy-2",
+    "href": "slides/02_competing-events.html#life-expectancy-2",
+    "title": "Competing Events and Embedding",
+    "section": "2. Life Expectancy",
+    "text": "2. Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\nlife_exp_cycle = trace[-1,] %*% payoff_life_exp\ntotal_life_exp = sum(life_exp_cycle)\ntotal_life_exp * params$cycle\n\n[1] 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#markov-trace-at-2-years",
+    "href": "slides/02_competing-events.html#markov-trace-at-2-years",
+    "title": "Competing Events and Embedding",
+    "section": "Markov Trace at 2 Years",
+    "text": "Markov Trace at 2 Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the sick state by year 2?"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#summary",
+    "href": "slides/02_competing-events.html#summary",
+    "title": "Competing Events and Embedding",
+    "section": "Summary",
+    "text": "Summary\n\nAt 2 years, 259 individuals have developed CVD.\nBecause there is no death, after 100 cycles life expectancy is 100 years.\nWe verified that the above results hold exactly when we convert to a daily cycle length."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#markov-trace-at-2-years-1",
+    "href": "slides/02_competing-events.html#markov-trace-at-2-years-1",
+    "title": "Competing Events and Embedding",
+    "section": "Markov Trace at 2 Years",
+    "text": "Markov Trace at 2 Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\n\n\n\n\n740.82\n259.18"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years",
+    "href": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 1: CVD State Occupancy at 2 Years",
+    "text": "Checkpoint 1: CVD State Occupancy at 2 Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years-1",
+    "href": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years-1",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 1: CVD State Occupancy at 2 Years",
+    "text": "Checkpoint 1: CVD State Occupancy at 2 Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\n\n\n\n\n740.82\n259.18"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-2-life-expectancy",
+    "href": "slides/02_competing-events.html#checkpoint-2-life-expectancy",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 2: Life Expectancy",
+    "text": "Checkpoint 2: Life Expectancy\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-2-life-expectancy-1",
+    "href": "slides/02_competing-events.html#checkpoint-2-life-expectancy-1",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 2: Life Expectancy",
+    "text": "Checkpoint 2: Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n1payoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\n2life_exp_cycle = tr[-1,] %*% payoff_life_exp\n3total_life_exp = sum(life_exp_cycle)\n\n\n1\n\nLife expectancy payoff is 1 for every state where someone remains alive.\n\n2\n\nTotal life-years alive in each state is the markov trace multiplied by the payoff vector.\n\n3\n\nTotal life expectancy is the sum of cycle values."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-2-life-expectancy-2",
+    "href": "slides/02_competing-events.html#checkpoint-2-life-expectancy-2",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 2: Life Expectancy",
+    "text": "Checkpoint 2: Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\nlife_exp_cycle = tr[-1,] %*% payoff_life_exp\ntotal_life_exp = sum(life_exp_cycle)\ntotal_life_exp\n\n[1] 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths",
+    "href": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 3: Changing Cycle Lengths",
+    "text": "Checkpoint 3: Changing Cycle Lengths\n\nWe will next switch to a daily cycle length and verify that we can recapitulate these numbers.\n\n\nparams_daily &lt;- modifyList(params,list(\n  cycle = 1/365,\n  n_cycles = params$n_cycles * 365))"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-1",
+    "href": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-1",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 3: Changing Cycle Lengths",
+    "text": "Checkpoint 3: Changing Cycle Lengths\n\nparams_daily$mP &lt;- \n  with(params_daily,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\nparams_daily$mP\n\n, ,  = natural_history\n\n         to\nfrom      Healthy        CVD\n  Healthy 0.99959 0.00041087\n  CVD     0.00000 1.00000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#adding-a-death-state",
+    "href": "slides/02_competing-events.html#adding-a-death-state",
+    "title": "Competing Events and Embedding",
+    "section": "Adding a Death State",
+    "text": "Adding a Death State\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-2",
+    "href": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-2",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 3: Changing Cycle Lengths",
+    "text": "Checkpoint 3: Changing Cycle Lengths\n\n# Markov Trace (Daily Cycle)\ntr_daily &lt;- sim_cohort(params_daily)\n\n\n# State Occupancy at 2 Years\n1000 * tr_daily[365 * 2 + 1,]\n\nnatural_history.Healthy     natural_history.CVD \n                 740.82                  259.18"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-3",
+    "href": "slides/02_competing-events.html#checkpoint-3-changing-cycle-lengths-3",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 3: Changing Cycle Lengths",
+    "text": "Checkpoint 3: Changing Cycle Lengths\n\n# Life Expectancy\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1) \nlife_exp_cycle = tr_daily[-1,] %*% payoff_life_exp  \ntotal_life_exp = sum(life_exp_cycle) \ntotal_life_exp * params_daily$cycle\n\n[1] 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#part-2-adding-background-mortality",
+    "href": "slides/02_competing-events.html#part-2-adding-background-mortality",
+    "title": "Competing Events and Embedding",
+    "section": "Part 2: Adding Background Mortality",
+    "text": "Part 2: Adding Background Mortality\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nSick\n\n Sick   \n\nHealthy-&gt;Sick\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.006   \n\nSick-&gt;Sick\n\n    \n\nSick-&gt;Dead\n\n  hr_S * r_HD hr_S=10   \n\nDead-&gt;Dead\n\n   \n\n\nFigure 1: Healthy-CVD-Dead Model\n\n\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#section",
+    "href": "slides/02_competing-events.html#section",
+    "title": "Competing Events and Embedding",
+    "section": "",
+    "text": "We will first construct a very simple CVD model with only two states: Healthy and CVD.\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.006   \n\nCVD-&gt;CVD\n\n    \n\nCVD-&gt;Dead\n\n  hr_S * r_HD hr_S=10   \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#parameterize-the-model",
+    "href": "slides/02_competing-events.html#parameterize-the-model",
+    "title": "Competing Events and Embedding",
+    "section": "Parameterize the model",
+    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"natural_history\"),   # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\"),   # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 1,                     # Cohort size\n    n_cycles = 100,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    initial_age = 55,                 # Cohort starting age\n    r_H_CVD = 0.15                    # Rate of healthy -&gt; CVD\n  )"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix",
+    "href": "slides/02_competing-events.html#transition-probability-matrix",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix",
+    "text": "Transition Probability Matrix\nWe’ll next construct a transition probability matrix using the standard rate-to-probability conversion formula:\n\\[\np = 1 - \\exp(-rt)\n\\] where \\(r\\) is the rate, \\(t\\) is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.)."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-1",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-1",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nNext, place these probabilities within the transition probability matrix array.\n\n\n\nOuter array dimensions goverened by the number of strategies under consideration."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-2",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-2",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-3",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-3",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\nFinal result:\n\nparams$mP\n\n, ,  = natural_history\n\n         to\nfrom      Healthy     CVD\n  Healthy 0.86071 0.13929\n  CVD     0.00000 1.00000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({ \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nsim_cohort(params) is a function that constructs a Markov trace from the supplied parameters."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-4",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-4",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams_mort$mP &lt;- \n  with(params_mort,{\n    \n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, \n                 tp_H_CVD,1-tp_CVD_D, 0,\n                 tp_H_D, tp_CVD_D, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-1",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-1",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nSpecify the initial state occupancy."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-2",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-2",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nIterate over the cycles in the model."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-3",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-3",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nWithin a cycle, iterate over the strategies under consideration."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-4",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-4",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\nThe markov trace tells us the fraction of the population in each state in any cycle:\n\ntrace &lt;- sim_cohort(params)\ntrace[1:5,]\n\n     natural_history.Healthy natural_history.CVD\n[1,]                 1.00000             0.00000\n[2,]                 0.86071             0.13929\n[3,]                 0.74082             0.25918\n[4,]                 0.63763             0.36237\n[5,]                 0.54881             0.45119"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#section-1",
+    "href": "slides/02_competing-events.html#section-1",
+    "title": "Competing Events and Embedding",
+    "section": "",
+    "text": "G\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVD-&gt;CVD\n\n    \n\nCVD-&gt;Dead\n\n   hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n   \n\n\n\n\n\n\n\nWe next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#parameterize-the-model-1",
+    "href": "slides/02_competing-events.html#parameterize-the-model-1",
+    "title": "Competing Events and Embedding",
+    "section": "Parameterize the model",
+    "text": "Parameterize the model\n\nparams_mort = \n  list(\n    t_names = c(\"natural_history\"),           # Strategy names. \n    n_treatments = 1,                         # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\", \"Dead\"),   # State names\n    n_states = 3,                             # Number of states\n    n_cohort = 1,                             # Cohort size\n    n_cycles = 100,                           # Number of cycles in model.  \n    cycle = 1,                                # Cycle length\n    initial_age = 55,                         # Cohort starting age\n    r_H_CVD = 0.15,                           # Rate of healthy -&gt; CVD\n    hr_CVD = 10,                              # Hazard Ratio: CVD Death\n    r_H_D = 0.01                              # Rate of healthy -&gt; dead\n  )"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#transition-probability-matrix-array-5",
+    "href": "slides/02_competing-events.html#transition-probability-matrix-array-5",
+    "title": "Competing Events and Embedding",
+    "section": "Transition Probability Matrix Array",
+    "text": "Transition Probability Matrix Array\n\nparams_mort$mP\n\n, ,  = natural_history\n\n         to\nfrom      Healthy     CVD      Dead\n  Healthy 0.85076 0.13929 0.0099502\n  CVD     0.00000 0.90484 0.0951626\n  Dead    0.00000 0.00000 1.0000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-5",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-5",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- c(1,rep(0,params$n_states-1))\n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({ \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\ntrace_mort &lt;- \n  sim_cohort(params_mort)"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#construct-the-markov-trace-6",
+    "href": "slides/02_competing-events.html#construct-the-markov-trace-6",
+    "title": "Competing Events and Embedding",
+    "section": "Construct the Markov Trace",
+    "text": "Construct the Markov Trace\n\ntrace_mort[1:5,]\n\n     natural_history.Healthy natural_history.CVD natural_history.Dead\n[1,]                 1.00000             0.00000            0.0000000\n[2,]                 0.85076             0.13929            0.0099502\n[3,]                 0.72379             0.24454            0.0316707\n[4,]                 0.61577             0.32209            0.0621437\n[5,]                 0.52387             0.37721            0.0989213"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years-2",
+    "href": "slides/02_competing-events.html#checkpoint-1-cvd-state-occupancy-at-2-years-2",
+    "title": "Competing Events and Embedding",
+    "section": "Checkpoint 1: CVD State Occupancy at 2 Years",
+    "text": "Checkpoint 1: CVD State Occupancy at 2 Years\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\nnatural_history.Dead\n\n\n\n\n723.8\n245.5\n31.7\n\n\n\n\n\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years",
+    "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years",
+    "title": "Competing Events and Embedding",
+    "section": "1. CVD State Occupancy at Two Years",
+    "text": "1. CVD State Occupancy at Two Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
+    "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
+    "title": "Competing Events and Embedding",
+    "section": "1. CVD State Occupancy at Two Years",
+    "text": "1. CVD State Occupancy at Two Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many will have transitioned to the CVD state by year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\n\n\n\n\n740.82\n259.18"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length",
+    "href": "slides/02_competing-events.html#daily-cycle-length",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\nWe will next switch to a daily cycle length and verify that we can recapitulate these numbers.\n\n\nparams_daily &lt;- modifyList(params,list(\n  cycle = 1/365,\n  n_cycles = params$n_cycles * 365))"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-1",
+    "href": "slides/02_competing-events.html#daily-cycle-length-1",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\nparams_daily$mP &lt;- \n  with(params_daily,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\nparams_daily$mP\n\n, ,  = natural_history\n\n         to\nfrom      Healthy        CVD\n  Healthy 0.99959 0.00041087\n  CVD     0.00000 1.00000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-2",
+    "href": "slides/02_competing-events.html#daily-cycle-length-2",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\n# Markov Trace (Daily Cycle)\ntrace_daily &lt;- sim_cohort(params_daily)\n\n\n# State Occupancy at 2 Years\n1000 * trace_daily[365 * 2 + 1,]\n\nnatural_history.Healthy     natural_history.CVD \n                 740.82                  259.18"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-3",
+    "href": "slides/02_competing-events.html#daily-cycle-length-3",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\n# Life Expectancy\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1) \nlife_exp_cycle_daily = trace_daily[-1,] %*% payoff_life_exp  \ntotal_life_exp_daily = sum(life_exp_cycle_daily) \ntotal_life_exp_daily * params_daily$cycle\n\n[1] 100"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-2-years",
+    "href": "slides/02_competing-events.html#cvd-state-occupancy-at-2-years",
+    "title": "Competing Events and Embedding",
+    "section": "1. CVD State Occupancy at 2 Years",
+    "text": "1. CVD State Occupancy at 2 Years\n\n\n\n\n\nnatural_history.Healthy\nnatural_history.CVD\nnatural_history.Dead\n\n\n\n\n723.8\n244.5\n31.7"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#life-expectancy-3",
+    "href": "slides/02_competing-events.html#life-expectancy-3",
+    "title": "Competing Events and Embedding",
+    "section": "2. Life Expectancy",
+    "text": "2. Life Expectancy\n\npayoff_life_exp_mort = c(\"Healthy\" = 1, \"CVD\" = 1, \"Dead\" = 0) \nlife_exp_cycle_mort = trace_mort[-1,] %*% payoff_life_exp_mort \ntotal_life_exp_mort = sum(life_exp_cycle_mort)\ntotal_life_exp_mort\n\n[1] 15.507"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-4",
+    "href": "slides/02_competing-events.html#daily-cycle-length-4",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\nparams_mort_daily &lt;- modifyList(params_mort,list(\n  cycle = 1/365,\n  n_cycles = params$n_cycles * 365))"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-5",
+    "href": "slides/02_competing-events.html#daily-cycle-length-5",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\nparams_mort_daily$mP &lt;- \n  with(params_mort_daily,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, \n                 tp_H_CVD,1-tp_CVD_D, 0,\n                 tp_H_D, tp_CVD_D, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\nparams_mort_daily$mP\n\n, ,  = natural_history\n\n         to\nfrom      Healthy        CVD        Dead\n  Healthy 0.99956 0.00041087 0.000027397\n  CVD     0.00000 0.99972606 0.000273935\n  Dead    0.00000 0.00000000 1.000000000"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-6",
+    "href": "slides/02_competing-events.html#daily-cycle-length-6",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\n# Markov Trace (Daily Cycle)\ntrace_mort_daily &lt;- sim_cohort(params_mort_daily)\n\n\n# State Occupancy at 2 Years\n1000 * trace_mort_daily[365 * 2 + 1,]\n\nnatural_history.Healthy     natural_history.CVD    natural_history.Dead \n                726.143                 231.488                  42.369"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#daily-cycle-length-7",
+    "href": "slides/02_competing-events.html#daily-cycle-length-7",
+    "title": "Competing Events and Embedding",
+    "section": "3. Daily Cycle Length",
+    "text": "3. Daily Cycle Length\n\n# Life Expectancy\npayoff_mort_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1, \"Death\" = 0) \nlife_exp_mort_daily = trace_mort_daily[-1,] %*% payoff_mort_life_exp  \ntotal_life_exp_mort_daily = sum(life_exp_mort_daily) \ntotal_life_exp_mort_daily * params_mort_daily$cycle\n\n[1] 15.624"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#summary-1",
+    "href": "slides/02_competing-events.html#summary-1",
+    "title": "Competing Events and Embedding",
+    "section": "Summary",
+    "text": "Summary\n\n\n\n\n\n\n\ntest \n\n\n\nNo Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624\n\n\n\n\n\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#summary-2",
+    "href": "slides/02_competing-events.html#summary-2",
+    "title": "Competing Events and Embedding",
+    "section": "Summary",
+    "text": "Summary\n\n\n\n\n\n\n\n\n\n\nNo Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624\n\n\n\n\n\n\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#section-2",
+    "href": "slides/02_competing-events.html#section-2",
+    "title": "Competing Events and Embedding",
+    "section": "",
+    "text": "No Mortality\nWith Mortality\n\n\nYearly Cycle\nDaily Cycle\nYearly Cycle\nDaily Cycle\n\n\n\n\n1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n\n\n2. Life Expectancy\n100.00\n100.00\n15.507\n15.624"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#section-3",
+    "href": "slides/02_competing-events.html#section-3",
+    "title": "Competing Events and Embedding",
+    "section": "",
+    "text": "Back to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#in-the-presence-of-competing-risks",
+    "href": "slides/02_competing-events.html#in-the-presence-of-competing-risks",
+    "title": "Competing Events and Embedding",
+    "section": "In the presence of competing risks,",
+    "text": "In the presence of competing risks,\n\n\n\nBack to Website"
   }
 ]
