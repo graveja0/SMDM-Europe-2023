@@ -2018,21 +2018,21 @@
   {
     "objectID": "slides/02_competing-events.html#life-expectancy",
     "href": "slides/02_competing-events.html#life-expectancy",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "2. Life Expectancy",
     "text": "2. Life Expectancy\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100."
   },
   {
     "objectID": "slides/02_competing-events.html#life-expectancy-1",
     "href": "slides/02_competing-events.html#life-expectancy-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "2. Life Expectancy",
     "text": "2. Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n\n1payoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\n2life_exp_cycle = trace[-1,] %*% payoff_life_exp\n3total_life_exp = sum(life_exp_cycle)\n\n\n1\n\nLife expectancy payoff is 1 for every state where someone remains alive.\n\n2\n\nTotal life-years alive in each state is the markov trace multiplied by the payoff vector.\n\n3\n\nTotal life expectancy is the sum of cycle values."
   },
   {
     "objectID": "slides/02_competing-events.html#life-expectancy-2",
     "href": "slides/02_competing-events.html#life-expectancy-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "2. Life Expectancy",
     "text": "2. Life Expectancy\n\n\nWe have a model with 100 annual cycles and no death.\nLet’s verify that life expectancy is 100\n\n\n\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1)\nlife_exp_cycle = trace[-1,] %*% payoff_life_exp\ntotal_life_exp = sum(life_exp_cycle)\ntotal_life_exp * params$cycle\n\n[1] 100"
   },
@@ -2046,7 +2046,7 @@
   {
     "objectID": "slides/02_competing-events.html#summary",
     "href": "slides/02_competing-events.html#summary",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Summary",
     "text": "Summary\n\nAfter 2 years, 259 individuals are in the CVD health state.\nBecause there is no death, after 100 cycles life expectancy is 100 years.\nWe verified that the above results hold exactly when we convert to a daily cycle length."
   },
@@ -2137,21 +2137,21 @@
   {
     "objectID": "slides/02_competing-events.html#section",
     "href": "slides/02_competing-events.html#section",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "We will first construct a very simple CVD model with only two states: Healthy and CVD.\nTransitions are goverened by a single rate from Healthy  CVD"
   },
   {
     "objectID": "slides/02_competing-events.html#parameterize-the-model",
     "href": "slides/02_competing-events.html#parameterize-the-model",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Parameterize the model",
     "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"natural_history\"),   # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\"),   # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 1,                     # Cohort size\n    n_cycles = 100,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    initial_age = 55,                 # Cohort starting age\n    r_H_CVD = 0.15                    # Rate of healthy -&gt; CVD\n  )"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix",
     "href": "slides/02_competing-events.html#transition-probability-matrix",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\nWe’ll next construct a transition probability matrix using the standard rate-to-probability conversion formula:\n\\[\np = 1 - \\exp(-rt)\n\\] where \\(r\\) is the rate, \\(t\\) is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.)."
   },
@@ -2186,7 +2186,7 @@
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace",
     "href": "slides/02_competing-events.html#construct-the-markov-trace",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({ \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nsim_cohort(params) is a function that constructs a Markov trace from the supplied parameters."
   },
@@ -2200,42 +2200,42 @@
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-1",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nSpecify the initial state occupancy."
   },
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-2",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nIterate over the cycles in the model."
   },
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-3",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- t(c(\"Healthy\" = params$n_cohort, \"CVD\" = 0)) \n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({  \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\n\n\nWithin a cycle, iterate over the strategies under consideration."
   },
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-4",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\nThe markov trace tells us the fraction of the population in each state in any cycle:\n\ntrace &lt;- sim_cohort(params)\ntrace[1:5,]\n\n     natural_history.Healthy natural_history.CVD\n[1,]                 1.00000             0.00000\n[2,]                 0.86071             0.13929\n[3,]                 0.74082             0.25918\n[4,]                 0.63763             0.36237\n[5,]                 0.54881             0.45119"
   },
   {
     "objectID": "slides/02_competing-events.html#section-1",
     "href": "slides/02_competing-events.html#section-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "We will first construct a very simple CVD model with only two states: Healthy and CVD.\nTransitions are goverened by a single rate from Healthy  CVD\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.006   \n\nCVD-&gt;CVD\n\n    \n\nCVD-&gt;Dead\n\n  hr_S * r_HD hr_S=10   \n\nDead-&gt;Dead"
   },
   {
     "objectID": "slides/02_competing-events.html#parameterize-the-model-1",
     "href": "slides/02_competing-events.html#parameterize-the-model-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Parameterize the model",
     "text": "Parameterize the model\n\nparams_mort = \n  list(\n    t_names = c(\"natural_history\"),           # Strategy names. \n    n_treatments = 1,                         # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\", \"Dead\"),   # State names\n    n_states = 3,                             # Number of states\n    n_cohort = 1,                             # Cohort size\n    n_cycles = 100,                           # Number of cycles in model.  \n    cycle = 1,                                # Cycle length\n    initial_age = 55,                         # Cohort starting age\n    r_H_CVD = 0.15,                           # Rate of healthy -&gt; CVD\n    hr_CVD = 10,                              # Hazard Ratio: CVD Death\n    r_H_D = 0.01                              # Rate of healthy -&gt; dead\n  )"
   },
@@ -2249,14 +2249,14 @@
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-5",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\nsim_cohort &lt;- function(params) {\n  tr_ &lt;- c(1,rep(0,params$n_states-1))\n  trace &lt;- \n    0:params$n_cycles %&gt;% map_df(~({ \n        apply(params$mP,3, simplify=FALSE, function(tp) {  \n          (tr_ %*% (tp %^% .x)) %&gt;% data.frame()\n        })\n    })) %&gt;% \n    as.matrix() \n}\n\ntrace_mort &lt;- \n  sim_cohort(params_mort)"
   },
   {
     "objectID": "slides/02_competing-events.html#construct-the-markov-trace-6",
     "href": "slides/02_competing-events.html#construct-the-markov-trace-6",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Construct the Markov Trace",
     "text": "Construct the Markov Trace\n\ntrace_mort[1:5,]\n\n     natural_history.Healthy natural_history.CVD natural_history.Dead\n[1,]                 1.00000             0.00000            0.0000000\n[2,]                 0.85076             0.13929            0.0099502\n[3,]                 0.72379             0.24454            0.0316707\n[4,]                 0.61577             0.32209            0.0621437\n[5,]                 0.52387             0.37721            0.0989213"
   },
@@ -2270,84 +2270,84 @@
   {
     "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years",
     "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "1. CVD State Occupancy at Two Years",
     "text": "1. CVD State Occupancy at Two Years\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many are in the CVD health state at year 2?"
   },
   {
     "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
     "href": "slides/02_competing-events.html#cvd-state-occupancy-at-two-years-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "1. CVD State Occupancy at Two Years",
     "text": "1. CVD State Occupancy at Two Years\n\n\nSuppose we start off with a cohort of 1000 healthy individuals.\nHow many are in the CVD health state at year 2?\n\n\n\nPin this number to your brain for a few minutes!\n\n\n\n\n\n\nHealthy\nCVD\n\n\n\n\n740.82\n259.18"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length",
     "href": "slides/02_competing-events.html#daily-cycle-length",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\nWe will next switch to a daily cycle length and verify that we can recapitulate these numbers."
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-1",
     "href": "slides/02_competing-events.html#daily-cycle-length-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n\nWe will next switch to a daily cycle length and verify that we can recapitulate these numbers.\n\n\n\nparams_daily &lt;- modifyList(params,list(\n  cycle = 1/365,\n  n_cycles = params$n_cycles * 365))"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-2",
     "href": "slides/02_competing-events.html#daily-cycle-length-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\nparams_daily$mP &lt;- \n  with(params_daily,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  }) \n\n\n\n$natural_history\n         to\nfrom      Healthy        CVD\n  Healthy 0.99959 0.00041087\n  CVD     0.00000 1.00000000"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-3",
     "href": "slides/02_competing-events.html#daily-cycle-length-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n# Markov Trace (Daily Cycle)\ntrace_daily &lt;- \n  sim_cohort(params_daily)\n\n# State Occupancy at 2 Years\n1000 * trace_daily[365 * 2 + 1,]\n\n\n\n\n\n\nHealthy\nCVD\n\n\n\n\n740.82\n259.18"
   },
   {
     "objectID": "slides/02_competing-events.html#cvd-state-occupancy-at-2-years",
     "href": "slides/02_competing-events.html#cvd-state-occupancy-at-2-years",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "1. CVD State Occupancy at 2 Years",
     "text": "1. CVD State Occupancy at 2 Years\n\n\n\n\n\nHealthy\nCVD\nDead\n\n\n\n\n723.8\n244.5\n31.7"
   },
   {
     "objectID": "slides/02_competing-events.html#life-expectancy-3",
     "href": "slides/02_competing-events.html#life-expectancy-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "2. Life Expectancy",
     "text": "2. Life Expectancy\n\npayoff_life_exp_mort = c(\"Healthy\" = 1, \"CVD\" = 1, \"Dead\" = 0) \nlife_exp_cycle_mort = trace_mort[-1,] %*% payoff_life_exp_mort \ntotal_life_exp_mort = sum(life_exp_cycle_mort)\ntotal_life_exp_mort\n\n[1] 15.507"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-4",
     "href": "slides/02_competing-events.html#daily-cycle-length-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n# Life Expectancy\npayoff_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1) \nlife_exp_cycle_daily = trace_daily[-1,] %*% payoff_life_exp  \ntotal_life_exp_daily = sum(life_exp_cycle_daily) \ntotal_life_exp_daily * params_daily$cycle\n\n[1] 100"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-5",
     "href": "slides/02_competing-events.html#daily-cycle-length-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\nparams_mort_daily &lt;- modifyList(params_mort,list(\n  cycle = 1/365,\n  n_cycles = params$n_cycles * 365))"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-6",
     "href": "slides/02_competing-events.html#daily-cycle-length-6",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\nparams_mort_daily$mP &lt;- \n  with(params_mort_daily,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, \n                 tp_H_CVD,1-tp_CVD_D, 0,\n                 tp_H_D, tp_CVD_D, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-7",
     "href": "slides/02_competing-events.html#daily-cycle-length-7",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n\n$natural_history\n         to\nfrom      Healthy        CVD        Dead\n  Healthy 0.99956 0.00041087 0.000027397\n  CVD     0.00000 0.99972606 0.000273935\n  Dead    0.00000 0.00000000 1.000000000"
   },
@@ -2368,14 +2368,14 @@
   {
     "objectID": "slides/02_competing-events.html#section-2",
     "href": "slides/02_competing-events.html#section-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "We next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD."
   },
   {
     "objectID": "slides/02_competing-events.html#section-3",
     "href": "slides/02_competing-events.html#section-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "We next include a background mortality rate that is increased by a hazard ratio (10.0) among people with CVD.\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVD-&gt;CVD\n\n    \n\nCVD-&gt;Dead\n\n   hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead"
   },
@@ -2389,21 +2389,21 @@
   {
     "objectID": "slides/02_competing-events.html#signs-of-trouble",
     "href": "slides/02_competing-events.html#signs-of-trouble",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Signs of Trouble",
     "text": "Signs of Trouble\n\n\n\n\n\n\nIn the presence of competing events (mortality), we obtain different results for different cycle lengths!"
   },
   {
     "objectID": "slides/02_competing-events.html#what-went-wrong-1",
     "href": "slides/02_competing-events.html#what-went-wrong-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What Went Wrong?",
     "text": "What Went Wrong?\n\n\nTo gain intuition for what is going on, let’s split out death for those with vs. without CVD:"
   },
   {
     "objectID": "slides/02_competing-events.html#parameterize-the-model-2",
     "href": "slides/02_competing-events.html#parameterize-the-model-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Parameterize the model",
     "text": "Parameterize the model\n\nparams_mort2 = \n  list(\n    t_names = c(\"natural_history\"),                       \n    n_treatments = 1,                                     \n    s_names  = c(\"Healthy\", \"CVD\", \"CVDDeath\", \"Dead\"),   \n    n_states = 4,                                         \n    n_cohort = 1,                                         \n    n_cycles = 100,                                        \n    cycle = 1,                                            \n    initial_age = 55,                                     \n    r_H_CVD = 0.15,                                       \n    hr_CVD = 10,                                          \n    r_H_D = 0.01                                          \n  )"
   },
@@ -2494,21 +2494,21 @@
   {
     "objectID": "slides/02_competing-events.html#year-cycle",
     "href": "slides/02_competing-events.html#year-cycle",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "10 Year Cycle",
     "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nThis matrix “captures” all transitions from Healthy  CVD in a single transition probability (0.7769)."
   },
   {
     "objectID": "slides/02_competing-events.html#year-cycle-1",
     "href": "slides/02_competing-events.html#year-cycle-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "10 Year Cycle",
     "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nBut we actually need to distribute out the marginal probability so that we’re left only with the probability that someone transitions to CVD and remains there at the end of the cycle.\nAs constructed, we have ruled out the possibility of compound transitions (Healthy  CVD  CVDDeath) in a single cycle."
   },
   {
     "objectID": "slides/02_competing-events.html#year-cycle-2",
     "href": "slides/02_competing-events.html#year-cycle-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "10 Year Cycle",
     "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nThis results in overcounting CVD state occupancy in some cases (people who develop CVD and die soon after) and undercounting CVD state occupancy in others (people who die of background causes before they would have developed CVD in the same cycle)."
   },
@@ -2543,35 +2543,35 @@
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-8",
     "href": "slides/02_competing-events.html#daily-cycle-length-8",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n# Markov Trace (Daily Cycle)\ntrace_mort_daily &lt;- sim_cohort(params_mort_daily)\n\n\n\n\n\n\nHealthy\nCVD\nDead\n\n\n\n\n726.1\n231.5\n42.4"
   },
   {
     "objectID": "slides/02_competing-events.html#section-4",
     "href": "slides/02_competing-events.html#section-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "params_mort2$mP &lt;- \n  with(params_mort2,{\n    \n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0,0,  \n                 tp_H_CVD,1-tp_CVD_D, 0,0,\n                 0,tp_CVD_D,1,0,\n                 tp_H_D, 0,0, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-1",
     "href": "slides/02_competing-events.html#transition-probability-matrix-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#daily-cycle-length-9",
     "href": "slides/02_competing-events.html#daily-cycle-length-9",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "3. Daily Cycle Length",
     "text": "3. Daily Cycle Length\n\n# Life Expectancy\npayoff_mort_life_exp = c(\"Healthy\" = 1, \"CVD\" = 1, \"Death\" = 0) \nlife_exp_mort_daily = trace_mort_daily[-1,] %*% payoff_mort_life_exp  \ntotal_life_exp_mort_daily = sum(life_exp_mort_daily) \ntotal_life_exp_mort_daily * params_mort_daily$cycle\n\n[1] 15.624"
   },
   {
     "objectID": "slides/02_competing-events.html#what-went-wrong-2",
     "href": "slides/02_competing-events.html#what-went-wrong-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What Went Wrong?",
     "text": "What Went Wrong?\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVD-&gt;CVD\n\n    \n\nCVDDeath\n\n CVDDeath   \n\nCVD-&gt;CVDDeath\n\n    hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n    \n\nCVDDeath-&gt;CVDDeath"
   },
@@ -2585,35 +2585,35 @@
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\nOur constructed model rules out compound transitions within a cycle.\nCompound transition: Healthy  CVD  Dead in a single cycle.\n\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-1",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\nTo accurately capture the underlying continuous time process, there should be a transition probability defined for a seemingly impossible transition: Healthy  CVD Death.\n\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-2",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nTest\n\n   \n\nHealthy-&gt;Test\n\n   \n\nCVD-&gt;CVD\n\n    \n\nCVDDeath\n\n CVDDeath   \n\nCVD-&gt;CVDDeath\n\n    hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n    \n\nCVDDeath-&gt;CVDDeath\n\n    \n\nTest-&gt;CVDDeath\n\n    \n\nTest2"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-3",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\nWhen we use the standard rate-to-probability conversion formula (i.e., \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\)) we obtain the marginal transition probability.\nThis marginal probability reflects the union of all possible transitions that start Healthy and then transition to and from the CVD state in the cycle."
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-4",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\nThat is, \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\) captures the probability of following scenarios occurring in a cycle:\n\nIndividual transitions from healthy to CVD.\nIndividual transitions from healthy to CVD to CVD Death.\nIndividual dies from background causes before they would have developed CVD in the same cycle."
   },
@@ -2627,21 +2627,21 @@
   {
     "objectID": "slides/02_competing-events.html#section-5",
     "href": "slides/02_competing-events.html#section-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix."
   },
   {
     "objectID": "slides/02_competing-events.html#section-6",
     "href": "slides/02_competing-events.html#section-6",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix.\n\n\n\n\n         Healthy   CVD CVDDeath Dead\nHealthy    0.202 0.415    0.333 0.05\nCVD        0.000 0.368    0.632 0.00\nCVDDeath   0.000 0.000    1.000 0.00\nDead       0.000 0.000    0.000 1.00\n\n\n\nThe correct transition probability matrix includes a seemingly impossible transition: Healthy  CVDDeath"
   },
   {
     "objectID": "slides/02_competing-events.html#what-you-were-taught",
     "href": "slides/02_competing-events.html#what-you-were-taught",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What You Were Taught",
     "text": "What You Were Taught\n\nConvert each rate to a probability for the time step using \\(p = 1-\\exp(-rt)\\).\nPlace the probabilities within a transition matrix \\(\\mathbf{P}\\).\nDiagonal elements of \\(\\mathbf{P}\\): 1 - (row sum of nondiagonal elements)."
   },
@@ -2669,35 +2669,35 @@
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-2",
     "href": "slides/02_competing-events.html#transition-probability-matrix-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nNext, place these probabilities within the transition probability matrix array.\n\n\n\nOuter array dimensions goverened by the number of strategies under consideration."
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-3",
     "href": "slides/02_competing-events.html#transition-probability-matrix-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\nparams$mP &lt;- \n  with(params,{\n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    array(data = c(1 - tp_H_CVD, 0, \n                 tp_H_CVD,1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })\n\n\n\nRemaining code simply names the various dimensions of the array."
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-4",
     "href": "slides/02_competing-events.html#transition-probability-matrix-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\n\n$natural_history\n         to\nfrom      Healthy     CVD\n  Healthy 0.86071 0.13929\n  CVD     0.00000 1.00000"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-5",
     "href": "slides/02_competing-events.html#transition-probability-matrix-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\nparams_mort$mP &lt;- \n  with(params_mort,{\n    \n    tp_H_CVD = 1 - exp(-r_H_CVD * cycle) \n    tp_H_D = 1 - exp(-r_H_D * cycle)\n    tp_CVD_D &lt;- 1 - exp(-(hr_CVD * r_H_D) * cycle)\n    \n    array(data = c(1 - tp_H_CVD - tp_H_D, 0, 0, \n                 tp_H_CVD,1-tp_CVD_D, 0,\n                 tp_H_D, tp_CVD_D, 1),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#parameterize-the-model-3",
     "href": "slides/02_competing-events.html#parameterize-the-model-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Parameterize the model",
     "text": "Parameterize the model\n\nparams_mort_embedded = \n  list(\n    t_names = c(\"natural_history\"),                       \n    n_treatments = 1,                                     \n    s_names  = c(\"Healthy\", \"CVD\", \"CVDDeath\", \"Dead\"),   \n    n_states = 4,                                         \n    n_cohort = 1,                                         \n    n_cycles = 100,                                        \n    cycle = 1,                                            \n    initial_age = 55,                                     \n    r_H_CVD = 0.15,                                       \n    hr_CVD = 10,                                          \n    r_H_D = 0.01                                          \n  )\n\n\nNote: this is the same parameter list as earlier!"
   },
@@ -2711,56 +2711,56 @@
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix",
     "href": "slides/02_competing-events.html#transition-rate-matrix",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR &lt;- \n  with(params_mort2_emb,{\n\n    r_CVD_D &lt;- hr_CVD * r_H_D\n    \n    R_ &lt;- \n      array(data = c(0, 0, 0,0,  \n                 r_H_CVD,0, 0,0,\n                 0,r_CVD_D,0,0,\n                 r_H_D, 0,0, 0),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n    R &lt;- apply(R_,3, simplify=FALSE,function(x) {\n      diag(x) = -rowSums(x)\n      x * cycle\n    })\n  R    \n  })"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix-1",
     "href": "slides/02_competing-events.html#transition-rate-matrix-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR &lt;- \n  with(params_mort2_emb,{\n\n    r_CVD_D &lt;- hr_CVD * r_H_D\n    \n    R_ &lt;- \n      array(data = c(0, 0, 0,0,  \n                 r_H_CVD,0, 0,0,\n                 0,r_CVD_D,0,0,\n                 r_H_D, 0,0, 0),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n    R &lt;- apply(R_,3, simplify=FALSE,function(x) {\n      diag(x) = -rowSums(x)\n      x * cycle\n    })\n  R    \n  })\n\n\n\nCalculate the CVD  Dead rate"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix-2",
     "href": "slides/02_competing-events.html#transition-rate-matrix-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR &lt;- \n  with(params_mort2_emb,{\n\n    r_CVD_D &lt;- hr_CVD * r_H_D\n    \n    R_ &lt;- \n      array(data = c(0, 0, 0,0,  \n                 r_H_CVD,0, 0,0,\n                 0,r_CVD_D,0,0,\n                 r_H_D, 0,0, 0),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n    R &lt;- apply(R_,3, simplify=FALSE,function(x) {\n      diag(x) = -rowSums(x)\n      x * cycle\n    })\n  R    \n  })\n\n\n\nPlace the rates within the matrix. We’ll get the diagonal elements in a second to ensure things balance out."
   },
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix-3",
     "href": "slides/02_competing-events.html#transition-rate-matrix-3",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR &lt;- \n  with(params_mort2_emb,{\n    r_CVD_D &lt;- hr_CVD * r_H_D\n    R_ &lt;- \n      array(data = c(0, 0, 0,0,  \n                 r_H_CVD,0, 0,0,\n                 0,r_CVD_D,0,0,\n                 r_H_D, 0,0, 0),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n    R &lt;- apply(R_,3, simplify=FALSE,function(x) {\n      diag(x) = -rowSums(x)\n      x * cycle \n    })\n  R    \n  })\n\n\n\nDiagonal elements are the negative row sum (i.e., each row of \\(\\mathbf{R}\\) sums to 0)"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix-4",
     "href": "slides/02_competing-events.html#transition-rate-matrix-4",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR &lt;- \n  with(params_mort2_emb,{\n    r_CVD_D &lt;- hr_CVD * r_H_D\n    R_ &lt;- \n      array(data = c(0, 0, 0,0,  \n                 r_H_CVD,0, 0,0,\n                 0,r_CVD_D,0,0,\n                 r_H_D, 0,0, 0),\n          dim = c(n_states, n_states, n_treatments),\n                  dimnames = list(from = s_names,\n                                  to = s_names,\n                                  t_names))\n    R &lt;- apply(R_,3, simplify=FALSE,function(x) {\n      diag(x) = -rowSums(x) \n      x * cycle\n    })\n  R    \n  })\n\n\n\nConvert \\(\\mathbf{R}\\) to the model cycle length (e.g., 1 year, 1 day, 1 month, etc.)."
   },
   {
     "objectID": "slides/02_competing-events.html#transition-rate-matrix-5",
     "href": "slides/02_competing-events.html#transition-rate-matrix-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Rate Matrix",
     "text": "Transition Rate Matrix\n\nparams_mort_embedded$mR\n\n$natural_history\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    -0.16  0.15      0.0 0.01\n  CVD         0.00 -0.10      0.1 0.00\n  CVDDeath    0.00  0.00      0.0 0.00\n  Dead        0.00  0.00      0.0 0.00"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-6",
     "href": "slides/02_competing-events.html#transition-probability-matrix-6",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\n\n$natural_history\n         to\nfrom      Healthy     CVD      Dead\n  Healthy 0.85076 0.13929 0.0099502\n  CVD     0.00000 0.90484 0.0951626\n  Dead    0.00000 0.00000 1.0000000"
   },
   {
     "objectID": "slides/02_competing-events.html#transition-probability-matrix-7",
     "href": "slides/02_competing-events.html#transition-probability-matrix-7",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Transition Probability Matrix",
     "text": "Transition Probability Matrix\n\nexpm(params_mort_embedded$mR[[\"natural_history\"]])\n\n         Healthy     CVD  CVDDeath     Dead\nHealthy  0.85214 0.13173 0.0068811 0.009241\nCVD      0.00000 0.90484 0.0951626 0.000000\nCVDDeath 0.00000 0.00000 1.0000000 0.000000\nDead     0.00000 0.00000 0.0000000 1.000000\n\n\n\nNotice how the embedded matrix now has a transition probability from Healthy  CVD Death!"
   },
@@ -2781,21 +2781,21 @@
   {
     "objectID": "slides/02_competing-events.html#resulting-error",
     "href": "slides/02_competing-events.html#resulting-error",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Resulting Error",
     "text": "Resulting Error\n\nIf one has misapplied this in a model, it’s going to be okay."
   },
   {
     "objectID": "slides/02_competing-events.html#quantified-absolute-error",
     "href": "slides/02_competing-events.html#quantified-absolute-error",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Quantified Absolute Error",
     "text": "Quantified Absolute Error"
   },
   {
     "objectID": "slides/02_competing-events.html#quantified-relative-error",
     "href": "slides/02_competing-events.html#quantified-relative-error",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Quantified Relative Error",
     "text": "Quantified Relative Error\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%.\nThis error will accumulate over each timestep."
   },
@@ -2809,14 +2809,14 @@
   {
     "objectID": "slides/02_competing-events.html#specification-error",
     "href": "slides/02_competing-events.html#specification-error",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Specification Error",
     "text": "Specification Error\nIf \\(\\epsilon_A - \\epsilon_{B} \\sim 0\\) the impact to the decision threshold is minimal.\n\nThese decision thresholds are semi-robust against this misspecification.\nRestated: Single model runs are biased under misspecification, but comparison across strategies helps cancel this out."
   },
   {
     "objectID": "slides/02_competing-events.html#rate-misspecification-conclusions",
     "href": "slides/02_competing-events.html#rate-misspecification-conclusions",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Rate Misspecification Conclusions",
     "text": "Rate Misspecification Conclusions\n\n\n\n\n\n\nIn the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices."
   },
@@ -2830,70 +2830,70 @@
   {
     "objectID": "slides/02_competing-events.html#spot-the-problem-1yr-cycle",
     "href": "slides/02_competing-events.html#spot-the-problem-1yr-cycle",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Spot the Problem (1yr Cycle)",
     "text": "Spot the Problem (1yr Cycle)\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000"
   },
   {
     "objectID": "slides/02_competing-events.html#spot-the-problem-1yr-cycle-1",
     "href": "slides/02_competing-events.html#spot-the-problem-1yr-cycle-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Spot the Problem (1yr Cycle)",
     "text": "Spot the Problem (1yr Cycle)\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000\n\n\n\n\n\n\n\n\nRecall that in this model, CVD has a very high death rate—meaning that many people who develop CVD will die very soon after."
   },
   {
     "objectID": "slides/02_competing-events.html#spot-the-problem-10yr-cycle",
     "href": "slides/02_competing-events.html#spot-the-problem-10yr-cycle",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Spot the Problem (10yr Cycle)",
     "text": "Spot the Problem (10yr Cycle)\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\n\n\n\n\n\nRecall that in this model, CVD has a very high death rate—meaning that many people who develop CVD will die very soon after.\n\n\n\n\n\n\n\n\n\nWith this knowledge in mind, can you spot something wrong with the above (annual) transition matrix?"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-5",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-5",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem."
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-6",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-6",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem.\n\n\n\n\n\n\n\n\n\nThe same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-7",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-7",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
     "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem.\n\n\n\n\n\n\n\n\n\nThe same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)"
   },
   {
     "objectID": "slides/02_competing-events.html#comparisons-across-strategies-bail-you-out",
     "href": "slides/02_competing-events.html#comparisons-across-strategies-bail-you-out",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Comparisons Across Strategies Bail You Out",
     "text": "Comparisons Across Strategies Bail You Out\n\nCommon CEA approaches compare strategies, i.e., \\(f(\\theta_A) - f(\\theta_{B})\\)\n\nNet monetary benefit.\nNet health benefit.\nIncremental cost effectiveness ratio.\n\nWith error it becomes:"
   },
   {
     "objectID": "slides/02_competing-events.html#why-does-this-matter",
     "href": "slides/02_competing-events.html#why-does-this-matter",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Why Does This Matter?",
     "text": "Why Does This Matter?\n\nWithout properly embedding, you are no longer modeling a continuous time process.\nSo your model results will differ compared to a continuous time model (e.g., discrete event simulation)\nMicrosimulation suffers the same problem because the patient-level transition probability matrix is embedded in a time step and requires Markov Rate conversion."
   },
   {
     "objectID": "slides/02_competing-events.html#rate-misspecification-conclusions-1",
     "href": "slides/02_competing-events.html#rate-misspecification-conclusions-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Rate Misspecification Conclusions",
     "text": "Rate Misspecification Conclusions\n\nExisting publication’s decision thresholds are generally okay if they misspecified rates.\nCheck the maximum rate of an event as a rough estimate of potential bias."
   },
   {
     "objectID": "slides/02_competing-events.html#spot-the-problem-1yr-cycle-2",
     "href": "slides/02_competing-events.html#spot-the-problem-1yr-cycle-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Spot the Problem (1yr Cycle)",
     "text": "Spot the Problem (1yr Cycle)\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath      Dead\n  Healthy  0.85076 0.13929 0.000000 0.0099502\n  CVD      0.00000 0.90484 0.095163 0.0000000\n  CVDDeath 0.00000 0.00000 1.000000 0.0000000\n  Dead     0.00000 0.00000 0.000000 1.0000000\n\n\n\n\n\n\n\n\nRecall that in this model, CVD has a very high death rate—meaning that many people who develop CVD will die very soon after.\n\n\n\n\n\n\n\n\n\nWith this knowledge in mind, can you spot something wrong with the above (annual) transition matrix?"
   },
@@ -2907,63 +2907,63 @@
   {
     "objectID": "slides/02_competing-events.html#comparisons-across-strategies-bail-you-out-1",
     "href": "slides/02_competing-events.html#comparisons-across-strategies-bail-you-out-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Comparisons Across Strategies Bail You Out",
     "text": "Comparisons Across Strategies Bail You Out\n\n\nCommon CEA approaches compare strategies, i.e., \\(f(\\theta_A) - f(\\theta_{B})\\)\n\nNet monetary benefit.\nNet health benefit.\nIncremental cost effectiveness ratio.\n\nWith error it becomes:\n\n\n\\[f(\\theta_A) + \\epsilon_A - (f(\\theta_{B}) + \\epsilon_{B})\\]"
   },
   {
     "objectID": "slides/02_competing-events.html#additional-notes",
     "href": "slides/02_competing-events.html#additional-notes",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Additional Notes",
     "text": "Additional Notes\n\nDiscrete Event Simulation automatically handles competing events.\nPublished rates from clinical studies are usually adjusted for competing events (survival studies)."
   },
   {
     "objectID": "slides/02_competing-events.html#what-well-teach-you",
     "href": "slides/02_competing-events.html#what-well-teach-you",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What We’ll Teach You",
     "text": "What We’ll Teach You\n\nPlace each rate in a rate matrix \\(\\mathbf{R}\\).\nDiagonal elements of \\(\\mathbf{R}\\): -1 * (row sum of nondiagonal elements).\nEmbed the transition probability matrix using matrix exponentiation \\(\\mathbf{P} = \\exp{(\\mathbf{R}t)}\\)."
   },
   {
     "objectID": "slides/02_competing-events.html#what-well-teach-you-1",
     "href": "slides/02_competing-events.html#what-well-teach-you-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What We’ll Teach You",
     "text": "What We’ll Teach You\n\n\nPlace each rate in a rate matrix \\(\\mathbf{R}\\).\nDiagonal elements of \\(\\mathbf{R}\\): -1 * (row sum of nondiagonal elements).\nEmbed the transition probability matrix using matrix exponentiation \\(\\mathbf{P} = \\exp{(\\mathbf{R}t})\\).\n\n\n\n\n\n\n\n\nThis process will ensure that the matrix captures “jumpover” states for compound transitions!"
   },
   {
     "objectID": "slides/02_competing-events.html#what-well-teach-you-2",
     "href": "slides/02_competing-events.html#what-well-teach-you-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "What We’ll Teach You",
     "text": "What We’ll Teach You\n\n\nPlace each rate in a rate matrix \\(\\mathbf{R}\\).\nDiagonal elements of \\(\\mathbf{R}\\): -1 * (row sum of nondiagonal elements).\nEmbed the transition probability matrix using matrix exponentiation \\(\\mathbf{P} = \\exp{(\\mathbf{R}t})\\).\n\n\n\n\n\n\n\n\nThis process will ensure that the matrix captures “jumpover” states for compound transitions!\n\n\n\n\n\n\n\n\n\nIt also ensures that changing cycle lengths will not change your answers!"
   },
   {
     "objectID": "slides/02_competing-events.html#section-7",
     "href": "slides/02_competing-events.html#section-7",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "",
     "text": "Using Conversion Formulas:\n\n\n         Healthy   CVD CVDDeath  Dead\nHealthy    0.852 0.132    0.007 0.009\nCVD        0.000 0.905    0.095 0.000\nCVDDeath   0.000 0.000    1.000 0.000\nDead       0.000 0.000    0.000 1.000\n\n\n\n\n\nUsing Rate Matrix Eponentiation:\n\n\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    0.851 0.139    0.000 0.01\n  CVD        0.000 0.905    0.095 0.00\n  CVDDeath   0.000 0.000    1.000 0.00\n  Dead       0.000 0.000    0.000 1.00"
   },
   {
     "objectID": "slides/02_competing-events.html#signs-of-trouble-1",
     "href": "slides/02_competing-events.html#signs-of-trouble-1",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Signs of Trouble",
     "text": "Signs of Trouble\n\n\n\n\n\n\nIn the presence of competing events (mortality), we obtain different results for different cycle lengths!\n\n\n\n\n\n\n  \n  \n  \n    \n    \n      \n      \n        Model With\nNo Mortality\n      \n      \n        Model With Mortality\n      \n    \n    \n      Yearly Cycle\n      Daily Cycle\n      Yearly Cycle\n      Daily Cycle\n    \n  \n  \n    1. CVD State Occupancy at Two Years\n259.18\n259.18\n244.540\n231.488\n    2. Life Expectancy\n100.00\n100.00\n15.507\n15.624"
   },
   {
     "objectID": "slides/02_competing-events.html#signs-of-trouble-2",
     "href": "slides/02_competing-events.html#signs-of-trouble-2",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Signs of Trouble",
     "text": "Signs of Trouble\n\n\n\n\n\n\nIn the presence of competing events (mortality), we obtain different results for different cycle lengths! Notice how the state occupancy in CVD differs in the right panel of the figure below."
   },
   {
     "objectID": "slides/02_competing-events.html#case-study",
     "href": "slides/02_competing-events.html#case-study",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Case Study",
     "text": "Case Study"
   },
@@ -2977,8 +2977,15 @@
   {
     "objectID": "slides/02_competing-events.html#learning-objectives",
     "href": "slides/02_competing-events.html#learning-objectives",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population.\n\n\n\n\n\n\nBack to Website"
+    "text": "Learning Objectives\n\nPitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#learning-objectives-1",
+    "href": "slides/02_competing-events.html#learning-objectives-1",
+    "title": "Competing Risks",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population.\n\n\n\nBack to Website"
   }
 ]

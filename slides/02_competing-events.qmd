@@ -1,5 +1,5 @@
 ---
-title: "Modeling With Competing Risks"
+title: "Competing Risks"
 subtitle: "Rates, Probabilities, and Embedding"
 format:
   revealjs:
@@ -13,6 +13,12 @@ editor_options:
 self-contained: true
 bibliography: references.bib
 ---
+
+## Learning Objectives
+
+1. Pitfalls of traditional transition probability conversion formulas. 
+2. Discuss compound transitions and how to account for them. 
+3. Demonstrate how to properly embed a transition probability matrix into a timestep. 
 
 <!-- 1. Healthy-CVD -->
 
@@ -1508,4 +1514,3 @@ round(apply(params_mort2$mP,3,function(x) x, simplify = FALSE)[[1]],3)
 4. Markov model is properly embedded.
 5. Markov model results will closely match cause-deleted and cause-specific mortality in the US population. 
 
-- 
