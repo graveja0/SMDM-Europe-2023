@@ -2510,7 +2510,7 @@
     "href": "slides/02_competing-events.html#year-cycle-2",
     "title": "Competing Risks",
     "section": "10 Year Cycle",
-    "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nThis results in overcounting CVD state occupancy in some cases (people who develop CVD and die soon after) and undercounting CVD state occupancy in others (people who die of background causes before they would have developed CVD in the same cycle)."
+    "text": "10 Year Cycle\n\n\n$natural_history\n         to\nfrom      Healthy     CVD     Dead\n  Healthy 0.12797 0.77687 0.095163\n  CVD     0.00000 0.36788 0.632121\n  Dead    0.00000 0.00000 1.000000\n\n\n\nThis problem isn’t fixed in the version of the model where death is a single health state.\nThe problem persists, but is “hidden” from view!"
   },
   {
     "objectID": "slides/02_competing-events.html#takeaway",
@@ -2522,9 +2522,9 @@
   {
     "objectID": "slides/02_competing-events.html#year-cycle-3",
     "href": "slides/02_competing-events.html#year-cycle-3",
-    "title": "Competing Events and Embedding",
+    "title": "Competing Risks",
     "section": "10 Year Cycle",
-    "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nThis model will overcount time spend in the CVD death state, and undercount time spent in death."
+    "text": "10 Year Cycle\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000\n\n\n\nThis results in overcounting CVD state occupancy in some cases (people who develop CVD and die soon after) and undercounting CVD state occupancy in others (people who die of background causes before they would have developed CVD in the same cycle)."
   },
   {
     "objectID": "slides/02_competing-events.html#takeaway-1",
@@ -2587,7 +2587,7 @@
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process",
     "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
-    "text": "Discretizing a Continuous Process\n\nOur constructed model rules out compound transitions within a cycle.\nCompound transition: Healthy  CVD  Dead in a single cycle.\n\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
+    "text": "Discretizing a Continuous Process\n\nOur constructed model rules out compound transitions within a cycle.\nCompound transition: Healthy  CVD  CVD Death in a single cycle.\n\n\n\n$natural_history\n          to\nfrom       Healthy     CVD CVDDeath     Dead\n  Healthy  0.12797 0.77687  0.00000 0.095163\n  CVD      0.00000 0.36788  0.63212 0.000000\n  CVDDeath 0.00000 0.00000  1.00000 0.000000\n  Dead     0.00000 0.00000  0.00000 1.000000"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-1",
@@ -2608,14 +2608,14 @@
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-3",
     "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
-    "text": "Discretizing a Continuous Process\n\nWhen we use the standard rate-to-probability conversion formula (i.e., \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\)) we obtain the marginal transition probability.\nThis marginal probability reflects the union of all possible transitions that start Healthy and then transition to and from the CVD state in the cycle."
+    "text": "Discretizing a Continuous Process\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVDDeath\n\n CVDDeath   \n\nHealthy-&gt;CVDDeath\n\n    \n\nCVD-&gt;CVD\n\n    \n\nCVD-&gt;CVDDeath\n\n    hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n    \n\nCVDDeath-&gt;CVDDeath"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-4",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-4",
     "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
-    "text": "Discretizing a Continuous Process\nThat is, \\(p_{HS}= 1 - e^{-r_{HS}\\Delta t}\\) captures the probability of following scenarios occurring in a cycle:\n\nIndividual transitions from healthy to CVD.\nIndividual transitions from healthy to CVD to CVD Death.\nIndividual dies from background causes before they would have developed CVD in the same cycle."
+    "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle does not get us out of this problem."
   },
   {
     "objectID": "slides/02_competing-events.html#correct-transition-matrix-10-year-cycle",
@@ -2629,14 +2629,14 @@
     "href": "slides/02_competing-events.html#section-5",
     "title": "Competing Risks",
     "section": "",
-    "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix."
+    "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix.\nThe correct transition probability matrix includes a seemingly impossible transition: Healthy  CVDDeath"
   },
   {
     "objectID": "slides/02_competing-events.html#section-6",
     "href": "slides/02_competing-events.html#section-6",
     "title": "Competing Risks",
     "section": "",
-    "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix.\n\n\n\n\n         Healthy   CVD CVDDeath Dead\nHealthy    0.202 0.415    0.333 0.05\nCVD        0.000 0.368    0.632 0.00\nCVDDeath   0.000 0.000    1.000 0.00\nDead       0.000 0.000    0.000 1.00\n\n\n\nThe correct transition probability matrix includes a seemingly impossible transition: Healthy  CVDDeath"
+    "text": "Rather than use the conversion formulas, we need to properly “embed” the transition probability matrix.\nThe correct transition probability matrix includes a seemingly impossible transition: Healthy  CVDDeath\n\n\n\n\n         Healthy   CVD CVDDeath Dead\nHealthy    0.202 0.415    0.333 0.05\nCVD        0.000 0.368    0.632 0.00\nCVDDeath   0.000 0.000    1.000 0.00\nDead       0.000 0.000    0.000 1.00"
   },
   {
     "objectID": "slides/02_competing-events.html#what-you-were-taught",
@@ -2853,7 +2853,7 @@
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-5",
     "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
-    "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem."
+    "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem.\n\n\n\n\n\n\n\n\n\nThe same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)"
   },
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-6",
@@ -2900,9 +2900,9 @@
   {
     "objectID": "slides/02_competing-events.html#discretizing-a-continuous-process-8",
     "href": "slides/02_competing-events.html#discretizing-a-continuous-process-8",
-    "title": "Modeling With Competing Risks",
+    "title": "Competing Risks",
     "section": "Discretizing a Continuous Process",
-    "text": "Discretizing a Continuous Process\n\n\nRather than use the conversion formulas, we need to properly “embed” the transition probability matrix."
+    "text": "Discretizing a Continuous Process\n\n\n\n\n\n\nChanging to shorter cycle lengths adds computational demands but does not get us out of this problem.\n\n\n\n\n\n\n\n\n\nThe same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)"
   },
   {
     "objectID": "slides/02_competing-events.html#comparisons-across-strategies-bail-you-out-1",
@@ -2987,5 +2987,26 @@
     "title": "Competing Risks",
     "section": "Learning Objectives",
     "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population.\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work",
+    "href": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work",
+    "title": "Competing Risks",
+    "section": "Why Don’t the Conversion Formulas Work?",
+    "text": "Why Don’t the Conversion Formulas Work?\n\nWhen we use the standard rate-to-probability conversion formula (i.e., \\(p_{H,CVD}= 1 - \\exp(-r_{H,CVD} t)\\) ) we obtain the marginal transition probability.\nThis marginal probability reflects the union of all possible transitions that start Healthy and then transition to and from the CVD state in the cycle."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work-1",
+    "href": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work-1",
+    "title": "Competing Risks",
+    "section": "Why Don’t the Conversion Formulas Work?",
+    "text": "Why Don’t the Conversion Formulas Work?\nThat is, \\(p_{H,CVD}= 1 - \\exp(-r_{H,CVD} t)\\) captures the probability of following scenarios occurring in a cycle:\n\nIndividual transitions from healthy to CVD.\nIndividual transitions from healthy to CVD to CVD Death.\nIndividual dies from background causes before they would have developed CVD in the same cycle."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#embedding-error",
+    "href": "slides/02_competing-events.html#embedding-error",
+    "title": "Competing Risks",
+    "section": "Embedding Error",
+    "text": "Embedding Error\n\nIf one has misapplied this in a model, it’s going to be okay."
   }
 ]
