@@ -1,5 +1,6 @@
 ---
-title: "Competing Events and Embedding"
+title: "Modeling With Competing Risks"
+subtitle: "Rates, Probabilities, and Embedding"
 format:
   revealjs:
     transition: fade
@@ -98,14 +99,15 @@ source("./manifest.r")
 
 ## 
 
-::: nonincremental
 -   We will first construct a very simple CVD model with only two states: Healthy and CVD.
-:::
+-   Transitions are goverened by a single rate from Healthy {{< fa arrow-right >}} CVD
+
 
 ## 
 
 ::: nonincremental
 -   We will first construct a very simple CVD model with only two states: Healthy and CVD.
+-   Transitions are goverened by a single rate from Healthy {{< fa arrow-right >}} CVD
 :::
 
 ```{dot}
@@ -153,7 +155,7 @@ $$
 p = 1 - \exp(-rt)
 $$ where $r$ is the rate, $t$ is the time-step (e.g., 1 for annual, 1/12 for monthly, etc.).
 
-## Transition Probability Matrix 
+## Transition Probability Matrix
 
 ```{r}
 #| echo: true
@@ -170,7 +172,7 @@ params$mP <-
   })
 ```
 
-## Transition Probability Matrix 
+## Transition Probability Matrix
 
 ```{r}
 #| echo: true
@@ -193,7 +195,7 @@ params$mP <-
 
 -   Outer array dimensions goverened by the number of strategies under consideration.
 
-## Transition Probability Matrix 
+## Transition Probability Matrix
 
 ```{r}
 #| echo: true
@@ -214,9 +216,7 @@ params$mP <-
 -   Remaining code simply names the various dimensions of the array.
 :::
 
-## Transition Probability Matrix 
-
-Final result:
+## Transition Probability Matrix
 
 ```{r, echo = FALSE}
 apply(params$mP,3,function(x)x, simplify=FALSE)
@@ -344,7 +344,7 @@ trace[1:5,]
 ## 2. Life Expectancy
 
 -   We have a model with `r params$n_cycles` annual cycles and no death.
--   Let's verify that life expectancy is `r params$n_cycles`
+-   Let's verify that life expectancy is `r params$n_cycles`.
 
 ## 2. Life Expectancy
 
@@ -510,7 +510,7 @@ params_mort =
 
 ```
 
-## Transition Probability Matrix Array
+## Transition Probability Matrix
 
 ```{r}
 #| echo: true
@@ -646,7 +646,13 @@ total_life_exp_mort_daily = sum(life_exp_mort_daily)
 total_life_exp_mort_daily * params_mort_daily$cycle
 ```
 
-## Summary
+## Signs of Trouble
+
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), we obtain different results for different cycle lengths!
+:::
+
+## Signs of Trouble
 
 ::: {.callout-important appearance="simple"}
 In the presence of competing events (mortality), we obtain different results for different cycle lengths!
@@ -684,8 +690,8 @@ tibble(measure = c("1. CVD State Occupancy at Two Years", "2. Life Expectancy"),
     columns = c(annual_mort, daily_mort),
     rows = measure == "1. CVD State Occupancy at Two Years"
   ) %>% 
-  tab_spanner(label = "No Mortality", columns = c(annual,daily)) %>% 
-  tab_spanner(label = "With Mortality", columns = c(annual_mort, daily_mort)) %>% 
+  tab_spanner(label = "Model With\nNo Mortality", columns = c(annual,daily)) %>% 
+  tab_spanner(label = "Model With Mortality", columns = c(annual_mort, daily_mort)) %>% 
   cols_label(
     annual = "Yearly Cycle",
     daily = "Daily Cycle",
@@ -706,46 +712,44 @@ tibble(measure = c("1. CVD State Occupancy at Two Years", "2. Life Expectancy"),
 ## Signs of Trouble
 
 ::: {.callout-important appearance="simple"}
-In the presence of competing events (mortality), we obtain different results for different cycle lengths!
+In the presence of competing events (mortality), we obtain different results for different cycle lengths! **Notice how the state occupancy in CVD differs in the right panel of the figure below.**
 :::
 
--   TK FIGURE GOES HERE !
-
-```{r, eval = FALSE}
+```{r}
 #| fig-height: 6
 #| fig-width: 10
 #| fig-align: center
 df_res <- 
     data.frame(trace) %>% 
         mutate(cycle = (row_number()-1)) %>% 
-        mutate(strategy = "No Mortality") %>% 
+        mutate(strategy = "Model With\nNo Mortality") %>% 
         mutate(cycle = cycle * params$cycle) %>% 
         mutate(cycle_length = paste0(params$cycle)) %>% 
     bind_rows(
         data.frame(trace_daily) %>% 
         mutate(cycle = (row_number()-1)) %>% 
-        mutate(strategy = "No Mortality") %>% 
+        mutate(strategy = "Model With\nNo Mortality") %>% 
         mutate(cycle = cycle * params_daily$cycle) %>% 
         mutate(cycle_length = paste0(params_daily$cycle))
     ) %>% 
     bind_rows(
         data.frame(trace_mort) %>% 
         mutate(cycle = (row_number()-1)) %>% 
-        mutate(strategy = "Mortality") %>% 
+        mutate(strategy = "Model With Mortality") %>% 
         mutate(cycle = cycle * params_mort$cycle) %>% 
         mutate(cycle_length = paste0(params_mort$cycle))
     ) %>%  
     bind_rows(
         data.frame(trace_mort_daily) %>% 
         mutate(cycle = (row_number()-1)) %>% 
-        mutate(strategy = "Mortality") %>% 
+        mutate(strategy = "Model With Mortality") %>% 
         mutate(cycle = cycle * params_mort_daily$cycle) %>% 
         mutate(cycle_length = paste0(params_mort_daily$cycle))
     ) %>%  
     mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c("Day","Year"))) %>% 
     gather(state,value,-strategy,-cycle,-cycle_length)  %>% 
     mutate(state = gsub("natural_history.","",state)) %>% 
-   mutate(strategy = factor(strategy, levels = c("No Mortality","Mortality")))
+   mutate(strategy = factor(strategy, levels = c("Model With\nNo Mortality","Model With Mortality")))
 
 df_res %>% 
     ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + 
@@ -834,23 +838,37 @@ params_mort2$mP <-
   })
 ```
 
-## Where's the Problem? (1yr Cycle)
+## Spot the Problem (1yr Cycle)
 
 ```{r}
 apply(params_mort2$mP,3,function(x) x, simplify=FALSE)
 ```
 
-## Where's the Problem? (1yr Cycle)
+## Spot the Problem (1yr Cycle)
 
 ```{r}
 apply(params_mort2$mP,3,function(x) x, simplify=FALSE)
 ```
 
 ::: {.callout-tip appearance="simple"}
-Recall that in this model, CVD has a very high death rate---meaning that many people who develop CVD will die soon after.
+Recall that in this model, CVD has a very high death rate---meaning that many people who develop CVD will die very soon after.
 :::
 
-## Where's the Problem? (10yr Cycle)
+## Spot the Problem (1yr Cycle)
+
+```{r}
+apply(params_mort2$mP,3,function(x) x, simplify=FALSE)
+```
+
+::: {.callout-tip appearance="simple"}
+Recall that in this model, CVD has a very high death rate---meaning that many people who develop CVD will die very soon after.
+:::
+
+::: {.callout-note appearance="simple"}
+With this knowledge in mind, can you spot something wrong with the above (annual) transition matrix?
+:::
+
+## Spot the Problem (10yr Cycle)
 
 ```{r}
 params_mort2_10y = 
@@ -888,19 +906,57 @@ apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
 ```
 
 ::: {.callout-tip appearance="simple"}
-Recall that in this model, CVD has a very high death rate---meaning that many people who develop CVD will die soon after.
+Recall that in this model, CVD has a very high death rate---meaning that many people who develop CVD will die very soon after.
+:::
+
+::: {.callout-note appearance="simple"}
+With this knowledge in mind, can you spot something wrong with the above (annual) transition matrix?
 :::
 
 ## Discretizing a Continuous Process
 
--   We "hold" some deaths in each cycle because the constructed probability matrix rules out "compound transitions"
--   Compound transition: Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} Dead in a single cycle.
-
-## Discretizing a Continuous Process
+-  Our constructed model **rules out compound transitions within a cycle.**
+-  Compound transition: Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} Dead in a single cycle.
 
 ```{r}
 apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
 ```
+
+## Discretizing a Continuous Process
+
+-  To accurately capture the underlying continuous time process, there should be a transition probability defined for a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVD Death. 
+
+```{r}
+apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
+```
+
+## Discretizing a Continuous Process
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    CVDDeath [pos="3,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    Test [pos="1,.65!" label = "" fontcolor="white" shape="point" color="red"];
+    Test2 [pos="3,-.9!" label = "" fontcolor="white" shape=none ];
+    Healthy -> Test [color = "red" style=dashed arrowhead=none];
+    Test -> CVDDeath [color = "red" style=dashed];
+    Healthy -> CVD [label="r_H_CVD = 0.15"]; 
+    CVD -> CVDDeath [label="  hr_CVD * r_HD\nhr_CVD=10" ];
+    CVDDeath -> CVDDeath;
+    Healthy -> Dead [label="r_HD=0.01"];
+    Dead -> Dead;
+  }
+  
+```
+
 
 ## Discretizing a Continuous Process
 
@@ -913,6 +969,7 @@ That is, $p_{HS}= 1 - e^{-r_{HS}\Delta t}$ captures the probability of following
 
 1.  Individual transitions from healthy to CVD.
 2.  Individual transitions from healthy to CVD to CVD Death.
+3.  Individual dies from background causes before they would have developed CVD in the same cycle.
 
 ## 10 Year Cycle
 
@@ -922,57 +979,189 @@ apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
 
 -   This matrix "captures" all transitions from Healthy {{< fa arrow-right >}} CVD in a single transition probability (`r round(params_mort2_10y$mP[1,2,1],4)`).
 
-
 ## 10 Year Cycle
-
 
 ```{r}
 apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
 ```
 
--   In other words, we rule out the possibility of a compound (Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} CVDDeath) in a single cycle.
+-   But we actually need to distribute out the marginal probability so that we're left only with the probability that someone transitions to CVD and *remains* there at the end of the cycle.
+-   As constructed, we have ruled out the possibility of compound transitions (Healthy {{< fa arrow-right >}} CVD {{< fa arrow-right >}} CVDDeath) in a single cycle.
 
 ## 10 Year Cycle
-
 
 ```{r}
 apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
 ```
 
-
-## 10 Year Cycle
-
-
-```{r}
-apply(params_mort2_10y$mP,3,function(x) x, simplify = FALSE)
-```
-
--   This model will overcount time spend in the CVD death state, and undercount time spent in death.
+-   This results in overcounting CVD state occupancy in some cases (people who develop CVD and die soon after) and undercounting CVD state occupancy in others (people who die of background causes before they would have developed CVD in the same cycle).
 
 ## Discretizing a Continuous Process
 
--   The same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)
--   Changing cycle lengths does not get us out of this problem.
+::: {.callout-important appearance="simple"}
+Changing to shorter cycle lengths adds computational demands but **does not get us out of this problem.**
+:::
+
+## Discretizing a Continuous Process
+
+
+::: {.callout-important appearance="simple"}
+Changing to shorter cycle lengths adds computational demands but **does not get us out of this problem.**
+:::
+
+
+::: {.callout-important appearance="simple"}
+The same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)
+:::
+
+## Discretizing a Continuous Process
+
+
+::: {.callout-important appearance="simple"}
+Changing to shorter cycle lengths adds computational demands but **does not get us out of this problem.**
+:::
+
+
+::: {.callout-important appearance="simple"}
+The same result holds if we use the simpler model with just three health states (Healthy, CVD, Dead)
+:::
+
+## Resulting Error
+
+![](images/dont_panic.png){fig-align="center"}
+
+If one has misapplied this in a model, it's going to be okay.
+
+## Quantified Absolute Error
+
+```{r, cache = TRUE}
+
+truth <- Vectorize(function(r1, r2, t)
+{
+  # Embed properly
+  x <- matrix(c(-r1-r2, r1, r2, rep(0, 6)), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% expm(x*t))[,2:3]
+})
+
+misspecify <- Vectorize(function(r1, r2, t)
+{
+  # Common Advice
+  # RL Fleurence, Christopher S. Hollenbeak. Rates and Probabilities in Economics, Pharmacoeconomics 2007; 25 (1) 3-6
+  tp1 <- 1-exp(-r1*t)
+  tp2 <- 1-exp(-r2*t)
+ 
+  # THIS CONVERSION CAN RESULT IN IMPOSSIBLE VALUES!
+  if(tp1 + tp2 > 1) return(NA)
+  
+  # Mispecify
+  x <- matrix(c(1-tp1-tp2, tp1, tp2, 0, 1, 0, 0, 0, 1), nrow=3, ncol=3, byrow=TRUE)
+  (c(1, 0, 0) %*% x)[,2:3]
+})
+
+par(mfrow=c(1,1))
+abs.error <- Vectorize(function(r1, r2, t=1)
+{
+  misspecify(r1, r2, t) - truth(r1, r2, t)
+})
+
+x <- seq(0.01, 0.7, by = 0.01)
+y <- x
+z <- outer(x, y, FUN=function(x, y) {abs.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="Misspecified Competing Rates",
+        sub="Absolute Error Contour State B, t=1")
+```
+
+## Quantified Relative Error
+
+```{r}
+rel.error <- Vectorize(function(r1, r2, t=1)
+{
+    x <- truth(r1, r2, t)
+    100*(misspecify(r1, r2, t) - x)/x
+})
+
+par(mfrow=c(1,2))
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[1,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State B, t=1")
+
+z <- outer(x, y, FUN=function(x, y) {rel.error(x, y)[2,]})
+contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
+        main="",
+        sub="Relative Error Contour (%) State C, t=1")
+par(mfrow=c(1,1))
+title(main="Misspecified Competing Rates")
+```
+
+-   For rates \< 0.1 of the chosen time step the error is \<5%.
+-   This error will accumulate over each timestep.
+
+## Comparisons Across Strategies Bail You Out
+
+-   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$
+    -   Net monetary benefit.
+    -   Net health benefit.
+    -   Incremental cost effectiveness ratio.
+
+- With error it becomes:
+
+## Comparisons Across Strategies Bail You Out
+::: nonincremental
+-   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$
+    -   Net monetary benefit.
+    -   Net health benefit.
+    -   Incremental cost effectiveness ratio.
+
+- With error it becomes:
+:::
+
+$$f(\theta_A) + \epsilon_A - (f(\theta_{B}) + \epsilon_{B})$$
+
+## Specification Error
+
+If $\epsilon_A - \epsilon_{B} \sim 0$ the impact to the decision threshold is minimal.
+
+-   These decision thresholds are semi-*robust* against this misspecification.
+-   Restated: Single model runs are biased under misspecification, but comparison across strategies helps cancel this out.
+
+## Rate Misspecification Conclusions
+
+::: {.callout-important appearance="simple"}
+In the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices.
+:::
+
+## Why Does This Matter?
+
+-   Without properly embedding, you are no longer modeling a continuous time process.
+-   So your model results will differ compared to a continuous time model (e.g., discrete event simulation)
+-   Microsimulation suffers the same problem because the patient-level transition probability matrix is embedded in a time step and requires Markov Rate conversion.
+
+## Rate Misspecification Conclusions
+
+-   Existing publication's decision thresholds are generally okay if they misspecified rates.
+-   Check the maximum rate of an event as a rough estimate of potential bias.
+
+## Additional Notes
+
+-   Discrete Event Simulation automatically handles competing events.
+
+-   Published rates from clinical studies are usually adjusted for competing events (survival studies).
+
+# So How Do We Obtain the Correct Transition Matrix?
+
+## 
+
+::: nonincremental
 -   Rather than use the conversion formulas, we need to properly "embed" the transition probability matrix.
-
-## Takeaway
-
-::: {.callout-important appearance="simple"}
-In the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices.
 :::
 
-## Takeaway
+## 
 
-::: {.callout-important appearance="simple"}
-In the presence of competing events (mortality), using standard conversion formulas will yield incorrect transition probability matrices.
+::: nonincremental
+-   Rather than use the conversion formulas, we need to properly "embed" the transition probability matrix.
 :::
-
-::: {.callout-important appearance="simple"}
-Depending on context, embedding error *may* be decision relevant (i.e., change optimal decisions)
-:::
-
-## Correct Transition Matrix: 10-year Cycle
-
 
 ```{r}
 params_mort2_10y_emb <- params_mort2_10y
@@ -1003,9 +1192,7 @@ round(params_mort2_10y_emb$mP[[1]],3)
 
 ```
 
-
 -   The correct transition probability matrix includes a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
-
 
 ```{r}
 
@@ -1059,38 +1246,37 @@ trace_mort2 <-
 
 ```
 
-# So How Do We Obtain the Correct Transition Matrix?
 
-## What You Were Taught {auto-animate=true}
+## What You Were Taught {auto-animate="true"}
 
 1.  Convert each rate to a probability for the time step using $p = 1-\exp(-rt)$.
 2.  Place the probabilities within a transition matrix $\mathbf{P}$.
-3.  Diagonal elements of $\mathbf{P}$:  1 - (row sum of nondiagonal elements). 
+3.  Diagonal elements of $\mathbf{P}$: 1 - (row sum of nondiagonal elements).
 
-## What We're Teaching You {auto-animate=true}
+## What We'll Teach You {auto-animate="true"}
 
-1. Place each rate in a rate matrix $\mathbf{R}$.
-2. Diagonal elements of $\mathbf{R}$: -1 * (row sum of nondiagonal elements).
-3. Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{\mathbf{Rt}}$.
+1.  Place each rate in a rate matrix $\mathbf{R}$.
+2.  Diagonal elements of $\mathbf{R}$: -1 \* (row sum of nondiagonal elements).
+3.  Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{(\mathbf{R}t)}$.
 
-## What We're Teaching You {auto-animate=true}
+## What We'll Teach You {auto-animate="true"}
 
 ::: nonincremental
-1. Place each rate in a rate matrix $\mathbf{R}$.
-2. Diagonal elements of $\mathbf{R}$: -1 * (row sum of nondiagonal elements).
-3. Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{(\mathbf{R}t})$.
+1.  Place each rate in a rate matrix $\mathbf{R}$.
+2.  Diagonal elements of $\mathbf{R}$: -1 \* (row sum of nondiagonal elements).
+3.  Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{(\mathbf{R}t})$.
 :::
 
 ::: {.callout-important appearance="simple"}
 This process will ensure that the matrix captures "jumpover" states for compound transitions!
 :::
 
-## What We're Teaching You {auto-animate=true}
+## What We'll Teach You {auto-animate="true"}
 
 ::: nonincremental
-1. Place each rate in a rate matrix $\mathbf{R}$.
-2. Diagonal elements of $\mathbf{R}$: -1 * (row sum of nondiagonal elements).
-3. Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{(\mathbf{R}t})$.
+1.  Place each rate in a rate matrix $\mathbf{R}$.
+2.  Diagonal elements of $\mathbf{R}$: -1 \* (row sum of nondiagonal elements).
+3.  Embed the transition probability matrix using matrix exponentiation $\mathbf{P} = \exp{(\mathbf{R}t})$.
 :::
 
 ::: {.callout-important appearance="simple"}
@@ -1100,6 +1286,8 @@ This process will ensure that the matrix captures "jumpover" states for compound
 ::: {.callout-important appearance="simple"}
 It also ensures that changing cycle lengths will not change your answers!
 :::
+
+# Steps to Embed a Transition Matrix
 
 ## Parameterize the model
 
@@ -1122,7 +1310,7 @@ params_mort_embedded =
 
 ```
 
-- Note: this is the same parameter list as earlier!
+-   Note: this is the same parameter list as earlier!
 
 ## Transition Rate Matrix
 
@@ -1150,7 +1338,6 @@ params_mort_embedded$mR <-
   R    
   })
 ```
-
 
 ## Transition Rate Matrix
 
@@ -1180,9 +1367,8 @@ params_mort_embedded$mR <-
 ```
 
 ::: nonincremental
-- Calculate the CVD {{< fa arrow-right >}} Dead rate
+-   Calculate the CVD {{< fa arrow-right >}} Dead rate
 :::
-
 
 ## Transition Rate Matrix
 
@@ -1212,13 +1398,10 @@ params_mort_embedded$mR <-
 ```
 
 ::: nonincremental
-- Place the rates within the matrix. We'll get the diagonal elements in a second to ensure things balance out. 
+-   Place the rates within the matrix. We'll get the diagonal elements in a second to ensure things balance out.
 :::
 
-
 ## Transition Rate Matrix
-
-
 
 ```{r}
 #| echo: true
@@ -1244,13 +1427,10 @@ params_mort_embedded$mR <-
 ```
 
 ::: nonincremental
-- Diagonal elements are the negative row sum (i.e., each row of $\mathbf{R}$ sums to 0)
+-   Diagonal elements are the negative row sum (i.e., each row of $\mathbf{R}$ sums to 0)
 :::
 
-
 ## Transition Rate Matrix
-
-
 
 ```{r}
 #| echo: true
@@ -1276,9 +1456,8 @@ params_mort_embedded$mR <-
 ```
 
 ::: nonincremental
-- Convert $\mathbf{R}$ to the model cycle length (e.g., 1 year, 1 day, 1 month, etc.).
+-   Convert $\mathbf{R}$ to the model cycle length (e.g., 1 year, 1 day, 1 month, etc.).
 :::
-
 
 ## Transition Rate Matrix
 
@@ -1292,8 +1471,7 @@ params_mort_embedded$mR
 expm(params_mort_embedded$mR[["natural_history"]])
 ```
 
-- Notice how the embedded matrix now has a transition probability from Healthy {{< fa arrow-right >}} CVD Death. 
-
+-   Notice how the embedded matrix now has a transition probability from Healthy {{< fa arrow-right >}} CVD Death!
 
 ## 
 
@@ -1304,11 +1482,30 @@ round(expm(params_mort_embedded$mR[["natural_history"]]),3)
 ```
 
 #### 
+
 #### 
+
 #### 
 
 #### Using Rate Matrix Eponentiation:
+
 ```{r}
 round(apply(params_mort2$mP,3,function(x) x, simplify = FALSE)[[1]],3)
 ```
 
+
+# Now it's your turn! 
+
+## Case Study
+
+![](images/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="300px"}
+
+## Learning Objectives
+
+1. Construct a natural history model for CVD.
+2. Background mortality based on cause-deleted life table data.
+3. CVD mortality based on cause-specific mortality. 
+4. Markov model is properly embedded.
+5. Markov model results will closely match cause-deleted and cause-specific mortality in the US population. 
+
+- 
