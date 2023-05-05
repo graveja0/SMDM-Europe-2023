@@ -9,7 +9,7 @@ execute:
   cache: false
 ---
 
-The objective of this blog post is to demonstrate how state occupancy will differ over different cycle lengths when using standard conversion formulas in the presence of competing risks. In the embedded version, however, changing the cycle length does not affect state occupancy estimates. 
+The objective of this blog post is to demonstrate how state occupancy will differ over different cycle lengths when using standard conversion formulas in the presence of competing risks. In the embedded version, however, changing the cycle length does not affect state occupancy estimates.
 
 ```{r setup}
 #| echo: false
@@ -34,7 +34,6 @@ library(glue)
 select =dplyr::select
 options("scipen" = 100, "digits" = 5)
 ```
-
 
 # Parameterize
 
@@ -78,18 +77,19 @@ params365 <-  # Daily cycle
   modifyList(params, list(n_cycles = 46 * 365, cycle = 1/365))
 
 ```
-1. Accumulators
-2. Transition tracker
+
+1.  Accumulators
+2.  Transition tracker
 
 # Transition Probability Matrices
 
-Our next objective is to define a function that constructs the time-dependent transition probability matrices. 
+Our next objective is to define a function that constructs the time-dependent transition probability matrices.
 
 ## 1. Using Conversion Formulas
 
-1. Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
-2. Convert the rate to the model timestep using $1 - exp(-rt)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle)
-3. Construct the transition probability matrix using the converted probabilities. 
+1.  Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
+2.  Convert the rate to the model timestep using $1 - exp(-rt)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle)
+3.  Construct the transition probability matrix using the converted probabilities.
 
 ```{r mPt}
 #| message: false
@@ -158,11 +158,11 @@ mPt <- function(t, params) {
 
 ## 2. Using Transition Rate Matrix Embedding
 
-1. Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
-2. Use these rates to fill out the Markovian transition rate matrix `mR`
-    - Diagonal of `mR` is the negative row sum of off-diagonal elements.
-3. Augment the transition rate matrix with non-Markovian accumulators and transition/tunnel states. 
-4. Embed the transition rate matrix into the time step using $mP = exp(mR*t)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle). 
+1.  Convert each annual transition probability to a rate using $r = -ln(1 - p)$.
+2.  Use these rates to fill out the Markovian transition rate matrix `mR`
+    -   Diagonal of `mR` is the negative row sum of off-diagonal elements.
+3.  Augment the transition rate matrix with non-Markovian accumulators and transition/tunnel states.
+4.  Embed the transition rate matrix into the time step using $mP = exp(mR*t)$, where $t$ is the timestep (e.g., $t = \frac{1}{12}$ for a monthly cycle).
 
 ```{r mPt_emb}
 #| message: false
@@ -257,9 +257,8 @@ mPt_embedded <- function(t,params) {
 
 # Simulate a Cohort of 1,000 Individuals
 
-
-- Construct a Markov trace and plot state occupancy over the simulation time horizon. 
-- Note that with different cycle lengths, the traditional approach yields different state occupancies!
+-   Construct a Markov trace and plot state occupancy over the simulation time horizon.
+-   Note that with different cycle lengths, the traditional approach yields different state occupancies!
 
 ## 1. Using Conversion Formulas
 
@@ -459,5 +458,4 @@ markov_result_emb$trace %>%
     geom_dl(method = list("first.bumpup",hjust=0,vjust=-1),aes(label = state))
 ```
 
-The figure clearly shows that changing the cycle length does not affect the state occupancy estimates. 
-
+The figure clearly shows that changing the cycle length does not affect the state occupancy estimates.
