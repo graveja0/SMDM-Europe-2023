@@ -18,4 +18,35 @@ bibliography: references.bib
 source("./manifest.r")
 ```
 
-## Slide
+# Copulas
+
+## What is a Copula?
+
+- The binding "glue" between correlated variables.
+- 
+
+## Copulas and PSA Sampling {auto-animate="true"}
+
+We typically draw PSA samples from the *marginal* distribution of each variable:
+
+$$
+F_1(x_1),  ..., F_d(x_d)
+$$
+
+
+## Copulas and PSA Sampling {auto-animate="true"}
+
+
+Copulas allow us to sample from the *joint* distribution:
+
+
+$$
+F(x_1,...,x_d) = C \big ( F_1(x_1), ..., F_d(x_d) \big )
+$$
+
+
+(This is a result of Sklar [1959].)
+
+## Copulas and PSA Sampling {auto-animate="true"}
+
+- Copula: a multivariate cumulative distribution function with uniform marginals. 

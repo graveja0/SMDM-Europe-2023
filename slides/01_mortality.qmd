@@ -1,5 +1,5 @@
 ---
-title: "Mortality Modeling"
+title: "Mortalty Modeling"
 format:
   revealjs:
     transition: fade
@@ -22,14 +22,6 @@ source("manifest.r")
 
 -   Understand options for modeling background mortality based on life tables and parametric mortality models.
 -   Construct a cause-deleted life table to model cause-specific and non-cause-specific death.
-
-## Approaches to Modeling Mortality
-
--   Standard approach is to draw from life table data
-    -   `qx` is the probability of death within an interval.
-    -   `mx` is the death rate within the interval.
-
-## Life Table Data
 
 ```{r}
 #| warning: false
@@ -63,15 +55,42 @@ lt <-  # Read in the U.S. life table data from the human mortality database.
   mutate(age = x)
 ```
 
+## Approaches to Modeling Mortality
+::: nonincremental
+-   Standard approach is to draw from life table data:
+:::
+
 ```{r}
 lt %>% 
   ungroup() %>% 
   select(-x) %>% 
   select(age,lx,dx,mx,qx) %>% 
-  head() %>% 
+  head(n=3) %>% 
   kable() %>% 
   kable_styling()
 ```
+
+- `lx` is the total number living in a hypothetical cohort (of 100,000). 
+- `dx` is the number of deaths in the age interval. 
+
+## Approaches to Modeling Mortality
+::: nonincremental
+-   Standard approach is to draw from life table data:
+:::
+
+```{r}
+lt %>% 
+  ungroup() %>% 
+  select(-x) %>% 
+  select(age,lx,dx,mx,qx) %>% 
+  head(n=3) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+-   `mx` is the death rate within the interval.
+-   `qx` is the probability of death within an interval.
+
 
 ## Life Table Data
 
@@ -84,7 +103,7 @@ lt %>%
   ungroup() %>% 
   select(-x) %>% 
   select(age,lx,dx,mx,qx) %>% 
-  head() %>% 
+  head(n=3) %>% 
   kable() %>% 
   kable_styling() %>% 
     column_spec(5, background = "#c6e6f5")
@@ -102,7 +121,7 @@ lt %>%
   ungroup() %>% 
   select(-x) %>% 
   select(age,lx,dx,mx,qx) %>% 
-  head() %>% 
+  head(n=3) %>% 
   kable() %>% 
   kable_styling() %>% 
   column_spec(4, background = "#e8c6f5")
@@ -130,16 +149,17 @@ tpDn_lookup <-
 
 -   Highlighted row: annual probability of death for 35-44 year old.
 
-## Life Table-Basd Mortality
+## Life Table-Based Mortality
 
 -   What if age bins are coarse (e.g., 0, 5, 10,... vs. 0,1,2,3,...)?
     -   Assume death probability/rate is constant within age bins (and cycles)?
 -   In a DES model, we need to sample a time to death.
     -   Can sample from survival function in underlying life table.
--   Alternative: summarize/sample from background mortality using modeling.
+
 
 ## Modeling Mortality
 
+-   Alternative: summarize/sample from background mortality using modeling.
 -   Fit a parametric mortality model to the life table data.
 -   Reduces dimensionality to a few parameters.
 -   Use these parameters to sample time of death, obtain mortality rate/probability at any arbitrary time, etc.
@@ -157,16 +177,21 @@ The R packages `MortalityLaws` and `demography` facilitate life table data aquis
 
 ## Processing Life Table Data
 
+- Code below extracts U.S. life table data from the human mortality database (HMD). 
+
 ```{r}
 #| echo: true
 #| eval: false
-hmd_usa <- demography::hmd.mx(
-  "USA",
-  username = "<<your user name>>", 
-  password = "<<your password>>", "USA")
+hmd_usa <-
+  demography::hmd.mx("USA",
+                     username = "<<your user name>>",
+                     password = "<<your password>>", "USA")
 ```
 
 ## Processing Life Table Data
+
+- Code below processes HMD data and constructs a (2019) life table from it. 
+- Radix (cohort size) is 100,000 individuals. 
 
 ```{r}
 hmd_usa <- 
@@ -176,26 +201,329 @@ hmd_usa <-
 ```{r}
 #| echo: true
 
-mortality_year = 2019 # <1>
-radix = 100000. # <2>
+mortality_year = 2019 
+radix = 100000. 
 
 lt = 
   hmd_usa %>% 
   demography::lifetable(.,series = "total", years = mortality_year) %>% 
   as_tibble() %>% 
   rename(age = x) %>% 
-  mutate_at(vars(lx,dx), function(x) x * radix) # <3> 
+  mutate_at(vars(lx,dx), function(x) x * radix) 
 ```
-1. Define the mortality year to extract.
-2. Define the number of individuals in a hypothetical cohort at the beginning of the life table.
-3. `lx` and `dx` are originally specified in terms of a cohort of 1. We multiply by the radix to get the number living dying based on the specified radix.  
 
-## Processing Life Table Data
+
+## 
+
+- Shaded column shows life expectancy at given age. 
+- We'll construct a series of discrete time Markov models to replicate these estimates. 
 
 ```{r}
 lt %>% 
+  select(age, lx, dx, ex, qx, mx) %>% 
   head() %>% 
   kable() %>% 
-  kable_styling()
+  kable_styling() %>% 
+   column_spec(4, background = "#c6e6f5")
 ```
+
+# Alive-Dead Model
+
+## Alive-Dead Model
+::: nonincremental
+- As a refresher, let's construct a very simple alive-dead model using life table death probability (`qx`) values.
+:::
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+
+digraph G {
+    layout = neato;
+    Alive [pos="0,0!"];
+    CVD [pos="1,1!" color="white" fontcolor="white"]; 
+    Dead [pos="1,-1!" ]
+    Alive -> Alive ;
+    CVD -> CVD [color="white"];
+    Alive -> CVD [label="" color="white" fontcolor="white"]; 
+    CVD -> Dead [label="" color="white" fontcolor="white"];
+    Alive -> Dead [label="qx(t)" ];
+    Dead -> Dead ;
+  }
+```
+
+## Parameterize the model
+
+```{r}
+#| echo: true
+
+params = 
+  list(
+    t_names = c("lifetable"),         # Strategy names. 
+    n_treatments = 1,                 # Number of treatments
+    s_names  = c("Alive", "Dead"),    # State names
+    n_states = 2,                     # Number of states
+    n_cohort = 100000,                # Cohort size
+    initial_age = 0,                  # Cohort starting age    
+    n_cycles = 110,                   # Number of cycles in model.  
+    cycle = 1,                        # Cycle length
+    life_table = lt                   # Processed HMD life table data (2019, USA)
+  )
+
+```
+
+
+## Parameterize the model
+
+```{r}
+#| echo: true
+#| code-line-numbers: "3-9"
+params = 
+  list(
+    t_names = c("lifetable"),         # Strategy names. 
+    n_treatments = 1,                 # Number of treatments
+    s_names  = c("Alive", "Dead"),    # State names
+    n_states = 2,                     # Number of states
+    n_cohort = 100000,                # Cohort size
+    initial_age = 0,                  # Cohort starting age    
+    n_cycles = 110,                   # Number of cycles in model.  
+    cycle = 1,                        # Cycle length
+    life_table = lt                   # Processed HMD life table data (2019, USA)
+  )
+
+```
+
+::: nonincremental
+- No specific strategies or policies under consideration; we're just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 newborns. 
+:::
+
+## Parameterize the model
+
+```{r}
+#| echo: true
+#| code-line-numbers: "10"
+params = 
+  list(
+    t_names = c("lifetable"),         # Strategy names. 
+    n_treatments = 1,                 # Number of treatments
+    s_names  = c("Alive", "Dead"),    # State names
+    n_states = 2,                     # Number of states
+    n_cohort = 100000,                # Cohort size
+    initial_age = 0,                  # Cohort starting age    
+    n_cycles = 110,                   # Number of cycles in model.  
+    cycle = 1,                        # Cycle length
+    life_table = lt                   # Processed HMD life table data (2019, USA)
+  )
+
+```
+
+::: nonincremental
+- Discrete time will be in annual cycles. 
+:::
+
+## Parameterize the model
+
+```{r}
+#| echo: true
+#| code-line-numbers: "11"
+params = 
+  list(
+    t_names = c("lifetable","hp2"),         # Strategy names. 
+    n_treatments = 2,                 # Number of treatments
+    s_names  = c("Alive", "Dead"),    # State names
+    n_states = 2,                     # Number of states
+    n_cohort = 100000,                # Cohort size
+    initial_age = 0,                  # Cohort starting age    
+    n_cycles = 110,                   # Number of cycles in model.  
+    cycle = 1,                        # Cycle length
+    life_table = lt                   # Processed HMD life table data (2019, USA)
+  )
+
+```
+
+::: nonincremental
+- The `lifetable` "strategy" will draw on the HMD life table data processed earlier. 
+:::
+
+
+## Age-Dependent Transition Matrix
+
+We'll next construct a transition probability matrix using the age-specific probability of death field (`qx`) from the life table data. 
+
+- To do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix. 
+
+## Age-Dependent Transition Matrix
+
+```{r}
+#| echo: true
+fn_mPt <- function(t, params)
+{
+  with(params, {
+    h = cycle # Time step
+    
+    lapply(t, function(tt){
+        current_age_lt <- pmin(initial_age  + (tt)*h - 1,max(lt$age))
+        p_death <- lt[lt$age==current_age_lt,"qx"]
+        p_death_modeled <- lt[lt$age==current_age_lt,"qx"]
+        
+        array(data = c(1 - p_death, 0, 
+                 p_death,1,
+                 
+                 1 - p_death_modeled, 0, 
+                 p_death_modeled,1),
+              
+              dim = c(n_states, n_states, n_treatments),
+              dimnames = list(from = s_names,
+                              to = s_names,
+                              t_names)) #%>% 
+          #apply(.,3,function(x) x, simplify = FALSE)  
+    })
+  })
+}
+
+```
+
+## Age-Dependent Transition Matrix
+
+```{r}
+#| echo: true
+params$mP <- 
+  fn_mPt(1:params$n_cycles, params)
+```
+
+
+::: columns
+::: {.column}
+```{r}
+#| echo: true
+params$mP[[1]]$lifetable
+params$mP[[90]]$lifetable
+```
+:::
+
+::: {.column}
+```{r}
+#| echo: true
+lt[1,c("age","qx")]
+lt[90,c("age","qx")]
+```
+:::
+
+:::
+
+
+## Construct the Markov Trace
+
+```{r}
+#| echo: true
+#| code-line-numbers: "1"
+sim_cohort <- function(params) {
+ params$t_names %>% map(~({
+    tr_ <- t(c("alive" = params$n_cohort, "dead" = 0))
+    
+    res <- do.call(rbind,lapply(params$mP, function(tp) {
+        tr_ <<- tr_ %*% matrix(unlist(tp[,,.x]),nrow=params$n_state)
+    }))
+    rbind(c(params$n_cohort,0),res)
+  }))
+}
+```
+
+::: nonincremental
+-   `sim_cohort(params)` is a function that constructs a Markov trace from the supplied parameters.
+:::
+
+## Construct the Markov Trace
+
+The markov trace tells us state occupancy in any cycle:
+
+```{r}
+#| echo: true
+trace <- 
+  sim_cohort(params)
+trace[[1]][1:10,]
+```
+
+# Checkpoint: Life Expectancy at Birth
+
+## Life Expectancy
+
+-   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
+-  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+-  Let's verify we can replicate this with our Markov model. 
+
+
+## Life Expectancy
+
+::: nonincremental
+-   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
+-  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+-  Let's verify we can replicate this with our Markov model.
+:::
+
+```{r}
+
+lt %>% 
+  ungroup() %>% 
+  select(age,qx,ex) %>% 
+  head(n=1) %>% 
+  kable() %>% 
+  kable_styling() %>% 
+    column_spec(3, background = "#c6e6f5")
+```
+
+
+## Life Expectancy
+
+```{r}
+#| echo: true
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
+life_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp  # <2>
+total_life_exp = sum(cycle_adj(life_exp_cycle,1)) # <3>
+total_life_exp
+```
+
+```{r}
+lt %>% 
+  ungroup() %>% 
+  select(age,qx,ex) %>% 
+  head(n=1) %>% 
+  kable() %>% 
+  kable_styling() %>% 
+    column_spec(3, background = "#c6e6f5")
+```
+
+## Life Expectancy 
+
+```{r}
+
+le_res <- lt %>% select(age,ex)
+
+ages <- lt$age
+
+le_res$ex_lt_markov = 
+  ages %>% map_dbl(~({
+  paramsX <- modifyList(params, list(initial_age=.x))
+  paramsX$mP <- 
+    fn_mPt(1:paramsX$n_cycles, paramsX)
+  traceX <- 
+    sim_cohort(paramsX)
+  life_expX_cycle = (traceX[[1]] * (1 / paramsX$n_cohort)) %*% payoff_life_exp  # <2>
+  total_life_expX = sum(cycle_adj(life_expX_cycle,1)) # <3>
+  total_life_expX
+}))
+
+le_res %>% 
+  gather(method,value,-age) %>% 
+  mutate(method = factor(method, labels = c("Life Table","Markov (Life Table qx)"))) %>% 
+  ggplot(aes(x = age, y = value, colour = method)) + 
+  geom_point() + 
+  hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+  scale_colour_aaas(name = "") + 
+  theme(legend.position = "top") 
+  
+```
+
 
