@@ -3476,7 +3476,7 @@
     "href": "slides/01_mortality.html#sampling-death-rates-des-4",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 92.903 86.374 95.143 74.026 42.930 88.784 77.696 79.816 76.613 64.576"
+    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 89.624 83.957 87.763 61.307 87.147 72.952     NA 75.692 78.080 94.435"
   },
   {
     "objectID": "slides/01_mortality.html#modeled-mortality-markov",
