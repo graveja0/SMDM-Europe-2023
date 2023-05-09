@@ -1,5 +1,5 @@
 ---
-title: "Mortalty Modeling"
+title: "Mortality Modeling"
 format:
   revealjs:
     transition: fade
@@ -20,8 +20,23 @@ source("manifest.r")
 
 ## Learning Objectives
 
+-   Underlying robust property of decision modeling.
 -   Understand options for modeling background mortality based on life tables and parametric mortality models.
 -   Construct a cause-deleted life table to model cause-specific and non-cause-specific death.
+
+## The Big Picture
+
+-  Decision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model. 
+-  For example, a model of $f_{cost}$ and $f_{qaly}$ are run versus $\theta_{ref}$ and $\theta_{target}$. 
+-  These runs will have error due to misspecification, and in differencing the error can mostly cancel. Let $g$ represent the truth, thus $f(\theta) = g(\theta)+\epsilon_{theta}$.
+
+## The Hopeful Big Picture
+
+$$\text{ICER} = \frac{f_{cost}(\theta_{target}) - \epsilon_{ct} - f_{cost}(\theta_{ref}) + \epsilon_{cr}}{f_{qaly}(\theta_{target}) - \epsilon_{qt} - f_{qaly}(\theta_{ref}) + \epsilon_{qr}}$$
+
+-  If $\epsilon_{ct} \sim \epsilon_{cr}$ and $\epsilon_{qt} \sim \epsilon_{qr}$ then the model errors cancel and this approaches the true model.
+-  The decision threshold is *robust* in this case even when model run results are biased!
+-  We will explore this perodically today.
 
 ```{r}
 #| warning: false
@@ -56,6 +71,7 @@ lt <-  # Read in the U.S. life table data from the human mortality database.
 ```
 
 ## Approaches to Modeling Mortality
+
 ::: nonincremental
 -   Standard approach is to draw from life table data:
 :::
@@ -70,10 +86,11 @@ lt %>%
   kable_styling()
 ```
 
-- `lx` is the total number living in a hypothetical cohort (of 100,000). 
-- `dx` is the number of deaths in the age interval. 
+-   `lx` is the total number living in a hypothetical cohort (of 100,000).
+-   `dx` is the number of deaths in the age interval.
 
 ## Approaches to Modeling Mortality
+
 ::: nonincremental
 -   Standard approach is to draw from life table data:
 :::
@@ -90,7 +107,6 @@ lt %>%
 
 -   `mx` is the death rate within the interval.
 -   `qx` is the probability of death within an interval.
-
 
 ## Life Table Data
 
@@ -156,7 +172,6 @@ tpDn_lookup <-
 -   In a DES model, we need to sample a time to death.
     -   Can sample from survival function in underlying life table.
 
-
 ## Modeling Mortality
 
 -   Alternative: summarize/sample from background mortality using modeling.
@@ -177,7 +192,7 @@ The R packages `MortalityLaws` and `demography` facilitate life table data aquis
 
 ## Processing Life Table Data
 
-- Code below extracts U.S. life table data from the human mortality database (HMD). 
+-   Code below extracts U.S. life table data from the human mortality database (HMD).
 
 ```{r}
 #| echo: true
@@ -190,8 +205,8 @@ hmd_usa <-
 
 ## Processing Life Table Data
 
-- Code below processes HMD data and constructs a (2019) life table from it. 
-- Radix (cohort size) is 100,000 individuals. 
+-   Code below processes HMD data and constructs a (2019) life table from it.
+-   Radix (cohort size) is 100,000 individuals.
 
 ```{r}
 hmd_usa <- 
@@ -212,11 +227,10 @@ lt =
   mutate_at(vars(lx,dx), function(x) x * radix) 
 ```
 
-
 ## 
 
-- Shaded column shows life expectancy at given age. 
-- We'll construct a series of discrete time Markov models to replicate these estimates. 
+-   Shaded column shows life expectancy at given age.
+-   We'll construct a series of discrete time Markov models to replicate these estimates.
 
 ```{r}
 lt %>% 
@@ -230,8 +244,9 @@ lt %>%
 # Alive-Dead Model
 
 ## Alive-Dead Model
+
 ::: nonincremental
-- As a refresher, let's construct a very simple alive-dead model using life table death probability (`qx`) values.
+-   As a refresher, let's construct a very simple alive-dead model using life table death probability (`qx`) values.
 :::
 
 ```{dot}
@@ -272,7 +287,6 @@ params =
 
 ```
 
-
 ## Parameterize the model
 
 ```{r}
@@ -294,7 +308,7 @@ params =
 ```
 
 ::: nonincremental
-- No specific strategies or policies under consideration; we're just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 newborns. 
+-   No specific strategies or policies under consideration; we're just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 newborns.
 :::
 
 ## Parameterize the model
@@ -318,7 +332,7 @@ params =
 ```
 
 ::: nonincremental
-- Discrete time will be in annual cycles. 
+-   Discrete time will be in annual cycles.
 :::
 
 ## Parameterize the model
@@ -342,15 +356,14 @@ params =
 ```
 
 ::: nonincremental
-- The `lifetable` "strategy" will draw on the HMD life table data processed earlier. 
+-   The `lifetable` "strategy" will draw on the HMD life table data processed earlier.
 :::
-
 
 ## Age-Dependent Transition Matrix
 
-We'll next construct a transition probability matrix using the age-specific probability of death field (`qx`) from the life table data. 
+We'll next construct a transition probability matrix using the age-specific probability of death field (`qx`) from the life table data.
 
-- To do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix. 
+-   To do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix.
 
 ## Age-Dependent Transition Matrix
 
@@ -391,9 +404,8 @@ params$mP <-
   fn_mPt(1:params$n_cycles, params)
 ```
 
-
 ::: columns
-::: {.column}
+::: column
 ```{r}
 #| echo: true
 params$mP[[1]]$lifetable
@@ -401,16 +413,14 @@ params$mP[[90]]$lifetable
 ```
 :::
 
-::: {.column}
+::: column
 ```{r}
 #| echo: true
 lt[1,c("age","qx")]
 lt[90,c("age","qx")]
 ```
 :::
-
 :::
-
 
 ## Construct the Markov Trace
 
@@ -449,16 +459,15 @@ trace[[1]][1:10,]
 ## Life Expectancy
 
 -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
--  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--  Let's verify we can replicate this with our Markov model. 
-
+-   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+-   Let's verify we can replicate this with our Markov model.
 
 ## Life Expectancy
 
 ::: nonincremental
 -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
--  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--  Let's verify we can replicate this with our Markov model.
+-   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+-   Let's verify we can replicate this with our Markov model.
 :::
 
 ```{r}
@@ -471,7 +480,6 @@ lt %>%
   kable_styling() %>% 
     column_spec(3, background = "#c6e6f5")
 ```
-
 
 ## Life Expectancy
 
@@ -495,7 +503,7 @@ lt %>%
     column_spec(3, background = "#c6e6f5")
 ```
 
-## Life Expectancy 
+## Life Expectancy
 
 ```{r}
 
@@ -525,5 +533,3 @@ le_res %>%
   theme(legend.position = "top") 
   
 ```
-
-
