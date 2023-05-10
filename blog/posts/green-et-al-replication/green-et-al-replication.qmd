@@ -78,7 +78,6 @@ params = list(
     n_cohort =1000, # Cohort size
     cycle = 1, # Cycle length
     
-
     Initial_age = 55,  # Cohort starting age
     effect = 0.5,  # Treatment Effect (drug) 
     
@@ -100,8 +99,7 @@ params <- modifyList(params,list(    n_cycles = 46/params$cycle))
 Our next objective is to define a function that constructs the time-dependent transition probability matrices.
 
 ```{r}
-t = 1:params$n_cycles
-tt = params$n_cycles
+
 mPt <- function(t, params) {
     lapply(t, function(tt){
         

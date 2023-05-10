@@ -18,7 +18,7 @@ library(gt)
 library(directlabels)
 library(glue)
 library(ggsci)
-
+theme_set(hrbrthemes::theme_ipsum(base_family = "Arial"))
 
 
 options("scipen" = 100, "digits" = 5)

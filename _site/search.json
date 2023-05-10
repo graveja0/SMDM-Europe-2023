@@ -1857,9 +1857,9 @@
   {
     "objectID": "slides/02_competing-events.html",
     "href": "slides/02_competing-events.html",
-    "title": "Dealing With Competing Events",
+    "title": "Competing Risks",
     "section": "",
-    "text": "source(\"./manifest.r\")\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.1     ✔ readr     2.1.4\n✔ forcats   1.0.0     ✔ stringr   1.5.0\n✔ ggplot2   3.4.2     ✔ tibble    3.2.1\n✔ lubridate 1.9.2     ✔ tidyr     1.3.0\n✔ purrr     1.0.1     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nAttaching package: 'kableExtra'\n\n\nThe following object is masked from 'package:dplyr':\n\n    group_rows\n\n\n\nAttaching package: 'Matrix'\n\n\nThe following objects are masked from 'package:tidyr':\n\n    expand, pack, unpack\n\n\nhere() starts at /Users/johngraves/Dropbox/teaching/SMDM-Europe-2023\n\nLoading required package: forecast\n\nRegistered S3 method overwritten by 'quantmod':\n  method            from\n  as.zoo.data.frame zoo \n\nRegistered S3 methods overwritten by 'demography':\n  method      from \n  print.lca   e1071\n  summary.lca e1071\n\nThis is demography 2.0.0.9000 \n\n\n\nAttaching package: 'MASS'\n\n\nThe following object is masked from 'package:dplyr':\n\n    select\n\n\n\nHealthy-CVD\nEstimate life expectancy.\nAdd background mortality and then calculate life expectancy.\nIntuition of embedding\nDemonstrate how changing cycle lengths won’t help."
+    "text": "Pitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
   },
   {
     "objectID": "slides/02_competing-events.html#slide",
@@ -2797,7 +2797,7 @@
     "href": "slides/02_competing-events.html#quantified-relative-error",
     "title": "Competing Risks",
     "section": "Quantified Relative Error",
-    "text": "Quantified Relative Error\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%.\nThis error will accumulate over each timestep."
+    "text": "Quantified Relative Error\n\n\n\n\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%.\nThis error will accumulate over each timestep."
   },
   {
     "objectID": "slides/02_competing-events.html#comparison",
@@ -2944,7 +2944,7 @@
     "href": "slides/02_competing-events.html#section-7",
     "title": "Competing Risks",
     "section": "",
-    "text": "Using Conversion Formulas:\n\n\n         Healthy   CVD CVDDeath  Dead\nHealthy    0.852 0.132    0.007 0.009\nCVD        0.000 0.905    0.095 0.000\nCVDDeath   0.000 0.000    1.000 0.000\nDead       0.000 0.000    0.000 1.000\n\n\n\n\n\nUsing Rate Matrix Eponentiation:\n\n\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    0.851 0.139    0.000 0.01\n  CVD        0.000 0.905    0.095 0.00\n  CVDDeath   0.000 0.000    1.000 0.00\n  Dead       0.000 0.000    0.000 1.00"
+    "text": "Using Conversion Formulas:\n\n\n         Healthy   CVD CVDDeath  Dead\nHealthy    0.852 0.132    0.007 0.009\nCVD        0.000 0.905    0.095 0.000\nCVDDeath   0.000 0.000    1.000 0.000\nDead       0.000 0.000    0.000 1.000\n\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Rate Matrix Eponentiation:\n\n\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    0.851 0.139    0.000 0.01\n  CVD        0.000 0.905    0.095 0.00\n  CVDDeath   0.000 0.000    1.000 0.00\n  Dead       0.000 0.000    0.000 1.00"
   },
   {
     "objectID": "slides/02_competing-events.html#signs-of-trouble-1",
@@ -2978,15 +2978,15 @@
     "objectID": "slides/02_competing-events.html#learning-objectives",
     "href": "slides/02_competing-events.html#learning-objectives",
     "title": "Competing Risks",
-    "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nPitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
+    "section": "",
+    "text": "Pitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
   },
   {
     "objectID": "slides/02_competing-events.html#learning-objectives-1",
     "href": "slides/02_competing-events.html#learning-objectives-1",
     "title": "Competing Risks",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population.\n\n\n\nBack to Website"
+    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population."
   },
   {
     "objectID": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work",
@@ -3007,7 +3007,7 @@
     "href": "slides/02_competing-events.html#embedding-error",
     "title": "Competing Risks",
     "section": "Embedding Error",
-    "text": "Embedding Error\n\nIf one has misapplied this in a model, it’s going to be okay."
+    "text": "Embedding Error\n\n\n\n\n\nIf one has misapplied this in a model, it’s going to be okay."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-is-a-copula",
@@ -3693,7 +3693,7 @@
     "href": "slides/01_mortality.html#sampling-death-rates-des-9",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1]  83.150  83.919  70.329  49.734  69.022  60.366  98.518  82.080 103.843\n[10]  69.503"
+    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 103.415  91.890  82.359  83.391  88.589  75.852  64.124  76.938  32.728\n[10]  83.533"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-alive-dead-model",
@@ -3827,5 +3827,47 @@
     "title": "1. Coping with Mortality",
     "section": "CVD Natural History Model",
     "text": "CVD Natural History Model\n\nNext set of slides will walk through the process of constructing a natural history model for cardiovascular disease.\nWe’ll construct a model with non-CVD background mortality, and CVD mortality.\nFirst step is constructing a cause-deleted life table.\n\nNeeded because at older ages, CVD is a substantial contributor (~50%) of overall mortality."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#learning-objectives",
+    "href": "slides/03_advanced-bookkeeping.html#learning-objectives",
+    "title": "Advanced Bookkeeping",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nProperly embed a transition probability matrix.\nInclude transition states and accumulators to facilitate calculation of costs and QALYs."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#green-et-al.-2023",
+    "href": "slides/03_advanced-bookkeeping.html#green-et-al.-2023",
+    "title": "Advanced Bookkeeping",
+    "section": "Green et al. (2023)",
+    "text": "Green et al. (2023)\n\n\n\n\n\n\n\nG\n\n  \n\nAsymptomatic\n\n Asymptomatic   \n\nAsymptomatic-&gt;Asymptomatic\n\n    \n\nProgressive\n\n Progressive Disease   \n\nAsymptomatic-&gt;Progressive\n\n  tpProg * (1-effect)   \n\nDead\n\n Dead   \n\nAsymptomatic-&gt;Dead\n\n  tpDn   \n\nProgressive-&gt;Progressive\n\n    \n\nProgressive-&gt;Dead\n\n     tpDcm+tpDn   \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#parameterize",
+    "href": "slides/03_advanced-bookkeeping.html#parameterize",
+    "title": "Advanced Bookkeeping",
+    "section": "Parameterize",
+    "text": "Parameterize"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#age-specific-transition-matrices",
+    "href": "slides/03_advanced-bookkeeping.html#age-specific-transition-matrices",
+    "title": "Advanced Bookkeeping",
+    "section": "Age-Specific Transition Matrices",
+    "text": "Age-Specific Transition Matrices\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#two-strategies",
+    "href": "slides/03_advanced-bookkeeping.html#two-strategies",
+    "title": "Advanced Bookkeeping",
+    "section": "Two Strategies",
+    "text": "Two Strategies\n\nWithout drug\nDrug that confers a 50% reduction in the probability of transitioning to progressive disease."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#complicating-factors",
+    "href": "slides/03_advanced-bookkeeping.html#complicating-factors",
+    "title": "Advanced Bookkeeping",
+    "section": "Complicating Factors",
+    "text": "Complicating Factors\n\nHigher rate of death from progressive disease, with a cost ($1,000) associated with it.\nBut can also die of background causes from progressive disease."
   }
 ]
