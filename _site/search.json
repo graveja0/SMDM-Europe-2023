@@ -3693,7 +3693,7 @@
     "href": "slides/01_mortality.html#sampling-death-rates-des-9",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 63.804 89.479 89.786 75.523 97.640 97.200 77.497 99.182 82.185 83.450"
+    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1]  83.150  83.919  70.329  49.734  69.022  60.366  98.518  82.080 103.843\n[10]  69.503"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-alive-dead-model",
@@ -3728,14 +3728,14 @@
     "href": "slides/01_mortality.html#cvd-deleted-life-table",
     "title": "1. Coping with Mortality",
     "section": "CVD-Deleted Life Table",
-    "text": "CVD-Deleted Life Table\n\nWe’ll next show you the process of constructing a cause-deleted life table.\nBasis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality."
+    "text": "CVD-Deleted Life Table\nConstructing the cause-deleted life table requires two necessary inputs:\n\nOverall mortality by age.\nCause-specific mortality by age (ideally as a % of all deaths at a given age).\n\n\nThese are obtainable for many countries from the Global Burden of Disease and Human Cause of Death Database websites."
   },
   {
     "objectID": "slides/01_mortality.html#cvd-deleted-life-table-1",
     "href": "slides/01_mortality.html#cvd-deleted-life-table-1",
     "title": "1. Coping with Mortality",
     "section": "CVD-Deleted Life Table",
-    "text": "CVD-Deleted Life Table\nConstructing the cause-deleted life table requires two necessary inputs:\n\nOverall mortality by age.\nCause-specific mortality by age (ideally as a % of all deaths at a given age).\n\n\nThese are obtainable for many countries from the Global Burden of Disease and Human Cause of Death Database websites."
+    "text": "CVD-Deleted Life Table\n\n\nOur estimates of CVD death by age will be drawn from the Global Burden of Disease website.\n\n\n\n\n\nScreenshot of Global Burden of Disease Data"
   },
   {
     "objectID": "slides/01_mortality.html#cvd-deleted-life-table-2",
@@ -3813,5 +3813,19 @@
     "title": "1. Coping with Mortality",
     "section": "Construct a Markov Trace",
     "text": "Construct a Markov Trace\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
+  },
+  {
+    "objectID": "slides/01_mortality.html#good-news",
+    "href": "slides/01_mortality.html#good-news",
+    "title": "1. Coping with Mortality",
+    "section": "Good News",
+    "text": "Good News\n\nModeled CVD and non-CVD mortality closely matches the cause-deleted life table data!"
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-natural-history-model-1",
+    "href": "slides/01_mortality.html#cvd-natural-history-model-1",
+    "title": "1. Coping with Mortality",
+    "section": "CVD Natural History Model",
+    "text": "CVD Natural History Model\n\nNext set of slides will walk through the process of constructing a natural history model for cardiovascular disease.\nWe’ll construct a model with non-CVD background mortality, and CVD mortality.\nFirst step is constructing a cause-deleted life table.\n\nNeeded because at older ages, CVD is a substantial contributor (~50%) of overall mortality."
   }
 ]

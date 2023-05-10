@@ -1220,10 +1220,14 @@ total_life_exp
 - We can construct an alternative life table that "nets out" cause-specific deaths.
 - Not foolproof: need to make an assumption that we can parse out deaths as indepdendent contributors to overall mortality. 
 
-## CVD-Deleted Life Table
+# CVD Natural History Model
 
-- We'll next show you the process of constructing a cause-deleted life table.
-- Basis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality. 
+## CVD Natural History Model
+
+- Next set of slides will walk through the process of constructing a natural history model for cardiovascular disease.
+- We'll construct a model with non-CVD background mortality, and CVD mortality. 
+- First step is constructing a cause-deleted life table. 
+  - Needed because at older ages, CVD is a substantial contributor (~50%) of overall mortality. 
 
 ## CVD-Deleted Life Table
 
@@ -1554,9 +1558,13 @@ trace <-
 trace[["natural_history"]][1:10,]
 ```
 
-## 
+## Good News
+
+- Modeled CVD and non-CVD mortality closely matches the cause-deleted life table data!
 
 ```{r}
+#| fig-align: center
+#| fig-width: 6
 lt_compare <- 
     lt_ %>% 
     mutate(dx = dx - dx_i) %>% 
@@ -1593,5 +1601,8 @@ trace[["natural_history"]] %>%
     labs(x = "Age", y = "Deaths") + 
     scale_y_continuous(limits = c(0,radix)) 
 ```
+
+# Your Turn
+
 
 
