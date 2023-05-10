@@ -274,7 +274,7 @@ m_P %>% data.frame() %>%
 
 ::: {style="font-size: 0.6em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|-----------|---------------------------------------|-----------|-----------|
+|-------------|---------------------------------|-------------|-------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
 :::
@@ -754,7 +754,7 @@ title(main="Misspecified Competing Rates")
 ```
 
 -   For rates \< 0.1 of the chosen time step the error is \<5%.
-- This error will accumulate over each timestep. 
+-   This error will accumulate over each timestep.
 
 ## Comparison
 
@@ -762,8 +762,6 @@ title(main="Misspecified Competing Rates")
     -   Net monetary benefit.
     -   Net health benefit.
     -   Incremental cost effectiveness ratio.
-    
-
 
 With error it becomes:
 
@@ -771,25 +769,22 @@ $$f(\theta_M) + \epsilon_M - (f(\theta_{ref}) + \epsilon_{ref})$$
 
 ## Specification Error
 
-If $\epsilon_M - \epsilon_{ref} \sim 0$ the impact to the decision threshold is
-minimal. 
-    
+If $\epsilon_M - \epsilon_{ref} \sim 0$ the impact to the decision threshold is minimal.
+
 -   These decision thresholds are semi-*robust* against this misspecification.
--   Restated: Single model runs are biased under misspecification, but decision
-threshold comparisons cancel this out. 
+-   Restated: Single model runs are biased under misspecification, but decision threshold comparisons cancel this out.
 
 ## Rate Misspecification Conclusions
 
--   Existing publications decision thresholds are generally okay if they
-misspecified rates under 3a.
--   Check the maximum rate of an event as a rough estimate of effect. 
--   Adjusting the timestep does little. The error still exists. 
+-   Existing publications decision thresholds are generally okay if they misspecified rates under 3a.
+-   Check the maximum rate of an event as a rough estimate of effect.
+-   Adjusting the timestep does little. The error still exists.
 
 ## Other
 
 -   Discrete Event Simulation automatically handles competing events.
 -   microsimulation is embedded in a time step and requires Markov Rate conversion.
--   Published rates from clinical studies are usually adjusted for competing events (survival studies). 
+-   Published rates from clinical studies are usually adjusted for competing events (survival studies).
 
 ## So Where Are We Now?
 
@@ -829,7 +824,7 @@ These two rate matrices can be used to construct the following transition probab
 ::: {style="font-size: 0.7em"}
 ::: columns
 ::: column
-m_P\_NH =
+m_P_NH =
 
 ```{r}
 expm(m_P) %>% kable(digits=4)
@@ -837,7 +832,7 @@ expm(m_P) %>% kable(digits=4)
 :::
 
 ::: column
-m_P\_A =
+m_P_A =
 
 ```{r}
 dimnames(m_P_A) = dimnames(m_P)
@@ -887,7 +882,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 
 ::: {style="font-size: 0.5em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|-----------|---------------------------------------|-----------|-----------|
+|-------------|---------------------------------|-------------|-------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Hazard Ratio     | $\frac{\text{Hazard rate of outcome in exposed}}{\text{Hazard rate of outcome in unexposed}}$           | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |

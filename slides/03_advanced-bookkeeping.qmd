@@ -1,6 +1,6 @@
 ---
 title: "Advanced Bookkeeping"
-subtitle: "Non-Markovian Accumulators and Transition States"
+subtitle: "Non-Markovian Accumulators, Transition States, and Backwards Conversion"
 format:
   revealjs:
     transition: fade
@@ -18,4 +18,396 @@ bibliography: references.bib
 source("./manifest.r")
 ```
 
-## Slide
+## Learning Objectives
+
+- Establish the transition rate matrix as the central "hub" of the modeling process. 
+- Include transition states and accumulators to accurately track and count events, costs, and QALYs.
+- Backwards convert an existing Markov model to facilitate new health states, new strategies, or new settings. 
+
+# Review of Key Concepts
+
+## Transition Rate Matrix {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
+
+::: incremental
+-   The central "hub" of a Markov model.
+-   Straightforward to convert rate matrix into a transition probability matrix.
+-   Facilitates modeling using alternative techniques:
+    -   Continuous time Markov
+    -   Discrete event simulation
+:::
+
+## Transition Rate Matrix {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
+
+- The "workshop" where you can include additional health states, new evidence, change cycle lengths, etc.
+- Ensures that results obtained via discrete time Markov model will match those under an identical model but different method (e.g., DES). 
+
+
+## What they didn't teach you {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
+
+- The transition rate matrix is also **essential** for accurate and transparent accounting of costs and QALYs.
+
+## What we'll teach you {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
+
+- We'll demonstrate how to augment the matrix with non-Markovian elements using the basic CVD model from the last session. 
+- We'll show you how to backwards convert an existing transition probability matrix into a continuous generator (rate) matrix. 
+- We'll then replicate and extend a recent didactic model (Green et al. 2023) in an applied case study using these methods. 
+
+# CVD Model
+
+## CVD Model
+
+::: nonincremental
+- Let's quickly build up the basic CVD  model again. 
+:::
+
+## Parameterize
+
+```{r}
+#| echo: true
+params = 
+  list(
+    t_names = c("natural_history"),                       
+    n_treatments = 1,                                     
+    s_names  = c("Healthy", "CVD", "CVDDeath", "Dead"),   
+    n_states = 4,                                         
+    n_cohort = 1,                                         
+    n_cycles = 100,                                        
+    cycle = 1,                                            
+    initial_age = 55,                                     
+    r_H_CVD = 0.15,                                       
+    hr_CVD = 10,                                          
+    r_H_D = 0.01                                          
+  )
+
+```
+
+## Transition Rate Matrix
+
+```{r}
+#| echo: true
+params$mR <- 
+  with(params,{
+
+    r_CVD_D <- hr_CVD * r_H_D
+    
+    R_ <- 
+      array(data = c(0, 0, 0,0,  
+                 r_H_CVD,0, 0,0,
+                 0,r_CVD_D,0,0,
+                 r_H_D, 0,0, 0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+    R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      x * cycle
+    })
+  R    
+  })
+```
+
+## Transition Rate Matrix
+
+```{r}
+#| echo: true
+params$mR
+```
+
+## Transition Probability Matrix
+
+```{r, echo = TRUE}
+expm(params$mR[["natural_history"]])
+```
+
+-   Notice how the embedded matrix now has a transition probability from Healthy {{< fa arrow-right >}} CVD Death!
+
+## Tracking Transitions and Event Counts
+
+- Given compound transitions, how can we track the total number of people who develop CVD?
+- What if there is a transitory utility decrement or cost to contracting CVD?
+
+## Markovian Transition Matrices
+
+- Traditional Markov modeling approaches restrict to a transition probability matrix.
+- Row sums all equal 1.0. 
+
+## Markovian Transition Matrices
+
+::: nonincremental
+- Traditional Markov modeling approaches restrict to a transition probability matrix.
+- Row sums all equal 1.0. 
+:::
+
+```{r, echo = FALSE}
+Pexp0 <-
+  expm(params$mR[["natural_history"]]) %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column()  
+
+
+Pexp0 %>% 
+  kable(col.names = c("",params$s_names)) %>% 
+  kable_styling() %>% 
+  kable_paper() %>% 
+  column_spec(2:5, color ="black", background = "#a2cc99")
+
+```
+
+## Non-Markovian Elements
+
+- Augmenting the transition matrix with non-markovian submatrices can facilitate accurate counting and bookkeeping. 
+- Depending on the objective, can include non-markovian **accumulators** and/or **transition states**. 
+
+## Non-Markovian Elements
+
+- **Accumulator**: tracks the total number of individuals who have entered a given state up until a given cycle (even if they moved out of the state later). 
+
+## Non-Markovian Elements
+
+- **Transition state**: tracks the total number of individuals who enter a given state in a given cycle. 
+  - Can construct as a tunnel state if you move them through to the next state (or to secular death). 
+  - But you don't have to do this. Depending on objective, you could just count the total number who enter the state to count up transitory costs, etc. 
+
+## Where we're headed
+
+```{r, echo = FALSE}
+Pexp <-
+  expm(params$mR[["natural_history"]]) %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column()  %>% 
+  cbind.data.frame(., trCVD = c(".", ".", ".", ".")) %>% 
+  cbind.data.frame(., accCVD = c(".", ".", ".", ".")) %>% 
+  rbind(., c("trCVD",rep(".", params$n_states + 2))) %>% 
+  rbind(., c("accCVD",rep(".", params$n_states + 2)))
+
+
+Pexp %>% 
+  kable(col.names = c("",params$s_names,"trCVD","accCVD")) %>% 
+  kable_styling() %>% 
+  kable_paper() %>% 
+  column_spec(2:5, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
+                                                       ifelse(Pexp$rowname=="trCVD","#e8b0d1","#a29af5"))) %>% 
+  column_spec(6, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#e8b0d1","#a29af5")) %>% 
+  column_spec(7, color = "black", background = ifelse(Pexp$rowname %in% c("accCVD","trCVD",params$s_names),"#a29af5","#e8b0d1")) 
+
+```
+
+# Augmenting the Transition Matrix
+
+## Augmenting the Transition Matrix
+
+- As noted earlier, all roads begin from the transition rate matrix. 
+- The way in which we construct the Markovian components is the same.
+  - Place rates as appropriate.
+  - Diagonal of Markovian elements is the negative sum of the other row elements.
+
+## Augmenting the Transition Matrix
+::: nonincremental
+- Rate matrix for basic CVD model
+:::
+
+```{r, echo = FALSE}
+Rexp0 <-
+  params$mR[["natural_history"]] %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column()  
+
+Rexp0 %>% 
+  kable(col.names = c("",params$s_names)) %>% 
+  kable_styling() %>% 
+  kable_paper() %>% 
+  column_spec(2:5, color ="black", background = "#a2cc99")
+
+```
+
+## Total CVD Cases
+
+- Suppose we wanted to track the total number of people who develop CVD over the simulated time horizon.
+- We can't do this accurately using CVD state occupancy in the Markov trace due to compound transitions.
+
+## Total CVD Cases
+
+- We need some way to track everyone who moves into the CVD state. 
+- We can do this by adding a **non-markovian accumulator** to the rate matrix. 
+
+## Non-Markovian Accumulators
+We'll start with the original transition rate matrix: 
+```{r, echo = TRUE}
+R_ <- params$mR[["natural_history"]]
+R_
+```
+
+## Non-Markovian Accumulators 
+::: nonincremental
+- Next,  we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
+:::
+- For now, just include zeros. 
+
+```{r, echo = TRUE}
+R <- 
+  cbind(R_,"accCVD" = c(0,0,0,0)) %>% 
+  rbind(.,"accCVD" = c(0,0,0,0,0))  
+R
+```
+
+## Non-Markovian Accumulators
+::: nonincremental
+- We then fill in the appropriate transition rate.
+:::
+```{r, echo = TRUE}
+R["Healthy","accCVD"] = R["Healthy","CVD"]
+R
+```
+
+## Non-Markovian Accumulators
+::: nonincremental
+- Finally, we convert to the transition probability matrix. 
+:::
+
+```{r, echo = TRUE, eval = FALSE}
+expm(R)  
+```
+
+```{r}
+Pexp <-
+  expm(params$mR[["natural_history"]]) %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column()  %>% 
+  cbind.data.frame(., accCVD = round(unname(expm(R))[1:4,5],3)) %>% 
+  rbind(., c("accCVD",round(unname(expm(R))[5,],3)))
+
+
+Pexp %>% 
+  kable(col.names = c("",params$s_names,"accCVD")) %>% 
+  kable_styling() %>% 
+  kable_paper() %>% 
+  column_spec(2:5, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
+                                                       ifelse(Pexp$rowname=="trCVD","#e8b0d1","#a29af5"))) %>% 
+  column_spec(6, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#a29af5","#a29af5")) 
+
+```
+
+
+#  Green et al. (2023) 
+
+## Green et al. (2023)
+
+```{dot}
+digraph G {
+    layout = neato;
+    Asymptomatic [pos="0,0!"];
+    "Progressive\nDisease" [pos="2,1!"]; 
+    Dead [pos="1,-1!"]
+    Asymptomatic -> Asymptomatic ;
+    "Progressive\nDisease" -> "Progressive\nDisease";
+    Asymptomatic -> "Progressive\nDisease" [label="tpProg * (1-effect)"]; 
+    "Progressive\nDisease" -> Dead [label="   tpDcm+tpDn" fontcolor="black"];
+    Asymptomatic -> Dead [label="tpDn"];
+    Dead -> Dead ;
+}
+```
+
+## Two Strategies
+
+1. Without drug
+2. Drug that confers a 50% reduction in the probability of transitioning to progressive disease. 
+
+## Complicating Factors
+
+- Higher rate of death from progressive disease, with a cost ($1,000) associated with it. 
+- But can also die of background causes from progressive disease. 
+
+## Parameterize
+
+```{r}
+params = list(
+    t_names = c("without_drug", "with_drug"),   # Treatment names
+    n_treatments =2,                            # Number of treatments
+    s_names  = c("Asympt", "Progressive", 
+                 "DeadCause","Dead"),           # State names
+    n_states = 4,                               # Number of states
+    n_cohort =1000,                             # Cohort size
+    cycle_length = 1,                                  # Cycle length
+    initial_age = 55,                           # Cohort starting age
+    effect = 0.5,                               # Treatment Effect (drug) 
+    cAsymp =500,                                # Cost of asympomatic state
+    cDeath =1000,                               # cost of death (progressive disease state only)
+    cDrug =1000,                                # Cost of drug
+    cProg =3000,                                # Cycle cost of progressive disease
+    uAsymp =0.95,                               # Asymptomatic state utility
+    uProg =0.75,                                # Progressive disease state utility
+    oDr = 0,                                    # Discount rate (QALYs)
+    cDr = 0,                                    # Discount rate (costs)
+    tpDcm =0.15,                                # Death from progressive disease trans prob
+    tpProg =0.01,                               # Transition prob: progressive disease
+    tpDn =0.0379                                # Background mortality transition prob
+)
+params <- modifyList(params,list(n_cycles = 46/params$cycle))
+```
+
+## Age-Specific Transition Matrices
+
+```{r}
+attach(params)
+t = 1:params$n_cycles
+tt = 1
+
+fn_mPt <- function(t, params) {
+  with(params, {
+    h = cycle_length # Time step
+    lapply(t, function(tt) {
+      current_age <- initial_age  + (tt) * cycle_length - 1
+      cycle = (tt) * cycle_length
+      
+      # Get background mortality rate
+      tpDn_lookup <-
+        c(
+          "(34,44]" = 0.0017,
+          "(44,54]" = 0.0044,
+          "(54,64]" = 0.0138,
+          "(64,74]" = 0.0379,
+          "(74,84]" = 0.0912,
+          "(84,100]" = 0.1958
+        )
+       age_grp <- cut(current_age, breaks = c(34,44,54,64,74,84,100))
+       tpDn <- tpDn_lookup[age_grp]
+       
+       tpProg_ <- tpProg * (cycle); tpProg_
+       
+       # Define off-diagonal elements of rate matrix
+       mR_ <- 
+            array(data = c(
+                           0, 0, 0, 0,
+                           -log(1-tpProg_), 0, 0, 0,
+                           0, -log(1-tpDcm), 0, 0,
+                           -log(1 - tpDn), -log(1 - tpDn), 0, 0,
+                           
+                           0, 0, 0, 0,
+                           -log(1-(tpProg_*(1-effect))), 0, 0, 0,
+                           0, -log(1-tpDcm), 0, 0,
+                           -log(1 - tpDn), -log(1 - tpDn), 0, 0),
+                  
+                          dim = c(n_states, n_states, n_treatments),
+                          dimnames = list(from = s_names,
+                                          to = s_names,
+                                          t_names))
+       # Balance out rate matrix
+       mR <- apply(mR_,3,function(x){
+            diag(x) <- -rowSums(x)
+            x
+        },simplify=FALSE)
+
+       mP_ <- # Embed the transition probability matrix
+         lapply(mR, expm)
+      
+    })
+  })
+}
+```
+
+
