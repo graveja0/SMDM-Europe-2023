@@ -576,7 +576,7 @@ tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>%
 
 ```
 
-###  Parameterize a Discrete Time Markov Model
+### Parameterize a Discrete Time Markov Model
 
 Next, we parameterize a discrete time Markov model.
 
@@ -608,7 +608,7 @@ params <- modifyList(params, list(
 params
 ```
 
-###  Transition Matrices
+### Transition Matrices
 
 #### Using Rate-to-Probability Conversion Formulas
 
@@ -704,7 +704,7 @@ params$m_P <- m_Pt(1:params$n_cycles)
 params$m_P[[71]]
 ```
 
-###  CVD Natural History Model
+### CVD Natural History Model
 
 #### Learning Objectives
 

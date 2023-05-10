@@ -1817,7 +1817,7 @@
     "href": "slides/00_welcome-and-intros.html#welcome-to-berlin",
     "title": "Welcome and Introductions",
     "section": "Welcome to Berlin!",
-    "text": "Welcome to Berlin!\n\n\nBack to Website"
+    "text": "Welcome to Berlin!"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html",
@@ -1887,14 +1887,14 @@
     "href": "slides/01_mortality.html#life-table-based-mortality",
     "title": "1. Coping with Mortality",
     "section": "Life Table-Based Mortality",
-    "text": "Life Table-Based Mortality\n\n\nA common approach is to use a life table-based lookup table in the model:\n\n\n\ntpDn_lookup &lt;-\n        c(\"(34,44]\" = 0.0017,  \n          \"(44,54]\" = 0.0044,\n          \"(54,64]\" = 0.0138,\n          \"(64,74]\" = 0.0379,\n          \"(74,84]\" = 0.0912,\n          \"(84,100]\" = 0.1958)\n\n\nHighlighted row: annual probability of death for 35-44 year old."
+    "text": "Life Table-Based Mortality\n\n\nA common approach is to use a life table-based lookup table in the model:\n\n\n\ntpDn_lookup &lt;-\n    c(\"(34,44]\" = 0.0017,  \n      \"(44,54]\" = 0.0044,\n      \"(54,64]\" = 0.0138,\n      \"(64,74]\" = 0.0379,\n      \"(74,84]\" = 0.0912,\n      \"(84,100]\" = 0.1958)\n\n\nHighlighted row: annual probability of death for 35-44 year old."
   },
   {
     "objectID": "slides/01_mortality.html#obtaining-life-table-data",
     "href": "slides/01_mortality.html#obtaining-life-table-data",
     "title": "1. Coping with Mortality",
     "section": "Obtaining Life Table Data",
-    "text": "Obtaining Life Table Data\n\nHuman Mortality Database\nGlobal Burden of Disease"
+    "text": "Obtaining Life Table Data\n\n\n\n\n\n\nThe R packages MortalityLaws and demography facilitate life table data aquisition and modeling.\n\n\n\nCommon sources:\n\nHuman Mortality Database\nGlobal Burden of Disease\nHuman Cause of Death Database\nHuman Life Table Database"
   },
   {
     "objectID": "slides/01_mortality.html#processing-life-table-data",
@@ -1908,7 +1908,7 @@
     "href": "slides/01_mortality.html#processing-life-table-data-1",
     "title": "1. Coping with Mortality",
     "section": "Processing Life Table Data",
-    "text": "Processing Life Table Data\n\n\nCode below extracts U.S. life table data from the human mortality database (HMD).\n\n\n\nhmd_usa &lt;-\n  demography::hmd.mx(\"USA\",\n                     username = \"&lt;&lt;your user name&gt;&gt;\",\n                     password = \"&lt;&lt;your password&gt;&gt;\", \"USA\")"
+    "text": "Processing Life Table Data\n\n\nCode below extracts U.S. life table data from the human mortality database (HMD).\n\n\n\nhmd_usa &lt;-\n    demography::hmd.mx(\"USA\",\n                       username = \"&lt;&lt;your user name&gt;&gt;\",\n                       password = \"&lt;&lt;your password&gt;&gt;\", \"USA\")"
   },
   {
     "objectID": "slides/01_mortality.html#processing-life-table-data-2",
@@ -3056,14 +3056,14 @@
     "href": "slides/01_mortality.html#life-table-based-mortality-1",
     "title": "1. Coping with Mortality",
     "section": "Life Table-Based Mortality",
-    "text": "Life Table-Based Mortality\n\nWhat if age bins are coarse (e.g., 0, 5, 10,… vs. 0,1,2,3,…)?\n\nAssume death probability/rate is constant within age bins (and cycles)?\n\nIn a DES model, we need to sample a time to death.\n\nCan sample from survival function in underlying life table.\n\nAges in life table often topcoded (e.g., 85, 100, etc.)"
+    "text": "Life Table-Based Mortality\n\nWhat if age bins are coarse (e.g., 0, 5, 10,… vs. 0,1,2,3,…)?\n\nAssume death probability/rate is constant within age bins (and cycles)?\nIn a DES model, we need to sample a time to death.\n\nCan sample from survival function in underlying life table.\nAges in life table often topcoded (e.g., 85, 100, etc.)"
   },
   {
     "objectID": "slides/01_mortality.html#section",
     "href": "slides/01_mortality.html#section",
     "title": "1. Coping with Mortality",
     "section": "",
-    "text": "Shaded column shows life expectancy at given age.\n\n\n\nWe’ll construct a series of discrete time Markov models to replicate these estimates.\n\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
+    "text": "Name\nModel\nCode\n\n\n\n\nAdult mortality\n\n\nGompertz\n$mu[x] = A exp[Bx]$\ngompertz\n\n\nGompertz\n$mu[x] = 1/sigma * exp[(x-M)/sigma)]$\ngompertz0\n\n\nMakeham\n$mu[x] = A exp[Bx] + C$\nmakeham\n\n\nMakeham\n$mu[x] = 1/sigma * exp[(x-M)/sigma)] + C$\nmakeham0\n\n\nPerks\n$mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$\nperks\n\n\nStrehler-Mildvan\n$mu[x] = K * exp[-V0 * (1 - Bx)/D]$\nstrehler_mildvan\n\n\nAdult and/or old-age mortality\n\n\nVan der Maen\n$mu[x] = A + Bx + Cx^2 + I/[N - x]$\nvandermaen\n\n\nBeard\n$mu[x] = A exp(Bx) / [1 + KA exp(Bx)]$\nbeard\n\n\nBeard-Makeham\n$mu[x] = A exp(Bx) / [1 + KA exp(Bx)] + C$\nbeard_makeham\n\n\nGamma-Gompertz\n$mu[x] = A exp(Bx) / (1 + AG/B * [exp(Bx) - 1])$\nggompertz"
   },
   {
     "objectID": "slides/01_mortality.html#alive-dead-model-1",
@@ -3091,28 +3091,28 @@
     "href": "slides/01_mortality.html#parameterize-the-model-1",
     "title": "1. Coping with Mortality",
     "section": "Parameterize the model",
-    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\"),         # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 0,                  # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt                   # Processed HMD life table data (2019, USA)\n  )\n\n\n\nNo specific strategies or policies under consideration; we’re just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 newborns."
+    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\"),         # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 0,                  # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt                   # Processed HMD life table data (2019, USA)\n  )\n\n\n\nNo specific strategies or policies under consideration; we’re just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 infants."
   },
   {
     "objectID": "slides/01_mortality.html#parameterize-the-model-2",
     "href": "slides/01_mortality.html#parameterize-the-model-2",
     "title": "1. Coping with Mortality",
     "section": "Parameterize the model",
-    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\"),         # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 0,                  # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt                   # Processed HMD life table data (2019, USA)\n  )\n\n\n\nDiscrete time will be in annual cycles."
+    "text": "Parameterize the model\n\nparams = \n    list(\n        t_names = c(\"lifetable\"),         # Strategy names. \n        n_treatments = 1,                 # Number of treatments\n        s_names  = c(\"Alive\", \"Dead\"),    # State names\n        n_states = 2,                     # Number of states\n        n_cohort = 100000,                # Cohort size\n        initial_age = 0,                  # Cohort starting age    \n        n_cycles = 110,                   # Number of cycles in model.  \n        cycle = 1,                        # Cycle length\n        life_table = lt                   # Processed HMD life table data (2019, USA)\n    )\n\n\n\nDiscrete time will be in annual cycles."
   },
   {
     "objectID": "slides/01_mortality.html#parameterize-the-model-3",
     "href": "slides/01_mortality.html#parameterize-the-model-3",
     "title": "1. Coping with Mortality",
     "section": "Parameterize the model",
-    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\"),         # Strategy names. \n    n_treatments = 1,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 0,                  # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt                   # Processed HMD life table data (2019, USA)\n  )\n\n\n\nThe lifetable “strategy” will draw on the HMD life table data processed earlier."
+    "text": "Parameterize the model\n\nparams = \n    list(\n        t_names = c(\"lifetable\"),         # Strategy names. \n        n_treatments = 1,                 # Number of treatments\n        s_names  = c(\"Alive\", \"Dead\"),    # State names\n        n_states = 2,                     # Number of states\n        n_cohort = 100000,                # Cohort size\n        initial_age = 0,                  # Cohort starting age    \n        n_cycles = 110,                   # Number of cycles in model.  \n        cycle = 1,                        # Cycle length\n        life_table = lt                   # Processed HMD life table data (2019, USA)\n    )\n\n\n\nThe lifetable “strategy” will draw on the HMD life table data processed earlier."
   },
   {
     "objectID": "slides/01_mortality.html#age-dependent-transition-matrix",
     "href": "slides/01_mortality.html#age-dependent-transition-matrix",
     "title": "1. Coping with Mortality",
     "section": "Age-Dependent Transition Matrix",
-    "text": "Age-Dependent Transition Matrix\nWe’ll next construct a transition probability matrix using the age-specific probability of death field (qx) from the life table data.\n\nTo do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix."
+    "text": "Age-Dependent Transition Matrix\n\nWe’ll next construct a transition probability matrix using the age-specific probability of death field (qx) from the life table data.\nTo do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix."
   },
   {
     "objectID": "slides/01_mortality.html#age-dependent-transition-matrix-1",
@@ -3154,7 +3154,7 @@
     "href": "slides/01_mortality.html#life-expectancy-1",
     "title": "1. Coping with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\nLet’s verify we can replicate this with our Markov model."
+    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\nLet’s verify we can replicate this with our Markov model.\n\n\n\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-2",
@@ -3189,14 +3189,14 @@
     "href": "slides/01_mortality.html#processing-life-table-data-3",
     "title": "1. Coping with Mortality",
     "section": "Processing Life Table Data",
-    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n  hmd_usa %&gt;% \n  demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n  as_tibble() %&gt;% \n  rename(age = x) %&gt;% \n  mutate_at(vars(lx,dx), function(x) x * radix)"
+    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n    hmd_usa %&gt;% \n    demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n    as_tibble() %&gt;% \n    rename(age = x) %&gt;% \n    mutate_at(vars(lx,dx), function(x) x * radix)"
   },
   {
     "objectID": "slides/01_mortality.html#section-1",
     "href": "slides/01_mortality.html#section-1",
     "title": "1. Coping with Mortality",
     "section": "",
-    "text": "Name\nModel\nCode\n\n\n\n\nAdult mortality\n\n\nGompertz\n$mu[x] = A exp[Bx]$\ngompertz\n\n\nGompertz\n$mu[x] = 1/sigma * exp[(x-M)/sigma)]$\ngompertz0\n\n\nMakeham\n$mu[x] = A exp[Bx] + C$\nmakeham\n\n\nMakeham\n$mu[x] = 1/sigma * exp[(x-M)/sigma)] + C$\nmakeham0\n\n\nPerks\n$mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$\nperks\n\n\nStrehler-Mildvan\n$mu[x] = K * exp[-V0 * (1 - Bx)/D]$\nstrehler_mildvan\n\n\nAdult and/or old-age mortality\n\n\nVan der Maen\n$mu[x] = A + Bx + Cx^2 + I/[N - x]$\nvandermaen\n\n\nBeard\n$mu[x] = A exp(Bx) / [1 + KA exp(Bx)]$\nbeard\n\n\nBeard-Makeham\n$mu[x] = A exp(Bx) / [1 + KA exp(Bx)] + C$\nbeard_makeham\n\n\nGamma-Gompertz\n$mu[x] = A exp(Bx) / (1 + AG/B * [exp(Bx) - 1])$\nggompertz"
+    "text": "Name\nModel\nCode\n\n\n\n\nOld-age mortality\n\n\nVan der Maen\n$mu[x] = A + Bx + I/[N - x]$\nvandermaen2\n\n\nQuadratic\n$mu[x] = A + Bx + Cx^2$\nquadratic\n\n\nKannisto\n$mu[x] = A exp(Bx) / [1 + A exp(Bx)]$\nkannisto\n\n\nKannisto-Makeham\n$mu[x] = A exp(Bx) / [1 + A exp(Bx)] + C$\nkannisto_makeham"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-4",
@@ -3245,14 +3245,14 @@
     "href": "slides/01_mortality.html#section-2",
     "title": "1. Coping with Mortality",
     "section": "",
-    "text": "Name\nModel\nCode\n\n\n\n\nOld-age mortality\n\n\nVan der Maen\n$mu[x] = A + Bx + I/[N - x]$\nvandermaen2\n\n\nQuadratic\n$mu[x] = A + Bx + Cx^2$\nquadratic\n\n\nKannisto\n$mu[x] = A exp(Bx) / [1 + A exp(Bx)]$\nkannisto\n\n\nKannisto-Makeham\n$mu[x] = A exp(Bx) / [1 + A exp(Bx)] + C$\nkannisto_makeham"
+    "text": "Name\nModel\nCode\n\n\n\n\nFull age range\n\n\nThiele\n$mu[x] = A exp(-Bx) + C exp[-.5D (x-E)^2] + F exp(Gx)$\nthiele\n\n\nWittstein\n$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$\nwittstein\n\n\nHeligman-Pollard\n$q[x]/p[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + G H^x$\nHP\n\n\nHeligman-Pollard\n$q[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + GH^x / [1 + GH^x]$\nHP2\n\n\nRogers-Planck\n$q[x] = A0 + A1 exp[-Ax] + A2 exp[B(x - u) - exp(-C(x - u))] + A3 exp[Dx]$\nrogersplanck\n\n\nMartinelle\n$mu[x] = [A exp(Bx) + C] / [1 + D exp(Bx)] + K exp(Bx)$\nmartinelle\n\n\nCarriere\n$l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)$\ncarriere1\n\n\nKostaki\n$q[x]/p[x] = A^{[(x+B)^C]} + D exp[-(E_i log(x/F_))^2] + G H^x$\nkostaki"
   },
   {
     "objectID": "slides/01_mortality.html#section-3",
     "href": "slides/01_mortality.html#section-3",
     "title": "1. Coping with Mortality",
     "section": "",
-    "text": "Name\nModel\nCode\n\n\n\n\nFull age range\n\n\nThiele\n$mu[x] = A exp(-Bx) + C exp[-.5D (x-E)^2] + F exp(Gx)$\nthiele\n\n\nWittstein\n$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$\nwittstein\n\n\nHeligman-Pollard\n$q[x]/p[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + G H^x$\nHP\n\n\nHeligman-Pollard\n$q[x] = A^{[(x + B)^C]} + D exp[-E log(x/F)^2] + GH^x / [1 + GH^x]$\nHP2\n\n\nRogers-Planck\n$q[x] = A0 + A1 exp[-Ax] + A2 exp[B(x - u) - exp(-C(x - u))] + A3 exp[Dx]$\nrogersplanck\n\n\nMartinelle\n$mu[x] = [A exp(Bx) + C] / [1 + D exp(Bx)] + K exp(Bx)$\nmartinelle\n\n\nCarriere\n$l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)$\ncarriere1\n\n\nKostaki\n$q[x]/p[x] = A^{[(x+B)^C]} + D exp[-(E_i log(x/F_))^2] + G H^x$\nkostaki"
+    "text": "We extract the percentage of overall deaths that are from CVD by age bin:\n\nihme_cvd &lt;- \n  tibble::tribble(\n        ~age_name,        ~val,\n               1, 0.038771524,\n               5, 0.038546046,\n              10, 0.044403585,\n              15, 0.033781126,\n              20, 0.035856165,\n              25, 0.053077797,\n              30, 0.086001439,\n              35, 0.130326551,\n              40, 0.184310334,\n              45,  0.21839762,\n              50, 0.243705394,\n              55, 0.256334637,\n              60,  0.26828001,\n              65, 0.272698709,\n              70,  0.28529754,\n              75, 0.310642009,\n               0, 0.016750489,\n              80, 0.353518012,\n              85, 0.399856716,\n              90, 0.447817792,\n              95, 0.495305502\n        ) %&gt;% \n    mutate(age_ihme = cut(age_name,unique(c(0,1,seq(0,95,5),105)),right=FALSE))  %&gt;% \n    select(age_ihme,  pct_cvd = val)"
   },
   {
     "objectID": "slides/01_mortality.html#mortality-modeling-3",
@@ -3273,7 +3273,7 @@
     "href": "slides/01_mortality.html#gompertz-model-1",
     "title": "1. Coping with Mortality",
     "section": "Gompertz Model",
-    "text": "Gompertz Model\n\nages     &lt;- lt$age[lt$age&lt;100]\ndeaths   &lt;- lt$dx[lt$age&lt;100]\nexposure &lt;- lt$lx[lt$age&lt;100]\n\ngom_fit &lt;- MortalityLaw(\n                x  = ages,      # vector with ages\n                Dx  = deaths,   # vector with death counts\n                Ex  = exposure, # vector containing exposures\n                law = \"gompertz\",\n                opt.method = \"LF2\")"
+    "text": "Gompertz Model\n\nages     &lt;- lt$age[lt$age&lt;100]\ndeaths   &lt;- lt$dx[lt$age&lt;100]\nexposure &lt;- lt$lx[lt$age&lt;100]\n\ngom_fit &lt;- MortalityLaw(\n    x  = ages,      # vector with ages\n    Dx  = deaths,   # vector with death counts\n    Ex  = exposure, # vector containing exposures\n    law = \"gompertz\",\n    opt.method = \"LF2\")"
   },
   {
     "objectID": "slides/01_mortality.html#gompertz-model-2",
@@ -3315,7 +3315,7 @@
     "href": "slides/01_mortality.html#section-4",
     "title": "1. Coping with Mortality",
     "section": "",
-    "text": "Back to Website"
+    "text": "Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:\n\n\n\n\n\nage\nage_ihme\npct_cvd\ndx\ndx_i\n\n\n\n\n0\n[0,1)\n0.01675\n553.221\n9\n\n\n10\n[10,15)\n0.04440\n11.518\n1\n\n\n25\n[25,30)\n0.05308\n103.706\n6\n\n\n50\n[50,55)\n0.24371\n365.721\n89\n\n\n75\n[75,80)\n0.31064\n1997.766\n621\n\n\n98\n[95,105)\n0.49531\n1262.593\n625"
   },
   {
     "objectID": "slides/01_mortality.html#construct-the-markov-trace-2",
@@ -3434,28 +3434,28 @@
     "href": "slides/01_mortality.html#sampling-death-rates-des",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\nIntuition is easier if we start with a defined quantile (e.g., 50th percentile of survival)\n\n\nu = 0.5"
+    "text": "1. Sampling Death Rates (DES)\n\nIntuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-rates-des-1",
     "href": "slides/01_mortality.html#sampling-death-rates-des-1",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nWe can feed the quantile (0.5) and coefficients into an inverse quantile function.\nStraightforward to do for Gompertz model\n\n\n\nu = 0.5\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 82.1"
+    "text": "1. Sampling Death Rates (DES)\n\n\nIntuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)\n\n\n\nu = 0.25"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-rates-des-2",
     "href": "slides/01_mortality.html#sampling-death-rates-des-2",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.5\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 82.1\n\n\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n82\n0.05772\n0.50179\n\n\n83\n0.06465\n0.47038"
+    "text": "1. Sampling Death Rates (DES)\n\n\nWe can feed the quantile (0.25) and coefficients into an inverse quantile function.\nStraightforward to do for Gompertz model\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-rates-des-3",
     "href": "slides/01_mortality.html#sampling-death-rates-des-3",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nThere is no inverse quantile function for Heligman-Pollard, but we can create one!\n\n\n\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n[1] 81.251"
+    "text": "1. Sampling Death Rates (DES)\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467\n\n\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-desth-rates-des",
@@ -3476,7 +3476,7 @@
     "href": "slides/01_mortality.html#sampling-death-rates-des-4",
     "title": "1. Coping with Mortality",
     "section": "1. Sampling Death Rates (DES)",
-    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 89.624 83.957 87.763 61.307 87.147 72.952     NA 75.692 78.080 94.435"
+    "text": "1. Sampling Death Rates (DES)\n\nThere is no inverse quantile function for Heligman-Pollard, but we can create one!"
   },
   {
     "objectID": "slides/01_mortality.html#modeled-mortality-markov",
@@ -3490,6 +3490,328 @@
     "href": "slides/01_mortality.html#parameterize-the-model-4",
     "title": "1. Coping with Mortality",
     "section": "Parameterize the model",
-    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\",\n                \"heligman-pollard\",\n                \"gompertz\"),          # Strategy names. \n    n_treatments = 3,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 40,                 # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt,                  # Processed HMD life table data (2019, USA)\n    gom_fit = gom_fit,                # Fitted Gompertz model object\n    hp_fit = hp_fit                   # Fitted Heligman-Pollard model object\n  )\n\n\n\nBack to Website"
+    "text": "Parameterize the model\n\nparams = \n  list(\n    t_names = c(\"lifetable\",          # Strategy names\n                \"heligman-pollard\",\n                \"gompertz\"),          \n    n_treatments = 3,                 # Number of treatments\n    s_names  = c(\"Alive\", \"Dead\"),    # State names\n    n_states = 2,                     # Number of states\n    n_cohort = 100000,                # Cohort size\n    initial_age = 40,                 # Cohort starting age    \n    n_cycles = 110,                   # Number of cycles in model.  \n    cycle = 1,                        # Cycle length\n    life_table = lt,                  # Processed HMD life table data (2019, USA)\n    gom_fit = gom_fit,                # Fitted Gompertz model object\n    hp_fit = hp_fit                   # Fitted Heligman-Pollard model object\n  )"
+  },
+  {
+    "objectID": "slides/01_mortality.html#the-big-picture",
+    "href": "slides/01_mortality.html#the-big-picture",
+    "title": "1. Coping with Mortality",
+    "section": "The Big Picture",
+    "text": "The Big Picture\n\nDecision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model.\nFor example, a model of \\(f_{cost}\\) and \\(f_{qaly}\\) are run versus \\(\\theta_{ref}\\) and \\(\\theta_{target}\\).\nThese runs will have error due to misspecification, and in differencing the error can mostly cancel. Let \\(g\\) represent the truth, thus \\(f(\\theta) = g(\\theta)+\\epsilon_{theta}\\)."
+  },
+  {
+    "objectID": "slides/01_mortality.html#the-hopeful-big-picture",
+    "href": "slides/01_mortality.html#the-hopeful-big-picture",
+    "title": "1. Coping with Mortality",
+    "section": "The Hopeful Big Picture",
+    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this perodically today."
+  },
+  {
+    "objectID": "slides/01_mortality.html#sampling-death-rates-des-5",
+    "href": "slides/01_mortality.html#sampling-death-rates-des-5",
+    "title": "1. Coping with Mortality",
+    "section": "1. Sampling Death Rates (DES)",
+    "text": "1. Sampling Death Rates (DES)\n\n\nThere is no inverse quantile function for Heligman-Pollard, but we can create one!\nApproxfun returns a function that provides a value of y for a given value of x.\n\n\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))"
+  },
+  {
+    "objectID": "slides/01_mortality.html#sampling-death-rates-des-6",
+    "href": "slides/01_mortality.html#sampling-death-rates-des-6",
+    "title": "1. Coping with Mortality",
+    "section": "1. Sampling Death Rates (DES)",
+    "text": "1. Sampling Death Rates (DES)\n\nFor approxfun():\n\nx is quantile in CDF for survival, i.e., 1 - Survival1\ny is the age.\n\nSo qHP(0.5) would return median survival age in the modeled data.\n\nRecall that survival is \\(\\exp(-H)\\), where \\(H\\) is the cumulative hazard"
+  },
+  {
+    "objectID": "slides/01_mortality.html#age-dependent-transition-matrices",
+    "href": "slides/01_mortality.html#age-dependent-transition-matrices",
+    "title": "1. Coping with Mortality",
+    "section": "Age-Dependent Transition Matrices",
+    "text": "Age-Dependent Transition Matrices\n\nfn_mPt &lt;- function(t, params) {\n  with(params, {\n    h = cycle # Time step\n    lapply(t, function(tt){\n       # Life table method\n        current_age_lt = pmin(initial_age  + (tt)*h - 1,max(lt$age))\n        p_death &lt;- lt[lt$age==current_age_lt,\"qx\"]\n        # parametric mortality methods\n        current_age = initial_age  + (tt)*h - 1\n        r_death_gompertz &lt;- gompertz(current_age,params$gom_fit$coefficients)$hx\n        p_death_gompertz &lt;- 1 - exp(-r_death_gompertz)\n        r_death_hp &lt;- HP(current_age, params$hp_fit$coefficients)$hx\n        p_death_hp &lt;- 1 - exp(-r_death_hp)\n        \n        array(data = c(1 - p_death, 0, \n                 p_death,1,\n                 \n                 1 - p_death_hp, 0, \n                 p_death_hp,1,\n                 \n                1 - p_death_gompertz, 0, \n                 p_death_gompertz,1),\n              \n              dim = c(n_states, n_states, n_treatments),\n              dimnames = list(from = s_names,\n                              to = s_names,\n                              t_names)) \n    })\n  })\n}"
+  },
+  {
+    "objectID": "slides/01_mortality.html#construct-a-markov-trace",
+    "href": "slides/01_mortality.html#construct-a-markov-trace",
+    "title": "1. Coping with Mortality",
+    "section": "Construct a Markov Trace",
+    "text": "Construct a Markov Trace\n\n# Add transition matrices into params.\nparams$mP &lt;- \n  fn_mPt(1:params$n_cycles, params)\n\n# Construct the Markov trace. \ntrace &lt;- \n  sim_cohort(params)"
+  },
+  {
+    "objectID": "slides/01_mortality.html#motivation-cause-deleted-mortality",
+    "href": "slides/01_mortality.html#motivation-cause-deleted-mortality",
+    "title": "1. Coping with Mortality",
+    "section": "Motivation: Cause-Deleted Mortality",
+    "text": "Motivation: Cause-Deleted Mortality\n\nOften, background mortality is drawn directly from life table data.\nModels also frequently include cause-specific death as a separate tracked event or health state."
+  },
+  {
+    "objectID": "slides/01_mortality.html#motivation-cause-deleted-mortality-1",
+    "href": "slides/01_mortality.html#motivation-cause-deleted-mortality-1",
+    "title": "1. Coping with Mortality",
+    "section": "Motivation: Cause-Deleted Mortality",
+    "text": "Motivation: Cause-Deleted Mortality\n\nThis approach “double-counts” death because cause-specific death is also reflected in the life table estimates!\nOK if cause-specific death is a small contributor to overall death rates.\nBut what if modeled disease is a frequent cause of death (e.g., cardiovascular disease, cancer)?"
+  },
+  {
+    "objectID": "slides/01_mortality.html#soluation-cause-deleted-life-table",
+    "href": "slides/01_mortality.html#soluation-cause-deleted-life-table",
+    "title": "1. Coping with Mortality",
+    "section": "Soluation: Cause-Deleted Life Table",
+    "text": "Soluation: Cause-Deleted Life Table\n\nWe can construct an alternative life table that “nets out” cause-specific deaths.\nNot foolproof: need to make an assumption that we can parse out deaths as indepdendent contributors to overall mortality."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-mortality",
+    "href": "slides/01_mortality.html#cvd-deleted-mortality",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Mortality",
+    "text": "CVD-Deleted Mortality\n\nWe’ll next show you the process of constructing a cause-deleted life table.\nBasis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality.\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#solution-cause-deleted-life-table",
+    "href": "slides/01_mortality.html#solution-cause-deleted-life-table",
+    "title": "1. Coping with Mortality",
+    "section": "Solution: Cause-Deleted Life Table",
+    "text": "Solution: Cause-Deleted Life Table\n\nWe can construct an alternative life table that “nets out” cause-specific deaths.\nNot foolproof: need to make an assumption that we can parse out deaths as indepdendent contributors to overall mortality."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-tables",
+    "href": "slides/01_mortality.html#cvd-deleted-life-tables",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Tables",
+    "text": "CVD-Deleted Life Tables\n\nWe’ll next show you the process of constructing a cause-deleted life table.\nBasis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-tables-1",
+    "href": "slides/01_mortality.html#cvd-deleted-life-tables-1",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Tables",
+    "text": "CVD-Deleted Life Tables\nConstructing the cause-deleted life table will provide two necessary inputs:\n\nOverall mortality by age.\nCVD-specific mortality by age (ideally as a % of all deaths at a given age)"
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-tables-2",
+    "href": "slides/01_mortality.html#cvd-deleted-life-tables-2",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Tables",
+    "text": "CVD-Deleted Life Tables\n\n\nOur estimates of CVD death by age will be drawn from the Global Burden of Disease website.\n\n\n\n\n\nScreenshot of Global Burden of Disease Data"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-5",
+    "href": "slides/01_mortality.html#section-5",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "We next calculate the cause-deleted probability of death (qd) and death rate (md), as well as the cause-specific probability of death (qi) and death rate (mi):"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-6",
+    "href": "slides/01_mortality.html#section-6",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "age\ndx\ndxd\ndx_i\nq\nqi\nmd\nmi\n\n\n\n\n0\n553.221\n544.221\n9\n0.00553\n0.00009\n0.00546\n0.00009\n\n\n1\n38.180\n37.180\n1\n0.00038\n0.00001\n0.00037\n0.00001\n\n\n2\n23.160\n22.160\n1\n0.00023\n0.00001\n0.00022\n0.00001\n\n\n3\n17.689\n16.689\n1\n0.00018\n0.00001\n0.00017\n0.00001\n\n\n4\n14.209\n13.209\n1\n0.00014\n0.00001\n0.00013\n0.00001\n\n\n5\n13.213\n12.213\n1\n0.00013\n0.00001\n0.00012\n0.00001"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-7",
+    "href": "slides/01_mortality.html#section-7",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "Back to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-8",
+    "href": "slides/01_mortality.html#section-8",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "Back to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-9",
+    "href": "slides/01_mortality.html#section-9",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "Back to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#modeling-cvd-deleted-mortality",
+    "href": "slides/01_mortality.html#modeling-cvd-deleted-mortality",
+    "title": "1. Coping with Mortality",
+    "section": "Modeling CVD-Deleted Mortality",
+    "text": "Modeling CVD-Deleted Mortality\n\nWe can also apply the methods covered earlier to the cause-deleted life table data!\n\n\nages_     &lt;- lt_$age[lt_$age&lt;100 & lt_$age&gt;=25]\ndeaths_   &lt;- lt_$dxd[lt_$age&lt;100 & lt_$age&gt;=25] \nexposure_  &lt;- lt_$lx[lt_$age&lt;100 & lt_$age&gt;=25]\n\nmort_fit_CVDdeleted &lt;- MortalityLaw(\n    x  = ages_,\n    Dx  = deaths_,   # vector with death counts\n    Ex  = exposure_, # vector containing exposures\n    law = \"HP2\",\n    opt.method = \"LF2\")"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-10",
+    "href": "slides/01_mortality.html#section-10",
+    "title": "1. Coping with Mortality",
+    "section": "",
+    "text": "Back to Website"
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#learning-objectives",
+    "href": "slides/00_welcome-and-intros.html#learning-objectives",
+    "title": "Welcome and Introductions",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nUnderlying robust property of decision modeling.\nUnderstand options for modeling background mortality based on life tables and parametric mortality models.\nConstruct a cause-deleted life table to model cause-specific and non-cause-specific death."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#the-big-picture",
+    "href": "slides/00_welcome-and-intros.html#the-big-picture",
+    "title": "Welcome and Introductions",
+    "section": "The Big Picture",
+    "text": "The Big Picture\n\nDecision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model.\nFor example, a model of \\(f_{cost}\\) and \\(f_{qaly}\\) are run versus \\(\\theta_{ref}\\) and \\(\\theta_{target}\\).\nThese runs will have error due to misspecification, and in differencing the error can mostly cancel. Let \\(g\\) represent the truth, thus \\(f(\\theta) = g(\\theta)+\\epsilon_{theta}\\)."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#the-hopeful-big-picture",
+    "href": "slides/00_welcome-and-intros.html#the-hopeful-big-picture",
+    "title": "Welcome and Introductions",
+    "section": "The Hopeful Big Picture",
+    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this perodically today.\n\n\n\nBack to Website"
+  },
+  {
+    "objectID": "slides/01_mortality.html#us-life-table-2019",
+    "href": "slides/01_mortality.html#us-life-table-2019",
+    "title": "1. Coping with Mortality",
+    "section": "US Life Table (2019)",
+    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
+  },
+  {
+    "objectID": "slides/01_mortality.html#death-hazard-at-age-40-gompertz-vs.-hp",
+    "href": "slides/01_mortality.html#death-hazard-at-age-40-gompertz-vs.-hp",
+    "title": "1. Coping with Mortality",
+    "section": "Death Hazard at Age 40: Gompertz vs. HP",
+    "text": "Death Hazard at Age 40: Gompertz vs. HP\n\ngompertz(x = 40, par = gom_fit$coefficients)$hx\n\n[1] 0.0021938\n\nHP(x = 40, par = hp_fit$coefficients)$hx\n\n[1] 0.0020409"
+  },
+  {
+    "objectID": "slides/01_mortality.html#sampling-death-rates-des-7",
+    "href": "slides/01_mortality.html#sampling-death-rates-des-7",
+    "title": "1. Coping with Mortality",
+    "section": "1. Sampling Death Rates (DES)",
+    "text": "1. Sampling Death Rates (DES)\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(0.25)\n\n[1] 71.069\n\n\nSurvival in life table:\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
+  },
+  {
+    "objectID": "slides/01_mortality.html#sampling-death-rates-des-8",
+    "href": "slides/01_mortality.html#sampling-death-rates-des-8",
+    "title": "1. Coping with Mortality",
+    "section": "1. Sampling Death Rates (DES)",
+    "text": "1. Sampling Death Rates (DES)\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function."
+  },
+  {
+    "objectID": "slides/01_mortality.html#sampling-death-rates-des-9",
+    "href": "slides/01_mortality.html#sampling-death-rates-des-9",
+    "title": "1. Coping with Mortality",
+    "section": "1. Sampling Death Rates (DES)",
+    "text": "1. Sampling Death Rates (DES)\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 63.804 89.479 89.786 75.523 97.640 97.200 77.497 99.182 82.185 83.450"
+  },
+  {
+    "objectID": "slides/01_mortality.html#life-expectancy-alive-dead-model",
+    "href": "slides/01_mortality.html#life-expectancy-alive-dead-model",
+    "title": "1. Coping with Mortality",
+    "section": "Life Expectancy: Alive-Dead Model",
+    "text": "Life Expectancy: Alive-Dead Model\n\ntotal_life_exp\n\n$lifetable\n[1] 40.959\n\n$`heligman-pollard`\n[1] 41.008\n\n$gompertz\n[1] 41.29"
+  },
+  {
+    "objectID": "slides/01_mortality.html#motivation",
+    "href": "slides/01_mortality.html#motivation",
+    "title": "1. Coping with Mortality",
+    "section": "Motivation",
+    "text": "Motivation\n\nOften, background mortality is drawn directly from life table data.\nModels also frequently include cause-specific death as a separate tracked event or health state."
+  },
+  {
+    "objectID": "slides/01_mortality.html#motivation-1",
+    "href": "slides/01_mortality.html#motivation-1",
+    "title": "1. Coping with Mortality",
+    "section": "Motivation",
+    "text": "Motivation\n\nThis approach “double-counts” death because cause-specific death is also reflected in the life table estimates!\nOK if cause-specific death is a small contributor to overall death rates.\nBut what if modeled disease is a frequent cause of death (e.g., cardiovascular disease, cancer)?"
+  },
+  {
+    "objectID": "slides/01_mortality.html#solution",
+    "href": "slides/01_mortality.html#solution",
+    "title": "1. Coping with Mortality",
+    "section": "Solution",
+    "text": "Solution\n\nWe can construct an alternative life table that “nets out” cause-specific deaths.\nNot foolproof: need to make an assumption that we can parse out deaths as indepdendent contributors to overall mortality."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-table",
+    "href": "slides/01_mortality.html#cvd-deleted-life-table",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Table",
+    "text": "CVD-Deleted Life Table\n\nWe’ll next show you the process of constructing a cause-deleted life table.\nBasis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-table-1",
+    "href": "slides/01_mortality.html#cvd-deleted-life-table-1",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Table",
+    "text": "CVD-Deleted Life Table\nConstructing the cause-deleted life table requires two necessary inputs:\n\nOverall mortality by age.\nCause-specific mortality by age (ideally as a % of all deaths at a given age).\n\n\nThese are obtainable for many countries from the Global Burden of Disease and Human Cause of Death Database websites."
+  },
+  {
+    "objectID": "slides/01_mortality.html#cvd-deleted-life-table-2",
+    "href": "slides/01_mortality.html#cvd-deleted-life-table-2",
+    "title": "1. Coping with Mortality",
+    "section": "CVD-Deleted Life Table",
+    "text": "CVD-Deleted Life Table\n\n\nOur estimates of CVD death by age will be drawn from the Global Burden of Disease website.\n\n\n\n\n\nScreenshot of Global Burden of Disease Data"
+  },
+  {
+    "objectID": "slides/01_mortality.html#construct-a-markov-trace-1",
+    "href": "slides/01_mortality.html#construct-a-markov-trace-1",
+    "title": "1. Coping with Mortality",
+    "section": "Construct a Markov Trace",
+    "text": "Construct a Markov Trace\n\n\n\ntrace[[\"lifetable\"]][1:10,]\n\n   Alive    Dead\n0 100000    0.00\n1  99792  207.68\n2  99584  416.43\n3  99365  634.88\n4  99138  861.67\n5  98899 1101.19\n6  98639 1361.45\n7  98358 1641.68\n8  98054 1945.62\n9  97728 2271.99\n\n\n\n\ntrace[[\"gompertz\"]][1:10,]\n\n   Alive    Dead\n0 100000    0.00\n1  99781  219.14\n2  99545  454.89\n3  99292  708.46\n4  99019  981.15\n5  98726 1274.35\n6  98410 1589.51\n7  98072 1928.21\n8  97708 2292.12\n9  97317 2682.98\n\n\n\n\ntrace[[\"heligman-pollard\"]][1:10,]\n\n   Alive    Dead\n0 100000    0.00\n1  99796  203.88\n2  99584  416.04\n3  99363  637.42\n4  99131  869.10\n5  98888 1112.31\n6  98632 1368.43\n7  98361 1639.00\n8  98074 1925.75\n9  97769 2230.56"
+  },
+  {
+    "objectID": "slides/01_mortality.html#calculate-life-expectancy",
+    "href": "slides/01_mortality.html#calculate-life-expectancy",
+    "title": "1. Coping with Mortality",
+    "section": "Calculate Life Expectancy",
+    "text": "Calculate Life Expectancy\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = lapply(trace, function(tr) (tr * (1 / params$n_cohort)) %*% payoff_life_exp)\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48\ncycle_adj      &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = lapply(life_exp_cycle,cycle_adj)"
+  },
+  {
+    "objectID": "slides/01_mortality.html#steps",
+    "href": "slides/01_mortality.html#steps",
+    "title": "1. Coping with Mortality",
+    "section": "Steps",
+    "text": "Steps\n\nCause-specific probability of death (qi): \\(q \\cdot dx_i / dx\\)\nCacluate cause-specific rates by dividing deaths of a given cause into person-years of exposure.\n\n\nThis is equivalent to multiplying the overall rate by the ratio of deaths of a given cause to the total."
+  },
+  {
+    "objectID": "slides/01_mortality.html#steps-1",
+    "href": "slides/01_mortality.html#steps-1",
+    "title": "1. Coping with Mortality",
+    "section": "Steps",
+    "text": "Steps\n\n\nCause-specific probability of death (qi): \\(q \\cdot dx_i / dx\\)\nCacluate cause-specific rates by dividing deaths of a given cause into person-years of exposure.\n\nThis is equivalent to multiplying the overall rate by the ratio of deaths of a given cause to the total.\n\n\n\n\nlt_ &lt;- \n  lt_ %&gt;% \n    # Cause specific probability of death. \n    mutate(qi = q * dx_i / dx) %&gt;% \n    mutate(Rd = (dx - dx_i) / dx) %&gt;% \n    mutate(md = m * Rd) %&gt;% \n    mutate(mi = m - md) %&gt;% \n    mutate(dxd = dx - dx_i)"
+  },
+  {
+    "objectID": "slides/01_mortality.html#basic-cvd-model",
+    "href": "slides/01_mortality.html#basic-cvd-model",
+    "title": "1. Coping with Mortality",
+    "section": "Basic CVD Model",
+    "text": "Basic CVD Model\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_HS   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD(t)   \n\nCVD-&gt;CVD\n\n    \n\nDead(CVD)\n\n Dead (CVD)   \n\nCVD-&gt;Dead(CVD)\n\n      r_DCVD(t)           \n\nCVD-&gt;Dead\n\n    r_HD(t)   \n\nDead(CVD)-&gt;Dead(CVD)\n\n    \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/01_mortality.html#basic-cvd-model-1",
+    "href": "slides/01_mortality.html#basic-cvd-model-1",
+    "title": "1. Coping with Mortality",
+    "section": "Basic CVD Model",
+    "text": "Basic CVD Model\n\n\nHealthy  Death based on modeled (Heligman-Pollard) cause-deleted mortality.\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_HS   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD(t)   \n\nCVD-&gt;CVD\n\n    \n\nDead(CVD)\n\n Dead (CVD)   \n\nCVD-&gt;Dead(CVD)\n\n      r_DCVD(t)           \n\nCVD-&gt;Dead\n\n    r_HD(t)   \n\nDead(CVD)-&gt;Dead(CVD)\n\n    \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/01_mortality.html#basic-cvd-model-2",
+    "href": "slides/01_mortality.html#basic-cvd-model-2",
+    "title": "1. Coping with Mortality",
+    "section": "Basic CVD Model",
+    "text": "Basic CVD Model\n\n\nCVD  Death based on age- and cause-specific death rates from cause-deleted life table.\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_HS   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD(t)   \n\nCVD-&gt;CVD\n\n    \n\nDead(CVD)\n\n Dead (CVD)   \n\nCVD-&gt;Dead(CVD)\n\n      r_DCVD(t)           \n\nCVD-&gt;Dead\n\n    r_HD(t)   \n\nDead(CVD)-&gt;Dead(CVD)\n\n    \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/01_mortality.html#age-dependent-transition-matrices-1",
+    "href": "slides/01_mortality.html#age-dependent-transition-matrices-1",
+    "title": "1. Coping with Mortality",
+    "section": "Age-Dependent Transition Matrices",
+    "text": "Age-Dependent Transition Matrices"
+  },
+  {
+    "objectID": "slides/01_mortality.html#basic-cvd-model-3",
+    "href": "slides/01_mortality.html#basic-cvd-model-3",
+    "title": "1. Coping with Mortality",
+    "section": "Basic CVD Model",
+    "text": "Basic CVD Model\n\n\nWe also allow for a CVD  Death transition based on non-CVD causes.\n\n\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_HS   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD(t)   \n\nCVD-&gt;CVD\n\n    \n\nDead(CVD)\n\n Dead (CVD)   \n\nCVD-&gt;Dead(CVD)\n\n      r_DCVD(t)           \n\nCVD-&gt;Dead\n\n    r_HD(t)   \n\nDead(CVD)-&gt;Dead(CVD)\n\n    \n\nDead-&gt;Dead"
+  },
+  {
+    "objectID": "slides/01_mortality.html#construct-a-markov-trace-2",
+    "href": "slides/01_mortality.html#construct-a-markov-trace-2",
+    "title": "1. Coping with Mortality",
+    "section": "Construct a Markov Trace",
+    "text": "Construct a Markov Trace\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
   }
 ]

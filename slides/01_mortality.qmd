@@ -1,11 +1,7 @@
 ---
-    <<<<<<< HEAD
-title: "Mortality Modeling"
-=======
-    title: "1. Coping with Mortality"
->>>>>>> 397cdfa (adding more to mortality)
+title: "1. Coping with Mortality"
 format:
-    revealjs:
+  revealjs:
     transition: fade
 background-transition: fade
 incremental: true 
@@ -18,29 +14,16 @@ self-contained: true
 bibliography: references.bib
 ---
     
-    ```{r setup}
+```{r setup}
 source("manifest.r")
 ```
 
+
 ## Learning Objectives
 
--   Underlying robust property of decision modeling.
 -   Understand options for modeling background mortality based on life tables and parametric mortality models.
 -   Construct a cause-deleted life table to model cause-specific and non-cause-specific death.
 
-## The Big Picture
-
--  Decision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model. 
--  For example, a model of $f_{cost}$ and $f_{qaly}$ are run versus $\theta_{ref}$ and $\theta_{target}$. 
--  These runs will have error due to misspecification, and in differencing the error can mostly cancel. Let $g$ represent the truth, thus $f(\theta) = g(\theta)+\epsilon_{theta}$.
-
-## The Hopeful Big Picture
-
-$$\text{ICER} = \frac{f_{cost}(\theta_{target}) - \epsilon_{ct} - f_{cost}(\theta_{ref}) + \epsilon_{cr}}{f_{qaly}(\theta_{target}) - \epsilon_{qt} - f_{qaly}(\theta_{ref}) + \epsilon_{qr}}$$
-    
-    -  If $\epsilon_{ct} \sim \epsilon_{cr}$ and $\epsilon_{qt} \sim \epsilon_{qr}$ then the model errors cancel and this approaches the true model.
--  The decision threshold is *robust* in this case even when model run results are biased!
-    -  We will explore this perodically today.
 
 ```{r}
 #| warning: false
@@ -78,9 +61,9 @@ lt <-  # Read in the U.S. life table data from the human mortality database.
 
 ::: nonincremental
 -   Standard approach is to draw from life table data:
-    :::
+:::
     
-    ```{r}
+```{r}
 lt %>% 
     ungroup() %>% 
     select(-x) %>% 
@@ -97,9 +80,9 @@ lt %>%
 
 ::: nonincremental
 -   Standard approach is to draw from life table data:
-    :::
+:::
     
-    ```{r}
+```{r}
 lt %>% 
     ungroup() %>% 
     select(-x) %>% 
@@ -118,7 +101,7 @@ lt %>%
 -   Death probabilities are useful for discrete time Markov models.
 :::
     
-    ```{r}
+```{r}
 lt %>% 
     ungroup() %>% 
     select(-x) %>% 
@@ -136,7 +119,7 @@ lt %>%
 -   Death rates are useful for discrete event simulation (DES) models.
 :::
     
-    ```{r}
+```{r}
 lt %>% 
     ungroup() %>% 
     select(-x) %>% 
@@ -152,9 +135,9 @@ lt %>%
 
 ::: nonincremental
 -   A common approach is to use a life table-based lookup table in the model:
-    :::
+:::
     
-    ```{r}
+```{r}
 #| echo: TRUE
 #| eval: FALSE
 #| code-line-numbers: "2"
@@ -178,28 +161,24 @@ tpDn_lookup <-
 -   Ages in life table often topcoded (e.g., 85, 100, etc.)
 
 
-<<<<<<< HEAD
-## Modeling Mortality
-
--   Alternative: summarize/sample from background mortality using modeling.
-=======
-    ## Alternative: Parametric Mortality Model
+## Alternative: Parametric Mortality Model
     
-    >>>>>>> 397cdfa (adding more to mortality)
 -   Fit a parametric mortality model to the life table data.
 -   Reduces dimensionality to a few parameters.
 -   Use these parameters to sample time of death, obtain mortality rate/probability at any arbitrary time, etc.
 
-## Modeling Mortality
+## Obtaining Life Table Data
 
 ::: {.callout-tip appearance="simple"}
 The R packages `MortalityLaws` and `demography` facilitate life table data aquisition and modeling.
 :::
     
-    ## Obtaining Life Table Data
-    
-    -   Human Mortality Database
--   Global Burden of Disease
+Common sources: 
+
+-   [Human Mortality Database](https://www.mortality.org)
+-   [Global Burden of Disease](https://www.healthdata.org/gbd)
+-  [Human Cause of Death Database](https://www.causesofdeath.org/cgi-bin/main.php)
+- [Human Life Table Database](https://www.lifetable.de)
 
 ## Processing Life Table Data
 
@@ -211,7 +190,7 @@ The R packages `MortalityLaws` and `demography` facilitate life table data aquis
 - Code below extracts U.S. life table data from the human mortality database (HMD). 
 :::
     
-    ```{r}
+```{r}
 #| echo: true
 #| eval: false
 hmd_usa <-
@@ -231,10 +210,12 @@ hmd_usa <-
 - Radix (cohort size) is 100,000 individuals. 
 :::
     
-    ```{r}
+```{r}
 hmd_usa <- 
     readRDS(url("https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds"))
 ```
+
+
 
 ```{r}
 #| echo: true
@@ -250,18 +231,9 @@ lt =
     mutate_at(vars(lx,dx), function(x) x * radix) 
 ```
 
-## 
-<<<<<<< HEAD
+## US Life Table (2019)
 
--   Shaded column shows life expectancy at given age.
--   We'll construct a series of discrete time Markov models to replicate these estimates.
-=======
-::: nonincremental
-- Shaded column shows life expectancy at given age. 
-:::
-
-- We'll construct a series of discrete time Markov models to replicate these estimates. 
->>>>>>> 397cdfa (adding more to mortality)
+Highlighted column: Remaining life expectancy at exact age x.
 
 ```{r}
 lt %>% 
@@ -335,12 +307,12 @@ params =
 ```
 
 ::: nonincremental
--   No specific strategies or policies under consideration; we're just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 newborns.
+-   No specific strategies or policies under consideration; we're just trying to replicate mortality using life table data for a hypothetical cohort of 100,000 infants.
 :::
     
-    ## Parameterize the model
+## Parameterize the model
     
-    ```{r}
+```{r}
 #| echo: true
 #| code-line-numbers: "10"
 params = 
@@ -362,9 +334,9 @@ params =
 -   Discrete time will be in annual cycles.
 :::
     
-    ## Parameterize the model
+## Parameterize the model
     
-    ```{r}
+```{r}
 #| echo: true
 #| code-line-numbers: "11"
 params = 
@@ -386,9 +358,9 @@ params =
 -   The `lifetable` "strategy" will draw on the HMD life table data processed earlier.
 :::
     
-    ## Age-Dependent Transition Matrix
+## Age-Dependent Transition Matrix
     
-    We'll next construct a transition probability matrix using the age-specific probability of death field (`qx`) from the life table data.
+- We'll next construct a transition probability matrix using the age-specific probability of death field (`qx`) from the life table data.
 
 -   To do so, we need to define a function that, for a given age and cycle length, calculates the probability of death and places this within a transition matrix.
 
@@ -429,20 +401,9 @@ params$mP <-
 ```
 
 ::: columns
-<<<<<<< HEAD
-::: column
-```{r}
-#| echo: true
-params$mP[[1]]$lifetable
-params$mP[[90]]$lifetable
-```
-:::
 
-::: column
-=======
 ::: {.column}
 Life Table:
->>>>>>> 397cdfa (adding more to mortality)
 ```{r}
 #| echo: true
 lt[1,c("age","qx")]
@@ -505,27 +466,20 @@ trace[["lifetable"]][1:10,]
 
 ## Life Expectancy
 
-<<<<<<< HEAD
--   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
--   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--   Let's verify we can replicate this with our Markov model.
-=======
-    -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
+-   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
 -  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
 -  Let's verify we can replicate this with our Markov model.
-
->>>>>>> 397cdfa (adding more to mortality)
 
 ## Life Expectancy
 
 ::: nonincremental
-<<<<<<< HEAD
--   We have a model with `r params$n_cycles` annual cycles for a cohort of `r params$n_cohort` `r params$initial_age` year olds.
--   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--   Let's verify we can replicate this with our Markov model.
+-   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
+-  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+-  Let's verify we can replicate this with our Markov model.
+
 :::
     
-    ```{r}
+```{r}
 
 lt %>% 
     ungroup() %>% 
@@ -535,13 +489,7 @@ lt %>%
     kable_styling() %>% 
     column_spec(3, background = "#c6e6f5")
 ```
-=======
-    -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
--  According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--  Let's verify we can replicate this with our Markov model.
-:::
 
->>>>>>> 397cdfa (adding more to mortality)
 
 ## Life Expectancy
 
@@ -572,7 +520,7 @@ total_life_exp = cycle_adj(life_exp_cycle) # <3>
 2. Calculate life years in each cycle.^[Note that we divide by `r params$n_cohort` to normalize the results to a single individual for life expectancy calculations.]
 :::
     
-    ```{r}
+```{r}
 #| echo: true
 #| code-line-numbers: "4-5"
 
@@ -618,7 +566,7 @@ total_life_exp = cycle_adj(life_exp_cycle) # <3>
 4. Sum of values (with cycle adjustment applied) is total life expectancy. 
 :::
     
-    ```{r}
+```{r}
 #| echo: true
 #| code-line-numbers: "11"
 
@@ -683,20 +631,19 @@ le_res %>%
     theme(legend.position = "top") 
 
 ```
-<<<<<<< HEAD
-=======
+
     
-    # Mortality Modeling
-    
-    ## Mortality Modeling
-    
-    - Depending on context and modeling environment, you may need to model mortality. 
+# Mortality Modeling
+
+## Mortality Modeling
+
+- Depending on context and modeling environment, you may need to model mortality. 
 - The `MortalityLaws` package has a *number* of mortality models we can draw from:
+
+## Mortality Modeling {.smaller}
     
-    ## Mortality Modeling {.smaller}
     
-    
-    ```{r}
+```{r}
 #| tbl-cap: Mortality Models in MortalityLaws package
 
 type_lut <- c(
@@ -734,8 +681,6 @@ laws1 %>%
     kable(col.names = c("Name","Model","Code")) %>% 
     pack_rows(index = table(fct_inorder(laws1$TYPE)))
 ```
-
-
 
 ## {.smaller}
 
@@ -784,7 +729,7 @@ laws4 %>%
 
 Generally speaking, we need three inputs:
     
-    -   `age`: Ages for lifetable
+-   `age`: Ages for lifetable
 -   `dx`: The number of deaths between exact ages x and x+1.
 -   `lx`: Number of survivors to exact age x. 
 
@@ -945,6 +890,7 @@ plot(gom_fit40)
 #| warning: false
 #| message: false
 #| echo: true
+#| code-line-numbers: "9"
 
 ages     <- lt$age[lt$age<100]
 deaths   <- lt$dx[lt$age<100]
@@ -980,7 +926,7 @@ eta = ifelse(x == 0, mu1, mu1 + mu2)
 hx  = eta/(1 + eta)
 ```
 
-## Heligman-Pollard
+## Death Hazard at Age 40: Gompertz vs. HP
 
 ```{r, echo = TRUE}
 gompertz(x = 40, par = gom_fit$coefficients)$hx
@@ -999,29 +945,38 @@ HP(x = 40, par = hp_fit$coefficients)$hx
 
 - Difficult to sample death times from life tables due to coarseness of data (e.g., five-year age bins).
 - Solution: 
-    1. Fit a parametric mortality model (e.g., Heligman-Pollard)
-2. Construct a survival function from modeled hazards. 
-3. Sample a death time from the survival function. 
+  1. Fit a parametric mortality model (e.g., Heligman-Pollard)
+  2. Construct a survival function from modeled hazards. 
+  3. Sample a death time from the survival function. 
 
 ## 1. Sampling Death Rates (DES)
 
-- Intuition is easier if we start with a defined quantile (e.g., 50th percentile of survival)
+
+- Intuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)
+
+
+
+## 1. Sampling Death Rates (DES)
+
+::: nonincremental
+- Intuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)
+:::
 
 ```{r}
 #| echo: true
-u = 0.5
+u = 0.25
 ```
 
 ## 1. Sampling Death Rates (DES)
 
 ::: nonincremental
-- We can feed the quantile (0.5) and coefficients into an inverse quantile function.
+- We can feed the quantile (0.25) and coefficients into an inverse quantile function.
 - Straightforward to do for Gompertz model
 :::
     
-    ```{r}
+```{r}
 #| echo: true
-u = 0.5
+u = 0.25
 qgompertz(p = u, shape = gom_fit$coefficients["B"], rate = gom_fit$coefficients["A"])
 ```
 
@@ -1033,13 +988,13 @@ qgompertz(p = u, shape = gom_fit$coefficients["B"], rate = gom_fit$coefficients[
 
 ```{r}
 #| echo: true
-u = 0.5
+u = 0.25
 qgompertz(p = u, shape = gom_fit$coefficients["B"], rate = gom_fit$coefficients["A"])
 ```
 
 ```{r}
 lt %>% mutate(Sx = exp(-cumsum(mx))) %>% 
-  filter(age>=82 & age<=83) %>% 
+  filter(age>=70 & age<=72) %>% 
   select(age,mx,Sx) %>% 
   kable() %>% 
   kable_styling() %>% 
@@ -1048,20 +1003,55 @@ lt %>% mutate(Sx = exp(-cumsum(mx))) %>%
 
 ## 1. Sampling Death Rates (DES)
 
-::: nonincremental
-
 - There is no inverse quantile function for Heligman-Pollard, but we can create one!
+
+
+## 1. Sampling Death Rates (DES)
+
+::: nonincremental
+- There is no inverse quantile function for Heligman-Pollard, but we can create one!
+- Approxfun returns a function that provides a value of `y` for a given value of `x`.
 :::
 
 ```{r}
 #| echo: true
 qHP <- 
   approxfun(y = 0:115,
-  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))
-qHP(u)
+            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))
 ```
 
-## 1. Sampling Desth Rates (DES)
+
+## 1. Sampling Death Rates (DES)
+
+
+- For `approxfun()`:
+  - `x` is quantile in CDF for survival, i.e., 1 - Survival^[Recall that survival is $\exp(-H)$, where $H$ is the cumulative hazard]
+  - `y` is the age. 
+- So qHP(0.5) would return median survival age in the modeled data. 
+
+
+## 1. Sampling Death Rates (DES)
+
+```{r}
+#| echo: true
+qHP <- 
+  approxfun(y = 0:115,
+            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))
+qHP(0.25)
+```
+
+Survival in life table:
+```{r}
+lt %>% mutate(Sx = exp(-cumsum(mx))) %>% 
+  #filter(age>=82 & age<=83) %>% 
+  filter(age>=70 & age<=72) %>% 
+  select(age,mx,Sx) %>% 
+  kable() %>% 
+  kable_styling() %>% 
+  column_spec(3, background = "#c6e6f5")
+```
+
+## 1. Sampling Death Rates (DES)
 
 - We now have the tools we need to sample death times that closely match underlying mortality data!
 - For a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.
@@ -1096,9 +1086,9 @@ qHP(u)
 
 params = 
   list(
-    t_names = c("lifetable",
+    t_names = c("lifetable",          # Strategy names
                 "heligman-pollard",
-                "gompertz"),          # Strategy names. 
+                "gompertz"),          
     n_treatments = 3,                 # Number of treatments
     s_names  = c("Alive", "Dead"),    # State names
     n_states = 2,                     # Number of states
@@ -1112,4 +1102,496 @@ params =
   )
 
 ```
->>>>>>> 397cdfa (adding more to mortality)
+
+## Age-Dependent Transition Matrices
+
+```{r}
+#| echo: true
+fn_mPt <- function(t, params) {
+  with(params, {
+    h = cycle # Time step
+    lapply(t, function(tt){
+       # Life table method
+        current_age_lt = pmin(initial_age  + (tt)*h - 1,max(lt$age))
+        p_death <- lt[lt$age==current_age_lt,"qx"]
+        # parametric mortality methods
+        current_age = initial_age  + (tt)*h - 1
+        r_death_gompertz <- gompertz(current_age,params$gom_fit$coefficients)$hx
+        p_death_gompertz <- 1 - exp(-r_death_gompertz)
+        r_death_hp <- HP(current_age, params$hp_fit$coefficients)$hx
+        p_death_hp <- 1 - exp(-r_death_hp)
+        
+        array(data = c(1 - p_death, 0, 
+                 p_death,1,
+                 
+                 1 - p_death_hp, 0, 
+                 p_death_hp,1,
+                 
+                1 - p_death_gompertz, 0, 
+                 p_death_gompertz,1),
+              
+              dim = c(n_states, n_states, n_treatments),
+              dimnames = list(from = s_names,
+                              to = s_names,
+                              t_names)) 
+    })
+  })
+}
+```
+
+## Construct a Markov Trace
+
+```{r}
+#| echo: true
+# Add transition matrices into params.
+params$mP <- 
+  fn_mPt(1:params$n_cycles, params)
+
+# Construct the Markov trace. 
+trace <- 
+  sim_cohort(params)
+```
+
+## Construct a Markov Trace
+
+::: columns
+
+::: {.column width="33%"}
+```{r, echo = TRUE}
+trace[["lifetable"]][1:10,]
+
+```
+
+:::
+
+::: {.column width="33%"}
+```{r, echo = TRUE}
+trace[["gompertz"]][1:10,]
+```
+:::
+
+::: {.column  width="33%"}
+```{r, echo = TRUE}
+trace[["heligman-pollard"]][1:10,]
+```
+::: 
+
+:::
+
+## Calculate Life Expectancy
+
+```{r}
+#| echo: true
+# Define the payoff for life expectancy
+payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
+
+# Calculate alive years in each cycle
+life_exp_cycle = lapply(trace, function(tr) (tr * (1 / params$n_cohort)) %*% payoff_life_exp)  # <2>
+
+# Function for cycle correction (alternative Simpson's method)
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x) sum(alt_simp_coef(length(x)) * x)
+
+total_life_exp = lapply(life_exp_cycle,cycle_adj) # <3>
+```
+
+## Life Expectancy: Alive-Dead Model
+
+```{r}
+#| echo: true
+total_life_exp
+```
+
+# Cause-Deleted Mortality 
+
+## Motivation
+
+- Often, background mortality is drawn directly from life table data. 
+- Models also frequently include cause-specific death as a separate tracked event or health state.
+
+## Motivation
+
+- This approach "double-counts" death because cause-specific death is also reflected in the life table estimates!
+- OK if cause-specific death is a small contributor to overall death rates.
+- But what if modeled disease is a frequent cause of death (e.g., cardiovascular disease, cancer)?
+
+## Solution
+
+- We can construct an alternative life table that "nets out" cause-specific deaths.
+- Not foolproof: need to make an assumption that we can parse out deaths as indepdendent contributors to overall mortality. 
+
+## CVD-Deleted Life Table
+
+- We'll next show you the process of constructing a cause-deleted life table.
+- Basis for example is cardiovascular disease (CVD), which at older ages is a substantial contributor (~50%) of overall mortality. 
+
+## CVD-Deleted Life Table
+
+Constructing the cause-deleted life table **requires two necessary inputs**:
+
+1.  Overall mortality by age.
+2.  Cause-specific mortality by age (ideally as a % of all deaths at a given age).
+  - These are obtainable for many countries from the Global Burden of Disease and Human Cause of Death Database websites.
+
+## CVD-Deleted Life Table 
+
+::: nonincremental
+- Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. 
+:::
+
+![Screenshot of Global Burden of Disease Data](images/gbd-cvd-deaths.png){height="500px"}
+
+##
+
+We extract the percentage of overall deaths that are from CVD by age bin:
+
+```{r, echo = TRUE}
+ihme_cvd <- 
+  tibble::tribble(
+        ~age_name,        ~val,
+               1, 0.038771524,
+               5, 0.038546046,
+              10, 0.044403585,
+              15, 0.033781126,
+              20, 0.035856165,
+              25, 0.053077797,
+              30, 0.086001439,
+              35, 0.130326551,
+              40, 0.184310334,
+              45,  0.21839762,
+              50, 0.243705394,
+              55, 0.256334637,
+              60,  0.26828001,
+              65, 0.272698709,
+              70,  0.28529754,
+              75, 0.310642009,
+               0, 0.016750489,
+              80, 0.353518012,
+              85, 0.399856716,
+              90, 0.447817792,
+              95, 0.495305502
+        ) %>% 
+    mutate(age_ihme = cut(age_name,unique(c(0,1,seq(0,95,5),105)),right=FALSE))  %>% 
+    select(age_ihme,  pct_cvd = val) 
+```
+
+## 
+
+Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:
+
+```{r}
+lt_ <-  # 
+    lt %>% 
+    mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %>% 
+    left_join(ihme_cvd,"age_ihme") %>%
+    mutate(dx_i = round(dx * pct_cvd)) %>% 
+    select(age,
+           age_ihme,
+           pct_cvd,
+           dx,  # Deaths
+           dx_i, # Cause-specific deaths
+           lx) %>% # Living
+    mutate(a = ifelse(age==0, 0.152, 0.5)) %>% # time lived by deaths in age group
+    mutate(age_interval = c(diff(age), NA)) %>% 
+    select(age,age_ihme,pct_cvd, lx,dx,dx_i,a,age_interval) %>% 
+    # Probability of death in interval =  deaths / total living at beginning of interval. 
+    mutate(q = replace_na(1 - lead(lx) / lx, 1))  %>% 
+      # Convert probability to rate. Note that we could also use q/(age_interval - q * (age_interval - a))
+    mutate(m = -log(1-q)/age_interval) 
+  
+
+lt_ %>% 
+  select(age,age_ihme,pct_cvd,dx,dx_i) %>% 
+  filter(age %in% c(0,10,25,50,75,98))  %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+## 
+
+We next calculate the cause-deleted probability of death (`qd`) and death rate (`md`), as well as the cause-specific probability of death (`qi`) and death rate (`mi`):
+
+## Steps
+
+1. Cause-specific probability of death (`qi`): $q \cdot dx_i / dx$
+2. Cacluate cause-specific rates by dividing deaths of a given cause into person-years of exposure.
+  - This is equivalent to multiplying the overall rate by the ratio of deaths of a given cause to the total.
+  
+## Steps
+
+::: nonincremental
+1. Cause-specific probability of death (`qi`): $q \cdot dx_i / dx$
+2. Cacluate cause-specific rates by dividing deaths of a given cause into person-years of exposure.
+    - This is equivalent to multiplying the overall rate by the ratio of deaths of a given cause to the total.
+:::
+
+```{r  echo = TRUE}
+lt_ <- 
+  lt_ %>% 
+    # Cause specific probability of death. 
+    mutate(qi = q * dx_i / dx) %>% 
+    mutate(Rd = (dx - dx_i) / dx) %>% 
+    mutate(md = m * Rd) %>% 
+    mutate(mi = m - md) %>% 
+    mutate(dxd = dx - dx_i)
+```
+
+##
+
+```{r}
+lt_ %>% 
+  select(age, dx, dxd, dx_i, q, qi, md, mi) %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+## Modeling CVD-Deleted Mortality
+
+- We can also apply the methods covered earlier to the cause-deleted life table data!
+
+```{r , echo = TRUE}
+ages_     <- lt_$age[lt_$age<100 & lt_$age>=25]
+deaths_   <- lt_$dxd[lt_$age<100 & lt_$age>=25] 
+exposure_  <- lt_$lx[lt_$age<100 & lt_$age>=25]
+
+mort_fit_CVDdeleted <- MortalityLaw(
+    x  = ages_,
+    Dx  = deaths_,   # vector with death counts
+    Ex  = exposure_, # vector containing exposures
+    law = "HP2",
+    opt.method = "LF2")
+
+```
+
+
+## 
+
+```{r}
+params = 
+  list(
+    t_names = c("natural_history","foo"),       # Strategy names. 
+    n_treatments = 2,                     # Number of treatments
+    s_names  = c("Healthy", "CVD","CVDDeath","Dead"),
+    n_states = 4,                         # Number of states
+    n_cohort = 100000,                    # Cohort size
+    initial_age = 25,                      # Cohort starting age    
+    n_cycles = 100,                       # Number of cycles in model.  
+    cycle = 1,                            # Cycle length
+    r_H_CVD = 0.1,                        # Healthy -> CVD transition rate
+    u_H = 1,                              # Utility state payoffs
+    u_CVD = 1,
+    u_D = 0,
+    u_DCVD = 0,
+    c_H = 0,                              # Cost state payoffs
+    c_CVD = 0,
+    c_DCVD = 0,
+    c_D = 0, 
+    cause_specific_mortality =            # Cause specific morality rate
+      approxfun(lt_$age, lt_$mi,rule = 2),
+    mort_fit = mort_fit_CVDdeleted        # Cause-Deleted Mortality Fit 
+  )
+
+```
+
+## Basic CVD Model
+
+```{dot}
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    "Dead\n(CVD)" [pos="3.1,-.5!"]
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    CVD -> "Dead\n(CVD)" [label = "    r_DCVD(t)        " labeldistance=1]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;
+    "Dead\n(CVD)" -> "Dead\n(CVD)"
+}
+
+```
+
+## Basic CVD Model
+
+::: nonincremental
+- Healthy {{< fa arrow-right >}} Death based on modeled (Heligman-Pollard) cause-deleted mortality. 
+:::
+
+```{dot}
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    "Dead\n(CVD)" [pos="3.1,-.5!"]
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    CVD -> "Dead\n(CVD)" [label = "    r_DCVD(t)        " labeldistance=1]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)" fontcolor="red"];
+    Dead -> Dead ;
+    "Dead\n(CVD)" -> "Dead\n(CVD)"
+}
+
+```
+
+## Basic CVD Model
+
+::: nonincremental
+- CVD {{< fa arrow-right >}} Death based on age- and cause-specific death rates from cause-deleted life table. 
+:::
+
+```{dot}
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    "Dead\n(CVD)" [pos="3.1,-.5!"]
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    CVD -> "Dead\n(CVD)" [label = "    r_DCVD(t)        " labeldistance=1 fontcolor="red"]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;  
+    "Dead\n(CVD)" -> "Dead\n(CVD)"
+}
+
+```
+
+
+## Basic CVD Model
+
+::: nonincremental
+- We also allow for a CVD {{< fa arrow-right >}} Death transition based on non-CVD causes. 
+:::
+
+```{dot}
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    "Dead\n(CVD)" [pos="3.1,-.5!"]
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    CVD -> "Dead\n(CVD)" [label = "    r_DCVD(t)        " labeldistance=1 ]
+    Healthy -> CVD [label="r_HS"]; 
+    CVD -> Dead [label="  r_HD(t)" fontcolor="red"];
+    Healthy -> Dead [label="r_HD(t)"];
+    Dead -> Dead ;
+    "Dead\n(CVD)" -> "Dead\n(CVD)"
+}
+
+```
+
+## Age-Dependent Transition Matrices
+
+```{r}
+fn_mPt_CVD <- function(t, params) {
+  with(params, {
+    h = cycle # Time step
+    lapply(t, function(tt){
+       # Life table method
+        current_age = initial_age  + (tt)*h - 1
+        
+        r_H_D <- HP(current_age, params$mort_fit$coefficients)$hx
+        r_CVD_D = params$cause_specific_mortality(current_age) 
+        
+        R <- array(data = c(
+                      -(r_H_D+params$r_H_CVD),0,0,0, 
+                      params$r_H_CVD,-(r_CVD_D+r_H_D),0,0, 
+                      0,r_CVD_D,0,0,
+                      r_H_D,r_H_D,0,0,
+                      
+                      -(r_H_D+params$r_H_CVD),0,0,0, 
+                      params$r_H_CVD,-(r_CVD_D+r_H_D),0,0, 
+                      0,r_CVD_D,0,0,
+                      r_H_D,r_H_D,0,0),
+              
+              dim = c(n_states, n_states, n_treatments),
+              dimnames = list(from = s_names,
+                              to = s_names,
+                              t_names)) 
+        P = apply(R,3,expm, simplify=FALSE)
+        P
+    })
+  })
+}
+params$mP <- fn_mPt_CVD(1:params$n_cycles,params)
+```
+
+
+## Construct a Markov Trace
+
+```{r}
+sim_cohort <- function(params) {
+  
+ params$t_names %>% map(~({ 
+    tr_ <- t(c(params$n_cohort,rep(0,params$n_states - 1)))
+    
+    res <- do.call(rbind,lapply(params$mP, function(tp) {
+        tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_state)
+    }))
+    res <- rbind(c(params$n_cohort,rep(0,params$n_states - 1)),res) 
+    dimnames(res) <- list(paste0(c(0:params$n_cycles)), params$s_names)
+    res
+  })) %>% 
+    set_names(params$t_names)
+}
+```
+
+```{r}
+#| echo: true
+trace <- 
+  sim_cohort(params)
+trace[["natural_history"]][1:10,]
+```
+
+## 
+
+```{r}
+lt_compare <- 
+    lt_ %>% 
+    mutate(dx = dx - dx_i) %>% 
+    select(age = age, dead_lt = dx, cvddeath_lt = dx_i) %>% 
+    mutate(age = age + 1) %>% 
+    filter(age>=params$initial_age) %>% 
+    mutate(dead_lt = ifelse(age==25,0,dead_lt),
+           cvddeath_lt = ifelse(age==25,0,cvddeath_lt)) %>% 
+    mutate_at(vars(dead_lt,cvddeath_lt), cumsum)
+
+
+trace[["natural_history"]] %>% 
+    data.frame() %>% 
+    tibble() %>% 
+    set_names(c("healthy","cvd","cvddeath","dead")) %>% 
+    mutate(age = params$initial_age  + (row_number())*params$cycle - 1 ) %>% 
+    select(age,cvddeath,dead) %>% 
+    inner_join(lt_compare, "age") %>% 
+    gather(state,value,-age) %>% 
+    mutate(state = factor(state,levels = c("cvddeath","cvddeath_lt","dead","dead_lt"), 
+                          labels = c("CVD Deaths",
+                                     "CVD Deaths (Life Table)",
+                                     "Non-CVD Mortality",
+                                     "Non-CVD Mortality (Life Table)"))) %>% 
+    mutate(state1 = ifelse(grepl("CVD Deaths",state),"CVD Deaths","Non-CVD Mortality")) %>% 
+    mutate(state2 = ifelse(grepl("Life Table",state),"Life Table","Markov")) %>% 
+    ggplot(aes(x = age, y = value, colour = state2)) + 
+    geom_line(aes(lty=state1))  +
+    hrbrthemes::theme_ipsum(base_family = "Arial") + 
+    scale_colour_aaas(name="") + 
+    scale_linetype(guide="none") +
+    geom_dl(method = list("last.bumpup",hjust=1),aes(label=state1),colour = "black") +
+    theme(legend.position="top") + 
+    labs(x = "Age", y = "Deaths") + 
+    scale_y_continuous(limits = c(0,radix)) 
+```
+
+

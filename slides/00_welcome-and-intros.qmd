@@ -15,3 +15,23 @@ bibliography: references.bib
 
 ## Welcome to Berlin!
 
+
+## Learning Objectives
+
+-   Underlying robust property of decision modeling.
+-   Understand options for modeling background mortality based on life tables and parametric mortality models.
+-   Construct a cause-deleted life table to model cause-specific and non-cause-specific death.
+
+## The Big Picture
+
+-  Decision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model. 
+-  For example, a model of $f_{cost}$ and $f_{qaly}$ are run versus $\theta_{ref}$ and $\theta_{target}$. 
+-  These runs will have error due to misspecification, and in differencing the error can mostly cancel. Let $g$ represent the truth, thus $f(\theta) = g(\theta)+\epsilon_{theta}$.
+
+## The Hopeful Big Picture
+
+$$\text{ICER} = \frac{f_{cost}(\theta_{target}) - \epsilon_{ct} - f_{cost}(\theta_{ref}) + \epsilon_{cr}}{f_{qaly}(\theta_{target}) - \epsilon_{qt} - f_{qaly}(\theta_{ref}) + \epsilon_{qr}}$$
+    
+-  If $\epsilon_{ct} \sim \epsilon_{cr}$ and $\epsilon_{qt} \sim \epsilon_{qr}$ then the model errors cancel and this approaches the true model.
+-  The decision threshold is *robust* in this case even when model run results are biased!
+-  We will explore this perodically today.
