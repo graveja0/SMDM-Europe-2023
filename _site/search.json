@@ -2797,7 +2797,7 @@
     "href": "slides/02_competing-events.html#quantified-relative-error",
     "title": "Competing Risks",
     "section": "Quantified Relative Error",
-    "text": "Quantified Relative Error\n\n\n\n\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%.\nThis error will accumulate over each timestep."
+    "text": "Quantified Relative Error\n\n\nFor rates &lt; 0.1 of the chosen time step the error is &lt;5%.\nThis error will accumulate over each timestep."
   },
   {
     "objectID": "slides/02_competing-events.html#comparison",
@@ -2944,7 +2944,7 @@
     "href": "slides/02_competing-events.html#section-7",
     "title": "Competing Risks",
     "section": "",
-    "text": "Using Conversion Formulas:\n\n\n         Healthy   CVD CVDDeath  Dead\nHealthy    0.852 0.132    0.007 0.009\nCVD        0.000 0.905    0.095 0.000\nCVDDeath   0.000 0.000    1.000 0.000\nDead       0.000 0.000    0.000 1.000\n\n\n\n\n\n\n\n\n\n\n\n\n\nUsing Rate Matrix Eponentiation:\n\n\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    0.851 0.139    0.000 0.01\n  CVD        0.000 0.905    0.095 0.00\n  CVDDeath   0.000 0.000    1.000 0.00\n  Dead       0.000 0.000    0.000 1.00"
+    "text": "Using Conversion Formulas:\n\n\n          to\nfrom       Healthy   CVD CVDDeath Dead\n  Healthy    0.851 0.139    0.000 0.01\n  CVD        0.000 0.905    0.095 0.00\n  CVDDeath   0.000 0.000    1.000 0.00\n  Dead       0.000 0.000    0.000 1.00\n\n\n\n\n\nUsing Rate Matrix Eponentiation:\n\n\n         Healthy   CVD CVDDeath  Dead\nHealthy    0.852 0.132    0.007 0.009\nCVD        0.000 0.905    0.095 0.000\nCVDDeath   0.000 0.000    1.000 0.000\nDead       0.000 0.000    0.000 1.000"
   },
   {
     "objectID": "slides/02_competing-events.html#signs-of-trouble-1",
@@ -2978,15 +2978,15 @@
     "objectID": "slides/02_competing-events.html#learning-objectives",
     "href": "slides/02_competing-events.html#learning-objectives",
     "title": "Competing Risks",
-    "section": "",
-    "text": "Pitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nPitfalls of traditional transition probability conversion formulas.\nDiscuss compound transitions and how to account for them.\nDemonstrate how to properly embed a transition probability matrix into a timestep."
   },
   {
     "objectID": "slides/02_competing-events.html#learning-objectives-1",
     "href": "slides/02_competing-events.html#learning-objectives-1",
     "title": "Competing Risks",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population."
+    "text": "Learning Objectives\n\nConstruct a natural history model for CVD.\nBackground mortality based on cause-deleted life table data.\nCVD mortality based on cause-specific mortality.\nMarkov model is properly embedded.\nMarkov model results will closely match cause-deleted and cause-specific mortality in the US population.\n\n\n\nBack to Website"
   },
   {
     "objectID": "slides/02_competing-events.html#why-dont-the-conversion-formulas-work",
@@ -3007,7 +3007,7 @@
     "href": "slides/02_competing-events.html#embedding-error",
     "title": "Competing Risks",
     "section": "Embedding Error",
-    "text": "Embedding Error\n\n\n\n\n\nIf one has misapplied this in a model, it’s going to be okay."
+    "text": "Embedding Error\n\nIf one has misapplied this in a model, it’s going to be okay."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-is-a-copula",
@@ -3924,7 +3924,7 @@
     "href": "slides/03_advanced-bookkeeping.html#non-markovian-elements",
     "title": "Advanced Bookkeeping",
     "section": "Non-Markovian Elements",
-    "text": "Non-Markovian Elements\n\nAugmenting the transition matrix with non-markovian submatrices can facilitate accurate counting and bookkeeping.\nDepending on the objective, can include non-markovian accumulators and/or transition states."
+    "text": "Non-Markovian Elements\n\nAugmenting the transition matrix with non-markovian rows and columns can facilitate accurate counting and bookkeeping.\nDepending on the objective, can include non-markovian accumulators and/or transition states."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#non-markovian-elements-1",
@@ -4071,27 +4071,62 @@
     "href": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-1",
     "title": "Advanced Bookkeeping",
     "section": "Non-Markovian Accumulators",
-    "text": "Non-Markovian Accumulators\n\n\nNext, we will add both a column and a row for the accumulator that tracks movement into the CVD health state.\n\n\n\nFor now, just include zeros.\n\n\nR &lt;- \n  cbind(R_,\"accCVD\" = c(0,0,0,0)) %&gt;% \n  rbind(.,\"accCVD\" = c(0,0,0,0,0))  \nR\n\n         Healthy   CVD CVDDeath Dead accCVD\nHealthy    -0.16  0.15      0.0 0.01      0\nCVD         0.00 -0.10      0.1 0.00      0\nCVDDeath    0.00  0.00      0.0 0.00      0\nDead        0.00  0.00      0.0 0.00      0\naccCVD      0.00  0.00      0.0 0.00      0"
+    "text": "Non-Markovian Accumulators\n\n\nNext, we will add both a column and a row for the accumulator that tracks movement into the CVD health state.\n\n\n\nFor now, just include zeros."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-2",
     "href": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-2",
     "title": "Advanced Bookkeeping",
     "section": "Non-Markovian Accumulators",
-    "text": "Non-Markovian Accumulators\n\n\nWe then fill in the appropriate transition rate.\n\n\n\nR[\"Healthy\",\"accCVD\"] = R[\"Healthy\",\"CVD\"]\nR\n\n         Healthy   CVD CVDDeath Dead accCVD\nHealthy    -0.16  0.15      0.0 0.01   0.15\nCVD         0.00 -0.10      0.1 0.00   0.00\nCVDDeath    0.00  0.00      0.0 0.00   0.00\nDead        0.00  0.00      0.0 0.00   0.00\naccCVD      0.00  0.00      0.0 0.00   0.00"
+    "text": "Non-Markovian Accumulators\n\n\nNext, we will add both a column and a row for the accumulator that tracks movement into the CVD health state.\nFor now, just include zeros.\n\n\n\nR &lt;- \n  cbind(R_,\"accCVD\" = c(0,0,0,0)) %&gt;% \n  rbind(.,\"accCVD\" = c(0,0,0,0,0))  \nR\n\n         Healthy   CVD CVDDeath Dead accCVD\nHealthy    -0.16  0.15      0.0 0.01      0\nCVD         0.00 -0.10      0.1 0.00      0\nCVDDeath    0.00  0.00      0.0 0.00      0\nDead        0.00  0.00      0.0 0.00      0\naccCVD      0.00  0.00      0.0 0.00      0"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-3",
     "href": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-3",
     "title": "Advanced Bookkeeping",
     "section": "Non-Markovian Accumulators",
-    "text": "Non-Markovian Accumulators\n\n\nFinally, we convert to the transition probability matrix.\n\n\n\nexpm(R)  \n\n\n\n\n\n\n\nHealthy\nCVD\nCVDDeath\nDead\naccCVD\n\n\n\n\nHealthy\n0.852\n0.132\n0.007\n0.009\n0.139\n\n\nCVD\n0\n0.905\n0.095\n0\n0\n\n\nCVDDeath\n0\n0\n1\n0\n0\n\n\nDead\n0\n0\n0\n1\n0\n\n\naccCVD\n0\n0\n0\n0\n1"
+    "text": "Non-Markovian Accumulators\n\n\nWe then fill in the appropriate transition rate.\n\n\n\nR[\"Healthy\",\"accCVD\"] = R[\"Healthy\",\"CVD\"]\nR\n\n         Healthy   CVD CVDDeath Dead accCVD\nHealthy    -0.16  0.15      0.0 0.01   0.15\nCVD         0.00 -0.10      0.1 0.00   0.00\nCVDDeath    0.00  0.00      0.0 0.00   0.00\nDead        0.00  0.00      0.0 0.00   0.00\naccCVD      0.00  0.00      0.0 0.00   0.00"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-4",
     "href": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-4",
     "title": "Advanced Bookkeeping",
     "section": "Non-Markovian Accumulators",
-    "text": "Non-Markovian Accumulators\n\n\nFinally, we convert to the transition probability matrix.\n\n\n\n\n\n\n\n\nHealthy\nCVD\nCVDDeath\nDead\naccCVD\n\n\n\n\nHealthy\n0.852\n0.132\n0.007\n0.009\n0.139\n\n\nCVD\n0\n0.905\n0.095\n0\n0\n\n\nCVDDeath\n0\n0\n1\n0\n0\n\n\nDead\n0\n0\n0\n1\n0\n\n\naccCVD\n0\n0\n0\n0\n1"
+    "text": "Non-Markovian Accumulators\n\n\nEmbed using matrix exponentiation to obtain the transition probability matrix.\n\n\n\nexpm(R)  \n\n\n\n\n\n\n\nHealthy\nCVD\nCVDDeath\nDead\naccCVD\n\n\n\n\nHealthy\n0.852\n0.132\n0.007\n0.009\n0.139\n\n\nCVD\n0\n0.905\n0.095\n0\n0\n\n\nCVDDeath\n0\n0\n1\n0\n0\n\n\nDead\n0\n0\n0\n1\n0\n\n\naccCVD\n0\n0\n0\n0\n1"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#cvd-model-2",
+    "href": "slides/03_advanced-bookkeeping.html#cvd-model-2",
+    "title": "Advanced Bookkeeping",
+    "section": "CVD Model",
+    "text": "CVD Model\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nCVD\n\n CVD   \n\nHealthy-&gt;CVD\n\n  r_H_CVD = 0.15   \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n  r_HD=0.01   \n\nCVD-&gt;CVD\n\n    \n\nCVDDeath\n\n CVDDeath   \n\nCVD-&gt;CVDDeath\n\n    hr_CVD * r_HD hr_CVD=10   \n\nDead-&gt;Dead\n\n    \n\nCVDDeath-&gt;CVDDeath"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tracking-events",
+    "href": "slides/03_advanced-bookkeeping.html#tracking-events",
+    "title": "Advanced Bookkeeping",
+    "section": "Tracking Events",
+    "text": "Tracking Events\n\nGiven compound transitions, how can we track the total number of people who develop CVD?\nWhat if there is a transitory utility decrement or cost to contracting CVD?"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#advanced-bookkeeping",
+    "href": "slides/03_advanced-bookkeeping.html#advanced-bookkeeping",
+    "title": "Advanced Bookkeeping",
+    "section": "Advanced Bookkeeping",
+    "text": "Advanced Bookkeeping\n\nGiven compound transitions, how can we track the total number of people who develop CVD?\nWhat if there is a cost associated with a single transition type (e.g., CVD  CVD death)\nWhat if we want to include a tunnel state to capture transient utility changes after contracting CVD or experiencing an acute event?"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#advanced-bookkeeping-1",
+    "href": "slides/03_advanced-bookkeeping.html#advanced-bookkeeping-1",
+    "title": "Advanced Bookkeeping",
+    "section": "Advanced Bookkeeping",
+    "text": "Advanced Bookkeeping\nAugmenting the transition matrix with non-markovian elements can address each question:\n\nAccumulator states to count total number of people who enter a health state.\nTransition states to count the number of people who transition into a state in a given cycle.\nTunnel states to capture transient events (e.g., 2 cycle utility decrement, etc.)"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-5",
+    "href": "slides/03_advanced-bookkeeping.html#non-markovian-accumulators-5",
+    "title": "Advanced Bookkeeping",
+    "section": "Non-Markovian Accumulators",
+    "text": "Non-Markovian Accumulators\n\nNote that the Markovian submatrix still has rows that sum to zero.\nAlso note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy  CVD cell in lecture 2!\n\nRecall that this probability is the marginal probability of transition (i.e., all transitions into CVD state). So it’s exactly what we want to accumulate!"
   }
 ]

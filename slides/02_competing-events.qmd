@@ -1521,8 +1521,9 @@ expm(params_mort_embedded$mR[["natural_history"]])
 #### Using Conversion Formulas:
 
 ```{r}
-round(expm(params_mort_embedded$mR[["natural_history"]]),3)
+round(apply(params_mort2$mP,3,function(x) x, simplify = FALSE)[[1]],3)
 ```
+
 
 #### 
 
@@ -1532,8 +1533,9 @@ round(expm(params_mort_embedded$mR[["natural_history"]]),3)
 
 #### Using Rate Matrix Eponentiation:
 
+
 ```{r}
-round(apply(params_mort2$mP,3,function(x) x, simplify = FALSE)[[1]],3)
+round(expm(params_mort_embedded$mR[["natural_history"]]),3)
 ```
 
 # Now it's your turn!
