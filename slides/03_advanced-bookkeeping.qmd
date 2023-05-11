@@ -60,24 +60,48 @@ source("./manifest.r")
 - Let's quickly build up the basic CVD  model again. 
 :::
 
+
+## CVD Model
+
+```{dot}
+//| fig-align: center
+//| fig-width: 10
+//| 
+digraph G {
+    layout = neato;
+    Healthy [pos="0,0!"];
+    CVD [pos="1,1!"]; 
+    Dead [pos="1,-1!"]
+    Healthy -> Healthy ;
+    CVD -> CVD;
+    Healthy -> CVD [label="r_H_CVD = 0.15"]; 
+    CVD -> Dead [label=" hr_CVD * r_HD\nhr_CVD=10" ];
+    Healthy -> Dead [label="r_HD=0.01"];
+    Dead -> Dead;
+  }
+```
+
+
 ## Parameterize
 
 ```{r}
 #| echo: true
+
 params = 
   list(
-    t_names = c("natural_history"),                       
-    n_treatments = 1,                                     
-    s_names  = c("Healthy", "CVD", "CVDDeath", "Dead"),   
-    n_states = 4,                                         
-    n_cohort = 1,                                         
-    n_cycles = 100,                                        
-    cycle = 1,                                            
-    initial_age = 55,                                     
-    r_H_CVD = 0.15,                                       
-    hr_CVD = 10,                                          
-    r_H_D = 0.01                                          
+    t_names = c("natural_history"),           # Strategy names. 
+    n_treatments = 1,                         # Number of treatments
+    s_names  = c("Healthy", "CVD", "Dead"),   # State names
+    n_states = 3,                             # Number of states
+    n_cohort = 1,                             # Cohort size
+    n_cycles = 100,                           # Number of cycles in model.  
+    cycle = 1,                                # Cycle length
+    initial_age = 55,                         # Cohort starting age
+    r_H_CVD = 0.15,                           # Rate of healthy -> CVD
+    hr_CVD = 10,                              # Hazard Ratio: CVD Death
+    r_H_D = 0.01                              # Rate of healthy -> dead
   )
+
 
 ```
 
@@ -87,14 +111,12 @@ params =
 #| echo: true
 params$mR <- 
   with(params,{
-
     r_CVD_D <- hr_CVD * r_H_D
-    
     R_ <- 
-      array(data = c(0, 0, 0,0,  
-                 r_H_CVD,0, 0,0,
-                 0,r_CVD_D,0,0,
-                 r_H_D, 0,0, 0),
+      array(data = c(0, 0, 0,  
+                 r_H_CVD,0, 0,
+                 r_H_D,r_H_D + r_CVD_D,0,
+                 r_H_D, 0,0),
           dim = c(n_states, n_states, n_treatments),
                   dimnames = list(from = s_names,
                                   to = s_names,
@@ -120,12 +142,19 @@ params$mR
 expm(params$mR[["natural_history"]])
 ```
 
--   Notice how the embedded matrix now has a transition probability from Healthy {{< fa arrow-right >}} CVD Death!
+## Advanced Bookkeeping
 
-## Tracking Transitions and Event Counts
+1. Given compound transitions, how can we track the total number of people who develop CVD?
+2. What if there is a cost associated with a single transition type (e.g., CVD {{< fa arrow-right >}} CVD death)
+3. What if we want to include a tunnel state to capture transient utility changes after contracting CVD or experiencing an acute event? 
 
-- Given compound transitions, how can we track the total number of people who develop CVD?
-- What if there is a transitory utility decrement or cost to contracting CVD?
+## Advanced Bookkeeping
+
+Augmenting the transition matrix with non-markovian elements can address each question:
+
+1. Accumulator states to count total number of people who enter a health state.
+2. Transition states to count the number of people who transition into a state in a given cycle.
+3. Tunnel states to capture transient events (e.g., 2 cycle utility decrement, etc.)
 
 ## Markovian Transition Matrices
 
@@ -151,13 +180,13 @@ Pexp0 %>%
   kable(col.names = c("",params$s_names)) %>% 
   kable_styling() %>% 
   kable_paper() %>% 
-  column_spec(2:5, color ="black", background = "#a2cc99")
+  column_spec(2:4, color ="black", background = "#a2cc99")
 
 ```
 
 ## Non-Markovian Elements
 
-- Augmenting the transition matrix with non-markovian submatrices can facilitate accurate counting and bookkeeping. 
+- Augmenting the transition matrix with non-markovian rows and columns can facilitate accurate counting and bookkeeping. 
 - Depending on the objective, can include non-markovian **accumulators** and/or **transition states**. 
 
 ## Non-Markovian Elements
@@ -178,8 +207,8 @@ Pexp <-
   round(., 3) %>%
   data.frame() %>% 
   rownames_to_column()  %>% 
-  cbind.data.frame(., trCVD = c(".", ".", ".", ".")) %>% 
-  cbind.data.frame(., accCVD = c(".", ".", ".", ".")) %>% 
+  cbind.data.frame(., trCVD = c(".", ".", ".")) %>% 
+  cbind.data.frame(., accCVD = c(".", ".", ".")) %>% 
   rbind(., c("trCVD",rep(".", params$n_states + 2))) %>% 
   rbind(., c("accCVD",rep(".", params$n_states + 2)))
 
@@ -188,10 +217,10 @@ Pexp %>%
   kable(col.names = c("",params$s_names,"trCVD","accCVD")) %>% 
   kable_styling() %>% 
   kable_paper() %>% 
-  column_spec(2:5, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
+  column_spec(2:4, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
                                                        ifelse(Pexp$rowname=="trCVD","#e8b0d1","#a29af5"))) %>% 
-  column_spec(6, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#e8b0d1","#a29af5")) %>% 
-  column_spec(7, color = "black", background = ifelse(Pexp$rowname %in% c("accCVD","trCVD",params$s_names),"#a29af5","#e8b0d1")) 
+  column_spec(5, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#e8b0d1","#a29af5")) %>% 
+  column_spec(6, color = "black", background = ifelse(Pexp$rowname %in% c("accCVD","trCVD",params$s_names),"#a29af5","#e8b0d1")) 
 
 ```
 
@@ -220,7 +249,7 @@ Rexp0 %>%
   kable(col.names = c("",params$s_names)) %>% 
   kable_styling() %>% 
   kable_paper() %>% 
-  column_spec(2:5, color ="black", background = "#a2cc99")
+  column_spec(2:4, color ="black", background = "#a2cc99")
 
 ```
 
@@ -247,10 +276,18 @@ R_
 :::
 - For now, just include zeros. 
 
+
+## Non-Markovian Accumulators 
+::: nonincremental
+- Next,  we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
+
+- For now, just include zeros. 
+:::
+
 ```{r, echo = TRUE}
 R <- 
-  cbind(R_,"accCVD" = c(0,0,0,0)) %>% 
-  rbind(.,"accCVD" = c(0,0,0,0,0))  
+  cbind(R_,"accCVD" = c(0,0,0)) %>% 
+  rbind(.,"accCVD" = c(0,0,0,0))  
 R
 ```
 
@@ -259,13 +296,13 @@ R
 - We then fill in the appropriate transition rate.
 :::
 ```{r, echo = TRUE}
-R["Healthy","accCVD"] = R["Healthy","CVD"]
+R["Healthy","accCVD"] = params$r_H_CVD
 R
 ```
 
 ## Non-Markovian Accumulators
 ::: nonincremental
-- Finally, we convert to the transition probability matrix. 
+- Embed using matrix exponentiation to obtain the transition probability matrix. 
 :::
 
 ```{r, echo = TRUE, eval = FALSE}
@@ -278,21 +315,292 @@ Pexp <-
   round(., 3) %>%
   data.frame() %>% 
   rownames_to_column()  %>% 
-  cbind.data.frame(., accCVD = round(unname(expm(R))[1:4,5],3)) %>% 
-  rbind(., c("accCVD",round(unname(expm(R))[5,],3)))
+  cbind.data.frame(., accCVD = round(unname(expm(R))[1:3,4],3)) %>% 
+  rbind(., c("accCVD",round(unname(expm(R))[4,],3)))
 
 
 Pexp %>% 
   kable(col.names = c("",params$s_names,"accCVD")) %>% 
   kable_styling() %>% 
   kable_paper() %>% 
-  column_spec(2:5, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
+  column_spec(2:4, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
                                                        ifelse(Pexp$rowname=="trCVD","#e8b0d1","#a29af5"))) %>% 
-  column_spec(6, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#a29af5","#a29af5")) 
+  column_spec(5, color = "black", background = ifelse(Pexp$rowname %in% c("trCVD",params$s_names),"#a29af5","#a29af5")) 
 
 ```
 
+## Non-Markovian Accumulators 
 
+- Note that the Markovian submatrix still has rows that sum to one.
+- Also note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy {{< fa arrow-right >}} CVD cell in lecture 2!
+  - Recall that this probability is the **marginal** probability of transition (i.e., all transitions into CVD state). So it's exactly what we want to accumulate!
+  
+
+```{r}
+R_ <- params$mR
+R <- lapply(R_, function(x) {
+    tmp_ <- rbind(cbind(x, "accCVD" = c(0,0,0)),"accCVD" = c(0,0,0,0))
+    tmp_["Healthy","accCVD"] = params$r_H_CVD
+    tmp_
+  })
+
+params$mR <- 
+  with(params,{
+
+    r_CVD_D <- hr_CVD * r_H_D
+    
+    R_ <- 
+      array(data = c(0, 0, 0,  
+                 r_H_CVD,0, 0,
+                 r_H_D,r_H_D + r_CVD_D,0,
+                 r_H_D, 0,0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+     R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      tmp_ <- rbind(cbind(x, "accCVD" = c(0,0,0)),"accCVD" = c(0,0,0,0))
+      tmp_["Healthy","accCVD"] = x["Healthy","CVD"]
+      tmp_ * cycle
+    })
+  R    
+  })
+
+
+params$mP <- 1:params$n_cycles %>% map(~(lapply(params$mR,expm)))
+
+sim_cohort <- function(params) {
+  
+ params$t_names %>% map(~({ 
+    tr_ <- t(c(params$n_cohort,rep(0,params$n_states))) 
+    
+    res <- do.call(rbind,lapply(params$mP, function(tp) {
+        tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_states+1)
+    }))
+    
+    res <- rbind(c(params$n_cohort,rep(0,params$n_states)),res) 
+    dimnames(res) <- list(paste0(c(0:params$n_cycles)), c(params$s_names,"accCVD"))
+    res
+  })) %>% 
+    set_names(params$t_names)
+}
+trace <- sim_cohort(params)
+
+```
+
+## How Many with CVD After 1 Years?
+
+- If we simply went based on state occupancy after one cycle, we'd understate the number of people who develop CVD.
+  - This is the number who *remain* in the CVD health state.
+  - Some had a compound transition and died within the cycle after they developed CVD!
+
+```{r}
+(trace[[1]]*100000) %>% head(n=2) %>% 
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  kable(col.names=c("cycle","Healthy","CVD","Dead","accCVD")) %>% 
+  kable_styling()
+```
+
+
+## How Many with CVD After 1 Years?
+::: nonincremental
+- The accumulator column tells us how many *total* people developed CVD. 
+:::
+
+```{r}
+(trace[[1]]*100000) %>% head(n=2) %>% 
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  kable(col.names=c("cycle","Healthy","CVD","Dead","accCVD")) %>% 
+  kable_styling()
+```
+
+## Transition States
+
+- What if we need to count how many people *transition* to a given state in a cycle?
+- For example, we may want to apply a one-time cost to a transition such as CVD {{< fa arrow-right >}} CVD death.
+- This type of transition is not immediately captured in the Markov trace. 
+  - Observed cycle-to-cycle change in death counts capture `CVD` {{< fa arrow-right >}} `CVD Death` as well as death from background causes. 
+  
+  
+## Transition States
+
+- Transition states are straightforward to capture as another element in the transition matrix. 
+- Similar to an accumulator state, but we allow for state exit after one cycle.
+- Amounts so simply zeroing out the `accCVD` {{< fa arrow-right >}} `accCVD` transition probability. 
+
+## Transition States
+
+We'll start with the original transition rate matrix: 
+
+```{r}
+params$mR <- 
+  with(params,{
+    r_CVD_D <- hr_CVD * r_H_D
+    R_ <- 
+      array(data = c(0, 0, 0,  
+                 r_H_CVD,0, 0,
+                 r_H_D,r_H_D + r_CVD_D,0,
+                 r_H_D, 0,0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+    R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      x * cycle
+    })
+  R    
+  })
+```
+
+```{r, echo = TRUE}
+R_ <- params$mR[["natural_history"]]
+R_
+```
+
+## Transition States
+::: nonincremental
+- Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
+:::
+- For now, just include zeros. 
+
+
+## Transition States
+::: nonincremental
+- Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
+:::
+- For now, just include zeros.  
+:::
+
+```{r, echo = TRUE}
+R <- 
+  cbind(R_,"trCVDDeath" = c(0,0,0)) %>% 
+  rbind(.,"trCVDDeath" = c(0,0,0,0))  
+R
+```
+
+## Transition States
+::: nonincremental
+- We then fill in the appropriate transition rate.
+:::
+```{r, echo = TRUE}
+R["CVD","trCVDDeath"] = params$hr_CVD * params$r_H_D
+R
+```
+
+## Transition States
+::: nonincremental
+- Embed using matrix exponentiation to obtain the transition probability matrix.
+- Note that we need to manually zero out the transition probability that keeps people in the transition state. 
+:::
+
+```{r, echo = TRUE, eval = FALSE}
+P = expm(R)  
+P["trCVDDeath","trCVDDeath"] = 0
+P
+```
+
+```{r}
+P = expm(R)  
+P["trCVDDeath","trCVDDeath"] = 0
+
+Pexp <-
+  P %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column()  
+
+
+Pexp %>% 
+  kable(col.names = c("",params$s_names,"trCVDDeath")) %>% 
+  kable_styling() %>% 
+  kable_paper() %>% 
+  column_spec(2:4, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
+                                                       ifelse(Pexp$rowname=="trCVDDeath","#e8b0d1","#a29af5"))) %>% 
+  column_spec(5, color = "black", background = ifelse(Pexp$rowname %in% c("trCVDDeath",params$s_names),"#e8b0d1","#e8b0d1")) 
+
+```
+
+## Transition States
+
+- Note that the Markovian submatrix still has rows that sum to one.
+- Also note that the transition state column captures transitions to death that occur from both the `Healthy` state (compound transitions) and the `CVD` state!
+
+  
+
+```{r}
+R_ <- params$mR
+R <- lapply(R_, function(x) {
+    tmp_ <- rbind(cbind(x, "trCVDDeath" = c(0,0,0)),"trCVDDeath" = c(0,0,0,0))
+    tmp_["CVD","trCVDDeath"] = params$hr_CVD * params$r_H_D
+    tmp_
+  })
+
+params$mR <- 
+  with(params,{
+
+    r_CVD_D <- hr_CVD * r_H_D
+    
+    R_ <- 
+      array(data = c(0, 0, 0,  
+                 r_H_CVD,0, 0,
+                 r_H_D,r_H_D + r_CVD_D,0,
+                 r_H_D, 0,0),
+          dim = c(n_states, n_states, n_treatments),
+                  dimnames = list(from = s_names,
+                                  to = s_names,
+                                  t_names))
+     R <- apply(R_,3, simplify=FALSE,function(x) {
+      diag(x) = -rowSums(x)
+      tmp_ <- rbind(cbind(x, "trCVDDeath" = c(0,0,0)),"trCVDDeath" = c(0,0,0,0))
+      tmp_["CVD","trCVDDeath"] = params$hr_CVD * params$r_H_D
+      tmp_ * cycle
+    })
+  R    
+  })
+
+params$mP <- 1:params$n_cycles %>% map(~({
+  lapply(params$mR,function(x) {
+    tmp_ <- expm(x)
+    tmp_["trCVDDeath","trCVDDeath"] = 0
+    tmp_
+    })
+ 
+  }))
+
+sim_cohort <- function(params) {
+  
+ params$t_names %>% map(~({ 
+    tr_ <- t(c(params$n_cohort,rep(0,params$n_states))) 
+    
+    res <- do.call(rbind,lapply(params$mP, function(tp) {
+        tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_states+1)
+    }))
+    
+    res <- rbind(c(params$n_cohort,rep(0,params$n_states)),res) 
+    dimnames(res) <- list(paste0(c(0:params$n_cycles)), c(params$s_names,"trCVDDeath"))
+    res
+  })) %>% 
+    set_names(params$t_names)
+}
+trace <- sim_cohort(params)
+
+```
+
+## How Many CVD Death Transitions Are There?
+
+```{r}
+(trace[[1]]*100000) %>% head(n=2) %>% 
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  kable(col.names=c("cycle","Healthy","CVD","Dead","trCVDDeath")) %>% 
+  kable_styling()
+```
+
+  
 #  Green et al. (2023) 
 
 ## Green et al. (2023)
