@@ -2790,7 +2790,7 @@
     "href": "slides/02_competing-events.html#quantified-absolute-error",
     "title": "Competing Risks",
     "section": "Quantified Absolute Error",
-    "text": "Quantified Absolute Error"
+    "text": "Quantified Absolute Error\n\n\nError after one cycle"
   },
   {
     "objectID": "slides/02_competing-events.html#quantified-relative-error",
@@ -2888,7 +2888,7 @@
     "href": "slides/02_competing-events.html#rate-misspecification-conclusions-1",
     "title": "Competing Risks",
     "section": "Rate Misspecification Conclusions",
-    "text": "Rate Misspecification Conclusions\n\nExisting publication’s decision thresholds are generally okay if they misspecified rates.\nCheck the maximum rate of an event as a rough estimate of potential bias."
+    "text": "Rate Misspecification Conclusions\n\nExisting publication’s decision thresholds are generally okay if they misspecified rates.\nCheck the maximum rate of an event as a rough estimate of potential bias.\nRule of thumb, on the error plot use the estimated rate for full time scale of simulation, i.e. one step is entire simulation."
   },
   {
     "objectID": "slides/02_competing-events.html#spot-the-problem-1yr-cycle-2",
@@ -2916,7 +2916,7 @@
     "href": "slides/02_competing-events.html#additional-notes",
     "title": "Competing Risks",
     "section": "Additional Notes",
-    "text": "Additional Notes\n\nDiscrete Event Simulation automatically handles competing events.\nPublished rates from clinical studies are usually adjusted for competing events (survival studies)."
+    "text": "Additional Notes\n\nDiscrete Event Simulation automatically handles competing events.\nMicrosimulation misspecification error interacts with the discrete time step truncation and increases this error!\nPublished rates from clinical studies are usually adjusted for competing events (the purpose of survival studies)."
   },
   {
     "objectID": "slides/02_competing-events.html#what-well-teach-you",
@@ -4310,5 +4310,19 @@
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
     "text": "Transition States\n\n\n\n\n\n\nHealthy\nCVD\nDead\ntunCVDy1\ntunCVDy2\n\n\n\n\nHealthy\n0.852\n0.131\n0.017\n0.139\n0.000\n\n\nCVD\n0.000\n0.896\n0.104\n0.000\n0.000\n\n\nDead\n0.000\n0.000\n1.000\n0.000\n0.000\n\n\ntunCVDy1\n0.000\n0.000\n0.000\n0.000\n0.896\n\n\ntunCVDy2\n0.000\n0.000\n0.000\n0.000\n0.000\n\n\n\n\n\n\n\n\nNote that the Markovian submatrix still has rows that sum to one."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#rate-misspecification-error-decision-threshold",
+    "href": "slides/02_competing-events.html#rate-misspecification-error-decision-threshold",
+    "title": "Competing Risks",
+    "section": "Rate Misspecification Error Decision Threshold",
+    "text": "Rate Misspecification Error Decision Threshold\n\nThe amount of error for a decision threshold is the difference in contour. In this example: \\(0.07 - 0.02 = 0.05\\)."
+  },
+  {
+    "objectID": "slides/02_competing-events.html#what-is-commonly-taught",
+    "href": "slides/02_competing-events.html#what-is-commonly-taught",
+    "title": "Competing Risks",
+    "section": "What Is Commonly Taught",
+    "text": "What Is Commonly Taught\n\nConvert each rate to a probability for the time step using \\(p = 1-\\exp(-rt)\\).\nPlace the probabilities within a transition matrix \\(\\mathbf{P}\\).\nDiagonal elements of \\(\\mathbf{P}\\): 1 - (row sum of nondiagonal elements)."
   }
 ]
