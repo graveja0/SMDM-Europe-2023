@@ -4162,55 +4162,111 @@
     "href": "slides/03_advanced-bookkeeping.html#transition-states-1",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\nTransition states are straightforward to capture as another element in the transition matrix.\nSimilar to an accumulator state, but we allow for state exit after one cycle.\nAmounts so simply zeroing out the accCVD  accCVD transition probability."
+    "text": "Transition States\n\nWhat if we need to count how many people transition to a given state in a cycle?\nFor example, we may want to apply a one-time cost to a transition such as CVD  CVD death.\nThis type of transition is not immediately captured in the Markov trace.\n\nObserved cycle-to-cycle change in death counts capture CVD  CVD Death as well as death from background causes."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-2",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-2",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\nWe’ll start with the original transition rate matrix:\n\nR_ &lt;- params$mR[[\"natural_history\"]]\nR_\n\n         to\nfrom      Healthy   CVD Dead\n  Healthy   -0.16  0.15 0.01\n  CVD        0.00 -0.11 0.11\n  Dead       0.00  0.00 0.00"
+    "text": "Transition States\n\nTransition states are straightforward to capture as another element in the transition matrix.\nSimilar to an accumulator state, but we require state exit after one cycle.\nAmounts so simply zeroing out the accCVD  accCVD transition probability."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-3",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-3",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\n\nNext, we will add both a column and a row for the transition state that tracks movement into the CVD Death state.\n\n\n\nFor now, just include zeros."
+    "text": "Transition States\nWe’ll start with the original transition rate matrix:\n\nR_ &lt;- params$mR[[\"natural_history\"]]\nR_\n\n         to\nfrom      Healthy   CVD Dead\n  Healthy   -0.16  0.15 0.01\n  CVD        0.00 -0.11 0.11\n  Dead       0.00  0.00 0.00"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-4",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-4",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\n\nNext, we will add both a column and a row for the transition state that tracks movement into the CVD Death state.\n\n\n\nFor now, just include zeros.\n:::\n\n\nR &lt;- \n  cbind(R_,\"trCVDDeath\" = c(0,0,0)) %&gt;% \n  rbind(.,\"trCVDDeath\" = c(0,0,0,0))  \nR\n\n           Healthy   CVD Dead trCVDDeath\nHealthy      -0.16  0.15 0.01          0\nCVD           0.00 -0.11 0.11          0\nDead          0.00  0.00 0.00          0\ntrCVDDeath    0.00  0.00 0.00          0"
+    "text": "Transition States\n\n\nNext, we will add both a column and a row for the transition state that tracks movement into the CVD Death state.\n\n\n\nFor now, just include zeros."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-5",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-5",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\n\nWe then fill in the appropriate transition rate.\n\n\n\nR[\"CVD\",\"trCVDDeath\"] = params$hr_CVD * params$r_H_D\nR\n\n           Healthy   CVD Dead trCVDDeath\nHealthy      -0.16  0.15 0.01        0.0\nCVD           0.00 -0.11 0.11        0.1\nDead          0.00  0.00 0.00        0.0\ntrCVDDeath    0.00  0.00 0.00        0.0"
+    "text": "Transition States\n\n\nNext, we will add both a column and a row for the transition state that tracks movement into the CVD Death state.\n\n\n\nFor now, just include zeros.\n\n\nR &lt;- \n  cbind(R_,\"trCVDDeath\" = c(0,0,0)) %&gt;% \n  rbind(.,\"trCVDDeath\" = c(0,0,0,0))  \nR\n\n           Healthy   CVD Dead trCVDDeath\nHealthy      -0.16  0.15 0.01          0\nCVD           0.00 -0.11 0.11          0\nDead          0.00  0.00 0.00          0\ntrCVDDeath    0.00  0.00 0.00          0"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-6",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-6",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\n\nEmbed using matrix exponentiation to obtain the transition probability matrix.\nNote that we need to manually zero out the transition probability that keeps people in the transition state.\n\n\n\nP = expm(R)  \nP[\"trCVDDeath\",\"trCVDDeath\"] = 0\nP\n\n\n\n\n\n\n\nHealthy\nCVD\nDead\ntrCVDDeath\n\n\n\n\nHealthy\n0.852\n0.131\n0.017\n0.007\n\n\nCVD\n0.000\n0.896\n0.104\n0.095\n\n\nDead\n0.000\n0.000\n1.000\n0.000\n\n\ntrCVDDeath\n0.000\n0.000\n0.000\n0.000"
+    "text": "Transition States\n\n\nWe then fill in the appropriate transition rate.\n\n\n\nR[\"CVD\",\"trCVDDeath\"] = params$hr_CVD * params$r_H_D\nR\n\n           Healthy   CVD Dead trCVDDeath\nHealthy      -0.16  0.15 0.01        0.0\nCVD           0.00 -0.11 0.11        0.1\nDead          0.00  0.00 0.00        0.0\ntrCVDDeath    0.00  0.00 0.00        0.0"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-states-7",
     "href": "slides/03_advanced-bookkeeping.html#transition-states-7",
     "title": "Advanced Bookkeeping",
     "section": "Transition States",
-    "text": "Transition States\n\nNote that the Markovian submatrix still has rows that sum to one.\nAlso note that the transition state column captures transitions to death that occur from both the Healthy state (compound transitions) and the CVD state!"
+    "text": "Transition States\n\n\nEmbed using matrix exponentiation to obtain the transition probability matrix.\nNote that we need to manually zero out the transition probability that keeps people in the transition state.\n\n\n\nP = expm(R)  \nP[\"trCVDDeath\",\"trCVDDeath\"] = 0\nP\n\n           Healthy     CVD     Dead trCVDDeath\nHealthy    0.85214 0.13107 0.016785  0.0068583\nCVD        0.00000 0.89583 0.104166  0.0946962\nDead       0.00000 0.00000 1.000000  0.0000000\ntrCVDDeath 0.00000 0.00000 0.000000  0.0000000"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#how-many-cvd-death-transitions-are-there",
     "href": "slides/03_advanced-bookkeeping.html#how-many-cvd-death-transitions-are-there",
     "title": "Advanced Bookkeeping",
     "section": "How Many CVD Death Transitions Are There?",
-    "text": "How Many CVD Death Transitions Are There?\n\n\n\n\n\ncycle\nHealthy\nCVD\nDead\ntrCVDDeath\n\n\n\n\n0\n100000\n0\n0.0\n0.00\n\n\n1\n85214\n13107\n1678.5\n685.83"
+    "text": "How Many CVD Death Transitions Are There?\n\n\nHypothetical cohort of 100,000.\n\n\n\nNote how there are some deaths in the first cycle, despite everyone starting healthy!\n\n\n\n\n\n\ncycle\nHealthy\nCVD\nDead\ntrCVDDeath\n\n\n\n\n0\n100000\n0\n0.0\n0.00\n\n\n1\n85214\n13107\n1678.5\n685.83"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#incorporating-a-one-time-cost",
+    "href": "slides/03_advanced-bookkeeping.html#incorporating-a-one-time-cost",
+    "title": "Advanced Bookkeeping",
+    "section": "Incorporating a one-time cost",
+    "text": "Incorporating a one-time cost\n\n\nCan define a cost “payoff” for trCVDDeath and apply as usual to calculate accumulated costs from a one-time CVD death cost.\n\n\n\n# Define the cost vector\ncost_payoff = c(\"Healthy\" = 0, \"CVD\" = 500, \"Dead\" = 0, \"trCVDDeath\" = 2000) \n\n# Sum up total costs in each cycle\ncosts_cycle = trace[[\"natural_history\"]][-1,] %*% cost_payoff\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48\ncycle_adj      &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_costs = cycle_adj(costs_cycle) \ntotal_costs\n\n[1] 5926.6"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#transition-states-8",
+    "href": "slides/03_advanced-bookkeeping.html#transition-states-8",
+    "title": "Advanced Bookkeeping",
+    "section": "Transition States",
+    "text": "Transition States\n\n\n\n\n\n\nHealthy\nCVD\nDead\ntrCVDDeath\n\n\n\n\nHealthy\n0.852\n0.131\n0.017\n0.007\n\n\nCVD\n0.000\n0.896\n0.104\n0.095\n\n\nDead\n0.000\n0.000\n1.000\n0.000\n\n\ntrCVDDeath\n0.000\n0.000\n0.000\n0.000\n\n\n\n\n\n\n\n\nNote that the Markovian submatrix still has rows that sum to one.\nAlso note that the transition state column captures transitions to death that occur from both the Healthy state (compound transitions) and the CVD state!"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-states-1",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-states-1",
+    "title": "Advanced Bookkeeping",
+    "section": "Tunnel States",
+    "text": "Tunnel States\n\nTunnel states are structured similarly to accumulators and transition states.\nOne additional complication: need to allow for tunnel state exit to background mortality (or other exit states)."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#accumulators-and-transition-states",
+    "href": "slides/03_advanced-bookkeeping.html#accumulators-and-transition-states",
+    "title": "Advanced Bookkeeping",
+    "section": "Accumulators and Transition States",
+    "text": "Accumulators and Transition States\n\nOccupy both ends of a spectrum.\nAccumulators: probability of remaining in accumulator state = 1.0.\nTransition States: probability of remaining in transition state = 0.0."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-states-2",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-states-2",
+    "title": "Advanced Bookkeeping",
+    "section": "Tunnel States",
+    "text": "Tunnel States\n\nProbability of remaining in tunnel: 0 &lt; p &lt; 1.\nReflects the idea that we don’t want to hold individuals “captive” in the tunnel state, as they can die from background causes, go into remission, etc."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-states-3",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-states-3",
+    "title": "Advanced Bookkeeping",
+    "section": "Tunnel States",
+    "text": "Tunnel States\n\nProcess for constructing is similar, with a “catch.”\nWe are already accounting for transitions to death in the primary Markovian submatrix.\nBut for accurate bookkeeping purposes (e.g., QALYs and costs) we still need to net them out."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-states-4",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-states-4",
+    "title": "Advanced Bookkeeping",
+    "section": "Tunnel States",
+    "text": "Tunnel States\n\nWe’ll do this by including a temporary “receiving bucket” in the rate matrix.\nThe receiving bucket is used for embedding, but can be discarded for the final transition probability matrix."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-states-5",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-states-5",
+    "title": "Advanced Bookkeeping",
+    "section": "Tunnel States",
+    "text": "Tunnel States\n\nSuppose we want to record a temporary 2 year (cycle) initial treatment cost once someone develops CVD.\nWe can set up a tunnel state to capture this."
   }
 ]

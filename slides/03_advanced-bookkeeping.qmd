@@ -253,6 +253,8 @@ Rexp0 %>%
 
 ```
 
+
+
 ## Total CVD Cases
 
 - Suppose we wanted to track the total number of people who develop CVD over the simulated time horizon.
@@ -262,6 +264,8 @@ Rexp0 %>%
 
 - We need some way to track everyone who moves into the CVD state. 
 - We can do this by adding a **non-markovian accumulator** to the rate matrix. 
+
+# 1. Accumulators
 
 ## Non-Markovian Accumulators
 We'll start with the original transition rate matrix: 
@@ -400,7 +404,9 @@ trace <- sim_cohort(params)
   data.frame() %>% 
   rownames_to_column() %>% 
   kable(col.names=c("cycle","Healthy","CVD","Dead","accCVD")) %>% 
-  kable_styling()
+  kable_styling() %>% 
+  column_spec(c(3), background = "#a2cc99") %>% 
+  column_spec(c(5), background = "#f7c6e6")
 ```
 
 
@@ -414,8 +420,11 @@ trace <- sim_cohort(params)
   data.frame() %>% 
   rownames_to_column() %>% 
   kable(col.names=c("cycle","Healthy","CVD","Dead","accCVD")) %>% 
-  kable_styling()
+  kable_styling() %>% 
+  column_spec(c(5), background = "#f7c6e6")
 ```
+
+# 2. Transition States
 
 ## Transition States
 
@@ -428,8 +437,8 @@ trace <- sim_cohort(params)
 ## Transition States
 
 - Transition states are straightforward to capture as another element in the transition matrix. 
-- Similar to an accumulator state, but we allow for state exit after one cycle.
-- Amounts so simply zeroing out the `accCVD` {{< fa arrow-right >}} `accCVD` transition probability. 
+- Similar to an accumulator state, but we require state exit after one cycle.
+- **Amounts so simply zeroing out the `accCVD` {{< fa arrow-right >}} `accCVD` transition probability.**
 
 ## Transition States
 
@@ -464,6 +473,7 @@ R_
 ## Transition States
 ::: nonincremental
 - Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
+
 :::
 - For now, just include zeros. 
 
@@ -472,8 +482,9 @@ R_
 ::: nonincremental
 - Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
 :::
+
 - For now, just include zeros.  
-:::
+
 
 ```{r, echo = TRUE}
 R <- 
@@ -497,11 +508,14 @@ R
 - Note that we need to manually zero out the transition probability that keeps people in the transition state. 
 :::
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE, eval = TRUE}
+#| code-line-numbers: "2"
 P = expm(R)  
 P["trCVDDeath","trCVDDeath"] = 0
 P
 ```
+
+## Transition States
 
 ```{r}
 P = expm(R)  
@@ -524,13 +538,10 @@ Pexp %>%
 
 ```
 
-## Transition States
-
 - Note that the Markovian submatrix still has rows that sum to one.
 - Also note that the transition state column captures transitions to death that occur from both the `Healthy` state (compound transitions) and the `CVD` state!
 
   
-
 ```{r}
 R_ <- params$mR
 R <- lapply(R_, function(x) {
@@ -592,6 +603,12 @@ trace <- sim_cohort(params)
 
 ## How Many CVD Death Transitions Are There?
 
+::: nonincremental
+- Hypothetical cohort of 100,000.
+:::
+- Note how there are some deaths in the first cycle, despite everyone starting healthy!
+
+
 ```{r}
 (trace[[1]]*100000) %>% head(n=2) %>% 
   data.frame() %>% 
@@ -600,7 +617,64 @@ trace <- sim_cohort(params)
   kable_styling()
 ```
 
-  
+## Incorporating a one-time cost
+
+::: nonincremental
+- Can define a cost "payoff" for `trCVDDeath` and apply as usual to calculate accumulated costs from a one-time CVD death cost. 
+:::
+
+```{r, echo = TRUE}
+# Define the cost vector
+cost_payoff = c("Healthy" = 0, "CVD" = 500, "Dead" = 0, "trCVDDeath" = 2000) 
+
+# Sum up total costs in each cycle
+costs_cycle = trace[["natural_history"]][-1,] %*% cost_payoff
+
+# Function for cycle correction (alternative Simpson's method)
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x) sum(alt_simp_coef(length(x)) * x)
+
+total_costs = cycle_adj(costs_cycle) 
+total_costs
+```
+
+# 3. Tunnel States
+
+## Tunnel States
+
+- Tunnel states are structured similarly to accumulators and transition states. 
+- One additional complication: need to allow for tunnel state exit to background mortality (or other exit states).
+
+
+## Accumulators and Transition States
+
+- Occupy both ends of a spectrum.
+- **Accumulators**:  probability of remaining in accumulator state = 1.0.
+- **Transition States**: probability of remaining in transition state = 0.0.
+
+## Tunnel States
+
+- Probability of remaining in tunnel: 0 < p < 1. 
+- Reflects the idea that we don't want to hold individuals "captive" in the tunnel state, as they can die from background causes, go into remission, etc. 
+
+## Tunnel States
+
+- Process for constructing is similar, with a "catch."
+- We are already accounting for transitions to death in the primary Markovian submatrix.
+- But for accurate bookkeeping purposes (e.g., QALYs and costs) we still need to net them out.
+
+## Tunnel States
+
+- We'll do this by including a temporary "receiving bucket" in the rate matrix. 
+- The receiving bucket is used for embedding, but can be discarded for the final transition probability matrix.
+
+## Tunnel States
+
+- Suppose we want to record a temporary 2 year (cycle) initial treatment cost once someone develops CVD.
+- We can set up a tunnel state to capture this. 
+
+
+
 #  Green et al. (2023) 
 
 ## Green et al. (2023)
