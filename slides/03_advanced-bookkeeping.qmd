@@ -20,9 +20,9 @@ source("./manifest.r")
 
 ## Learning Objectives
 
-- Establish the transition rate matrix as the central "hub" of the modeling process. 
-- Include transition states and accumulators to accurately track and count events, costs, and QALYs.
-- Backwards convert an existing Markov model to facilitate new health states, new strategies, or new settings. 
+-   Establish the transition rate matrix as the central "hub" of the modeling process.
+-   Include transition states and accumulators to accurately track and count events, costs, and QALYs.
+-   Backwards convert an existing Markov model to facilitate new health states, new strategies, or new settings.
 
 # Review of Key Concepts
 
@@ -38,28 +38,26 @@ source("./manifest.r")
 
 ## Transition Rate Matrix {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
 
-- The "workshop" where you can include additional health states, new evidence, change cycle lengths, etc.
-- Ensures that results obtained via discrete time Markov model will match those under an identical model but different method (e.g., DES). 
-
+-   The "workshop" where you can include additional health states, new evidence, change cycle lengths, etc.
+-   Ensures that results obtained via discrete time Markov model will match those under an identical model but different method (e.g., DES).
 
 ## What they didn't teach you {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
 
-- The transition rate matrix is also **essential** for accurate and transparent accounting of costs and QALYs.
+-   The transition rate matrix is also **essential** for accurate and transparent accounting of costs and QALYs.
 
 ## What we'll teach you {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
 
-- We'll demonstrate how to augment the matrix with non-Markovian elements using the basic CVD model from the last session. 
-- We'll show you how to backwards convert an existing transition probability matrix into a continuous generator (rate) matrix. 
-- We'll then replicate and extend a recent didactic model (Green et al. 2023) in an applied case study using these methods. 
+-   We'll demonstrate how to augment the matrix with non-Markovian elements using the basic CVD model from the last session.
+-   We'll show you how to backwards convert an existing transition probability matrix into a continuous generator (rate) matrix.
+-   We'll then replicate and extend a recent didactic model (Green et al. 2023) in an applied case study using these methods.
 
 # CVD Model
 
 ## CVD Model
 
 ::: nonincremental
-- Let's quickly build up the basic CVD  model again. 
+-   Let's quickly build up the basic CVD model again.
 :::
-
 
 ## CVD Model
 
@@ -80,7 +78,6 @@ digraph G {
     Dead -> Dead;
   }
 ```
-
 
 ## Parameterize
 
@@ -144,28 +141,28 @@ expm(params$mR[["natural_history"]])
 
 ## Advanced Bookkeeping
 
-1. Given compound transitions, how can we track the total number of people who develop CVD?
-2. What if there is a cost associated with a single transition type (e.g., CVD {{< fa arrow-right >}} CVD death)?
-3. What if we want to include a tunnel state to capture transient utility changes after contracting CVD or experiencing an acute event? 
+1.  Given compound transitions, how can we track the total number of people who develop CVD?
+2.  What if there is a cost associated with a single transition type (e.g., CVD {{< fa arrow-right >}} CVD death)?
+3.  What if we want to include a tunnel state to capture transient utility changes after contracting CVD or experiencing an acute event?
 
 ## Advanced Bookkeeping
 
 Augmenting the transition matrix with non-markovian elements can address each question:
 
-1. **Accumulator states** to count total number of people who enter a health state.
-2. **Transition states** to count the number of people who transition into a state in a given cycle.
-3. **Tunnel states** to capture transient events (e.g., 2 cycle utility decrement, etc.)
+1.  **Accumulator states** to count total number of people who enter a health state.
+2.  **Transition states** to count the number of people who transition into a state in a given cycle.
+3.  **Tunnel states** to capture transient events (e.g., 2 cycle utility decrement, etc.)
 
 ## Markovian Transition Matrices
 
-- Traditional Markov modeling approaches restrict to a transition probability matrix.
-- Row sums all equal 1.0. 
+-   Traditional Markov modeling approaches restrict to a transition probability matrix.
+-   Row sums all equal 1.0.
 
 ## Markovian Transition Matrices
 
 ::: nonincremental
-- Traditional Markov modeling approaches restrict to a transition probability matrix.
-- Row sums all equal 1.0. 
+-   Traditional Markov modeling approaches restrict to a transition probability matrix.
+-   Row sums all equal 1.0.
 :::
 
 ```{r, echo = FALSE}
@@ -186,18 +183,18 @@ Pexp0 %>%
 
 ## Non-Markovian Elements
 
-- Augmenting the transition matrix with non-markovian rows and columns can facilitate accurate counting and bookkeeping. 
-- Depending on the objective, can include non-markovian **accumulators** and/or **transition states**. 
+-   Augmenting the transition matrix with non-markovian rows and columns can facilitate accurate counting and bookkeeping.
+-   Depending on the objective, can include non-markovian **accumulators** and/or **transition states**.
 
 ## Non-Markovian Elements
 
-- **Accumulator**: tracks the total number of individuals who have entered a given state up until a given cycle (even if they moved out of the state later). 
+-   **Accumulator**: tracks the total number of individuals who have entered a given state up until a given cycle (even if they moved out of the state later).
 
 ## Non-Markovian Elements
 
-- **Transition state**: tracks the total number of individuals who enter a given state in a given cycle. 
-  - Can construct as a **tunnel state** if you move them through to the next state (or exit for some other reason like background mortality). 
-  - But you don't have to do this. Depending on objective, you could just count the total number who enter the state to count up transitory costs, etc. 
+-   **Transition state**: tracks the total number of individuals who enter a given state in a given cycle.
+    -   Can construct as a **tunnel state** if you move them through to the next state (or exit for some other reason like background mortality).
+    -   But you don't have to do this. Depending on objective, you could just count the total number who enter the state to count up transitory costs, etc.
 
 ## Where we're headed
 
@@ -228,14 +225,15 @@ Pexp %>%
 
 ## Augmenting the Transition Matrix
 
-- As noted earlier, all roads begin from the transition rate matrix. 
-- The way in which we construct the Markovian components is the same.
-  - Place rates as appropriate.
-  - Diagonal of Markovian elements is the negative sum of the other row elements.
+-   As noted earlier, all roads begin from the transition rate matrix.
+-   The way in which we construct the Markovian components is the same.
+    -   Place rates as appropriate.
+    -   Diagonal of Markovian elements is the negative sum of the other row elements.
 
 ## Augmenting the Transition Matrix
+
 ::: nonincremental
-- Rate matrix for basic CVD model
+-   Rate matrix for basic CVD model
 :::
 
 ```{r, echo = FALSE}
@@ -253,39 +251,41 @@ Rexp0 %>%
 
 ```
 
+## Total CVD Cases
 
+-   Suppose we wanted to track the total number of people who develop CVD over the simulated time horizon.
+-   We can't do this accurately using CVD state occupancy in the Markov trace due to compound transitions.
 
 ## Total CVD Cases
 
-- Suppose we wanted to track the total number of people who develop CVD over the simulated time horizon.
-- We can't do this accurately using CVD state occupancy in the Markov trace due to compound transitions.
-
-## Total CVD Cases
-
-- We need some way to track everyone who moves into the CVD state. 
-- We can do this by adding a **non-markovian accumulator** to the rate matrix. 
+-   We need some way to track everyone who moves into the CVD state.
+-   We can do this by adding a **non-markovian accumulator** to the rate matrix.
 
 # 1. Accumulators
 
 ## Non-Markovian Accumulators
-We'll start with the original transition rate matrix: 
+
+We'll start with the original transition rate matrix:
+
 ```{r, echo = TRUE}
 R_ <- params$mR[["natural_history"]]
 R_
 ```
 
-## Non-Markovian Accumulators 
+## Non-Markovian Accumulators
+
 ::: nonincremental
-- Next,  we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
+-   Next, we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
 :::
-- For now, just include zeros. 
 
+-   For now, just include zeros.
 
-## Non-Markovian Accumulators 
+## Non-Markovian Accumulators
+
 ::: nonincremental
-- Next,  we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
+-   Next, we will add both a column *and* a row for the accumulator that tracks movement into the CVD health state.
 
-- For now, just include zeros. 
+-   For now, just include zeros.
 :::
 
 ```{r, echo = TRUE}
@@ -296,8 +296,9 @@ R
 ```
 
 ## Non-Markovian Accumulators
+
 ::: nonincremental
-- Next fill in the appropriate transition rate.
+-   Next fill in the appropriate transition rate.
 :::
 
 ```{r, echo = TRUE}
@@ -307,16 +308,16 @@ R
 ```
 
 ## Non-Markovian Accumulators
-::: nonincremental
-- Embed using matrix exponentiation to obtain the transition probability matrix. 
-:::
-- The transition matrix now includes a Markovian submatrix (green) and a non-markovian accumulator component (purple).
 
+::: nonincremental
+-   Embed using matrix exponentiation to obtain the transition probability matrix.
+:::
+
+-   The transition matrix now includes a Markovian submatrix (green) and a non-markovian accumulator component (purple).
 
 ```{r, echo = TRUE, eval = FALSE}
 expm(R)  
 ```
-
 
 ```{r}
 Pexp <-
@@ -339,13 +340,11 @@ Pexp %>%
 
 ```
 
+## Non-Markovian Accumulators
 
-## Non-Markovian Accumulators 
-
-- Note that the Markovian submatrix still has rows that sum to one.
-- Also note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy {{< fa arrow-right >}} CVD cell in lecture 2!
-  - Recall that this probability is the **marginal** probability of transition (i.e., all transitions into CVD state). So it's exactly what we want to accumulate!
-  
+-   Note that the Markovian submatrix still has rows that sum to one.
+-   Also note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy {{< fa arrow-right >}} CVD cell in lecture 2!
+    -   Recall that this probability is the **marginal** probability of transition (i.e., all transitions into CVD state). So it's exactly what we want to accumulate!
 
 ```{r}
 R_ <- params$mR
@@ -402,9 +401,9 @@ trace <- sim_cohort(params)
 
 ## How Many with CVD After 1 Years?
 
-- If we simply went based on state occupancy after one cycle, we'd understate the number of people who develop CVD.
-  - This is the number who *remain* in the CVD health state.
-  - Some had a compound transition and died within the cycle after they developed CVD!
+-   If we simply went based on state occupancy after one cycle, we'd understate the number of people who develop CVD.
+    -   This is the number who *remain* in the CVD health state.
+    -   Some had a compound transition and died within the cycle after they developed CVD!
 
 ```{r}
 (trace[[1]]*100000) %>% head(n=2) %>% 
@@ -416,10 +415,10 @@ trace <- sim_cohort(params)
   column_spec(c(5), background = "#f7c6e6")
 ```
 
-
 ## How Many with CVD After 1 Years?
+
 ::: nonincremental
-- The accumulator column tells us how many *total* people developed CVD. 
+-   The accumulator column tells us how many *total* people developed CVD.
 :::
 
 ```{r}
@@ -435,21 +434,20 @@ trace <- sim_cohort(params)
 
 ## Transition States
 
-- What if we need to count how many people *transition* to a given state in a cycle?
-- For example, we may want to apply a one-time cost to a transition such as CVD {{< fa arrow-right >}} CVD death.
-- This type of transition is not immediately captured in the Markov trace. 
-  - Observed cycle-to-cycle change in death counts capture `CVD` {{< fa arrow-right >}} `CVD Death` as well as death from background causes. 
-  
-  
-## Transition States
-
-- Transition states are straightforward to capture as another element in the transition matrix. 
-- Similar to an accumulator state, but we require state exit after one cycle.
-- **Amounts so simply zeroing out the `accCVD` {{< fa arrow-right >}} `accCVD` transition probability.**
+-   What if we need to count how many people *transition* to a given state in a cycle?
+-   For example, we may want to apply a one-time cost to a transition such as CVD {{< fa arrow-right >}} CVD death.
+-   This type of transition is not immediately captured in the Markov trace.
+    -   Observed cycle-to-cycle change in death counts capture `CVD` {{< fa arrow-right >}} `CVD Death` as well as death from background causes.
 
 ## Transition States
 
-We'll start with the original transition rate matrix: 
+-   Transition states are straightforward to capture as another element in the transition matrix.
+-   Similar to an accumulator state, but we require state exit after one cycle.
+-   **Amounts so simply zeroing out the `accCVD`** {{< fa arrow-right >}} **`accCVD` transition probability.**
+
+## Transition States
+
+We'll start with the original transition rate matrix:
 
 ```{r}
 params$mR <- 
@@ -478,17 +476,17 @@ R_
 ```
 
 ## Transition States
+
 ::: nonincremental
-- Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
+-   Next, we will add both a column *and* a row for the transition state that tracks movement into the CVD Death state.
 :::
 
 ## Transition States
+
 ::: nonincremental
-- Next,  we will add both a column *and* a row for the transition state that tracks movement into the CVD Death  state.
-- For now, just include zeros.  
+-   Next, we will add both a column *and* a row for the transition state that tracks movement into the CVD Death state.
+-   For now, just include zeros.\
 :::
-
-
 
 ```{r, echo = TRUE}
 R <- 
@@ -498,18 +496,21 @@ R
 ```
 
 ## Transition States
+
 ::: nonincremental
-- We then fill in the appropriate transition rate.
+-   We then fill in the appropriate transition rate.
 :::
+
 ```{r, echo = TRUE}
 R["CVD","trCVDDeath"] = params$hr_CVD * params$r_H_D
 R
 ```
 
 ## Transition States
+
 ::: nonincremental
-- Embed using matrix exponentiation to obtain the transition probability matrix.
-- Note that we need to manually zero out the transition probability that keeps people in the transition state. 
+-   Embed using matrix exponentiation to obtain the transition probability matrix.
+-   Note that we need to manually zero out the transition probability that keeps people in the transition state.
 :::
 
 ```{r, echo = TRUE, eval = TRUE}
@@ -542,10 +543,9 @@ Pexp %>%
 
 ```
 
-- Note that the Markovian submatrix still has rows that sum to one.
-- Also note that the transition state column captures transitions to death that occur from both the `Healthy` state (compound transitions) and the `CVD` state!
+-   Note that the Markovian submatrix still has rows that sum to one.
+-   Also note that the transition state column captures transitions to death that occur from both the `Healthy` state (compound transitions) and the `CVD` state!
 
-  
 ```{r}
 R_ <- params$mR
 R <- lapply(R_, function(x) {
@@ -608,10 +608,10 @@ trace <- sim_cohort(params)
 ## How Many CVD Death Transitions Are There?
 
 ::: nonincremental
-- Hypothetical cohort of 100,000.
+-   Hypothetical cohort of 100,000.
 :::
-- Note how there are some deaths in the first cycle, despite everyone starting from healthy!
 
+-   Note how there are some deaths in the first cycle, despite everyone starting from healthy!
 
 ```{r}
 tmp <- (trace[[1]]*100000) %>% head(n=2) %>% 
@@ -626,7 +626,7 @@ tmp %>%
 ## Incorporating a one-time cost
 
 ::: nonincremental
-- Can define a cost "payoff" for `trCVDDeath` and apply as usual to calculate accumulated costs from a one-time CVD death cost. 
+-   Can define a cost "payoff" for `trCVDDeath` and apply as usual to calculate accumulated costs from a one-time CVD death cost.
 :::
 
 ```{r, echo = TRUE}
@@ -648,41 +648,39 @@ total_costs
 
 ## Tunnel States
 
-- Tunnel states are structured similarly to accumulators and transition states. 
-- One additional complication: need to allow for tunnel state exit to background mortality (or other exit states).
-
+-   Tunnel states are structured similarly to accumulators and transition states.
+-   One additional complication: need to allow for tunnel state exit to background mortality (or other exit states).
 
 ## Accumulators and Transition States
 
-- Occupy both ends of a spectrum.
-- **Accumulators**:  probability of remaining in accumulator state = 1.0.
-- **Transition States**: probability of remaining in transition state = 0.0.
+-   Occupy both ends of a spectrum.
+-   **Accumulators**: probability of remaining in accumulator state = 1.0.
+-   **Transition States**: probability of remaining in transition state = 0.0.
 
 ## Tunnel States
 
-- Probability of remaining in tunnel: 0 < p < 1. 
-- Reflects the idea that most will remain in the tunnel for the cycle, but some might leave due to secular death, transition back to a less severe disease state (e.g., remission), etc.
+-   Probability of remaining in tunnel: 0 \< p \< 1.
+-   Reflects the idea that most will remain in the tunnel for the cycle, but some might leave due to secular death, transition back to a less severe disease state (e.g., remission), etc.
 
 ## Tunnel States
 
-- Process for constructing is similar, with a "catch."
-- We are already accounting for transitions to death in the primary Markovian submatrix.
-- But for accurate bookkeeping purposes (e.g., QALYs and costs) we still need to net them out.
+-   Process for constructing is similar, with a "catch."
+-   We are already accounting for transitions to death in the primary Markovian submatrix.
+-   But for accurate bookkeeping purposes (e.g., QALYs and costs) we still need to net them out.
 
 ## Tunnel States
 
-- We'll do this by including a temporary "receiving bucket" in the rate matrix. 
-- The receiving bucket is used for embedding, but can be discarded for the final transition probability matrix.
+-   We'll do this by including a temporary "receiving bucket" in the rate matrix.
+-   The receiving bucket is used for embedding, but can be discarded for the final transition probability matrix.
 
 ## Tunnel States
 
-- Suppose we want to record a temporary 2 year (cycle) initial treatment cost once someone develops CVD.
-- We can set up a tunnel state to capture this. 
+-   Suppose we want to record a temporary 2 year (cycle) initial treatment cost once someone develops CVD.
+-   We can set up a tunnel state to capture this.
 
-## Tunnel State 
+## Tunnel State
 
-We'll start with the original transition rate matrix: 
-
+We'll start with the original transition rate matrix:
 
 ```{r}
 params$mR <- 
@@ -715,14 +713,14 @@ R_
 
 ## Tunnel State
 
-- Next,  we will add columns *and* rows for the tunnel states. 
-- Given that our model has an annual cycle, and the tunnel lasts two years, we need to add two columns and two rows **PLUS** a receiving bucket. So three new rows and columns. 
-- If we had a monthly time cycle, we'd need to add 25 ... 
-
+-   Next, we will add columns *and* rows for the tunnel states.
+-   Given that our model has an annual cycle, and the tunnel lasts two years, we need to add two columns and two rows **PLUS** a receiving bucket. So three new rows and columns.
+-   If we had a monthly time cycle, we'd need to add 25 ...
 
 ## Tunnel States
+
 ::: nonincremental
-- For now, just include zeros.  
+-   For now, just include zeros.\
 :::
 
 ```{r, echo = TRUE}
@@ -733,18 +731,21 @@ R
 ```
 
 ## Tunnel State
+
 ::: nonincremental
-- We then fill in the appropriate transition rate for entry into the tunnel. 
+-   We then fill in the appropriate transition rate for entry into the tunnel.
 :::
+
 ```{r, echo = TRUE}
 R["Healthy","tunCVDy1"] = R["Healthy","CVD"]
 R
 ```
 
 ## Tunnel State
+
 ::: nonincremental
-- Embed using matrix exponentiation to obtain the initial transition probability matrix.
-- Note that we need to TK 
+-   Embed using matrix exponentiation to obtain the initial transition probability matrix.
+-   Note that we need to TK
 :::
 
 ```{r, echo = TRUE, eval = TRUE}
@@ -785,10 +786,8 @@ Pexp %>%
 
 ```
 
-- Note that the Markovian submatrix still has rows that sum to one.
+-   Note that the Markovian submatrix still has rows that sum to one.
 
-
-  
 ```{r}
 R_ <- params$mR
 R <- lapply(R_, function(x) {
@@ -855,10 +854,7 @@ trace <- sim_cohort(params)
 
 ```
 
-
-
-
-#  Green et al. (2023) 
+# Green et al. (2023)
 
 ## Green et al. (2023)
 
@@ -879,13 +875,13 @@ digraph G {
 
 ## Two Strategies
 
-1. Without drug
-2. Drug that confers a 50% reduction in the probability of transitioning to progressive disease. 
+1.  Without drug
+2.  Drug that confers a 50% reduction in the probability of transitioning to progressive disease.
 
 ## Complicating Factors
 
-- Higher rate of death from progressive disease, with a cost ($1,000) associated with it. 
-- But can also die of background causes from progressive disease. 
+-   Higher rate of death from progressive disease, with a cost (\$1,000) associated with it.
+-   But can also die of background causes from progressive disease.
 
 ## Parameterize
 
@@ -974,5 +970,3 @@ fn_mPt <- function(t, params) {
   })
 }
 ```
-
-

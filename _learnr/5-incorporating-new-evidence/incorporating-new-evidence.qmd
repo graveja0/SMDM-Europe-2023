@@ -1,0 +1,243 @@
+---
+title: "Afternoon Case Study"
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introduction
+
+The objective of this case study is to work through the process of constructing and then amending an existing Markov model to incorporate new evidence, health states, etc.
+
+```{r setup, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(demography)
+library(MortalityLaws)
+library(directlabels)
+library(ggsci)
+library(hrbrthemes)
+library(MASS)
+library(mgcv)
+library(patchwork)
+library(knitr)
+library(kableExtra)
+library(here)
+library(ggsci)
+library(expm)
+library(glue)
+select =dplyr::select
+options("scipen" = 100, "digits" = 5)
+
+alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+
+```
+
+# Parameterize
+
+```{r parameterize}
+params = list(
+    t_names = c("without_drug", "with_drug"),   # Treatment names
+    n_treatments =2,                            # Number of treatments
+    s_names  = c("Asympt", "Progressive", 
+                 "DeadCause","Dead"),           # State names
+    n_states = 4,                               # Number of states
+    n_cohort =1000,                             # Cohort size
+    cycle_length = 1,                                  # Cycle length
+    initial_age = 55,                           # Cohort starting age
+    effect = 0.5,                               # Treatment Effect (drug) 
+    cAsymp =500,                                # Cost of asympomatic state
+    cDeath =1000,                               # cost of death (progressive disease state only)
+    cDrug =1000,                                # Cost of drug
+    cProg =3000,                                # Cycle cost of progressive disease
+    uAsymp =0.95,                               # Asymptomatic state utility
+    uProg =0.75,                                # Progressive disease state utility
+    oDr = 0,                                    # Discount rate (QALYs)
+    cDr = 0,                                    # Discount rate (costs)
+    tpDcm =0.15,                                # Death from progressive disease trans prob
+    tpProg =0.01,                               # Transition prob: progressive disease
+    tpDn =0.0379                                # Background mortality transition prob
+)
+params <- modifyList(params,list(n_cycles = 46/params$cycle))
+```
+
+## Markovian Transition Rate Matrix
+
+```{r temp}
+attach(params)
+t  = 1:n_cycles
+tt = 1
+```
+
+```{r mR}
+
+fn_mRt <- function(t, params) {
+  with(params, {
+    lapply(t, function(tt) {
+      current_age <- initial_age  + (tt) * cycle_length - 1
+      cycle = (tt) * cycle_length
+      
+      # Get background mortality rate
+      tpDn_lookup <-
+        c(
+          "(34,44]" = 0.0017,
+          "(44,54]" = 0.0044,
+          "(54,64]" = 0.0138,
+          "(64,74]" = 0.0379,
+          "(74,84]" = 0.0912,
+          "(84,100]" = 0.1958
+        )
+       age_grp <- cut(current_age, breaks = c(34,44,54,64,74,84,100))
+       tpDn <- tpDn_lookup[age_grp]
+       
+       tpProg_ <- tpProg * (cycle)
+       
+       # Convert supplied probabilities back to rates. 
+       rProg = -log(1 - tpProg_)
+       rProgDrug = -log(1-(tpProg_*(1-effect)))
+       rDcm = -log(1 - tpDcm)
+       rDn = -log(1 - tpDn)
+       
+       # Define off-diagonal elements of rate matrix
+       mR_ <- 
+            array(data = c(
+                           0, 0, 0, 0,   
+                           rProg, 0, 0, 0,
+                           0, rDcm, 0, 0,
+                           rDn, rDn, 0, 0,
+                           
+                           0, 0, 0, 0,
+                           rProgDrug, 0, 0, 0,
+                           0, rDcm, 0, 0,
+                           rDn, rDn, 0, 0),
+                  
+                          dim = c(n_states, n_states, n_treatments),
+                          dimnames = list(from = s_names,
+                                          to = s_names,
+                                          t_names))
+       # Balance out rate matrix
+       mR <- apply(mR_,3,function(x){
+            diag(x) <- -rowSums(x)
+            x
+        },simplify=FALSE)
+
+    })
+  })
+}
+
+params$mR = fn_mRt(1:params$n_cycles, params)
+
+```
+
+## Transition Probability Matrix
+
+```{r}
+params$mP <- 
+    lapply(params$mR,function(x) {
+        lapply(x,expm)
+    })
+```
+
+# Markov Trace
+
+```{r}
+sim_cohort <- function(params) {
+
+ params$t_names %>% map(~({ 
+    tr_ <- t(c(params$n_cohort,rep(0,params$n_states-1))) 
+    
+    res <- do.call(rbind,lapply(params$mP, function(tp) {
+        tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_states)
+    }))
+    
+    res <- rbind(c(params$n_cohort,rep(0,params$n_states-1)),res) 
+    dimnames(res) <- list(paste0(c(0:params$n_cycles)), c(params$s_names))
+    matrix(unlist(res),ncol=params$n_states)
+  })) %>% 
+    set_names(params$t_names) 
+}
+trace <- sim_cohort(params)
+```
+
+# Outcomes
+
+## Survival 
+
+```{r}
+survival_payoff <- c("Asympt" = 1, "Progressive" = 1, "DeadCause" = 0, "Dead" = 0 )
+survival = lapply(trace,function(tr) (tr / params$n_cohort)%*% survival_payoff)
+data.frame(survival) %>% 
+    mutate(cycle = row_number()-1) %>% 
+    gather(strategy, value,-cycle) %>% 
+    tibble() %>% 
+    ggplot(aes(x = cycle, y = value, colour = strategy)) + geom_step() + 
+    hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+    ggsci::scale_colour_aaas() + 
+    directlabels::geom_dl(method = list("smart.grid"),aes(label = strategy)) + 
+    theme(legend.position = "none") + 
+    labs(x = "Cycle", y = "Survival")
+```
+
+## Life Expectancy
+
+```{r}
+data.frame(lapply(survival,sum))
+```
+
+## Prevalence 
+
+```{r}
+prev_progressive = c(0,1,0,0)
+prevalence_progressive = lapply(trace,function(tr) ((tr / params$n_cohort) %*% prev_progressive) / ((tr / params$n_cohort) %*% c(1,1,0,0)))  
+
+prevalence_progressive %>% 
+    data.frame() %>% 
+    mutate(cycle = row_number()-1) %>% 
+    gather(strategy, value,-cycle) %>% 
+    tibble() %>% 
+    ggplot(aes(x = cycle, y = value, colour = strategy)) + geom_step() + 
+    hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+    ggsci::scale_colour_aaas() + 
+    directlabels::geom_dl(method = list("smart.grid"),aes(label = strategy)) + 
+    theme(legend.position = "none") + 
+    labs(x = "Cycle", y = "Prevalance")
+```
+
+## State Payoffs
+
+### Utility Payoffs
+
+-   State occupancy in the Asymtomatic state confers a utility accrual of `r params$uAsymp`.
+-   State occupancy in the Progressive disease state confers a utility of `r params$uProg`.
+
+```{r u_payoff}
+u_payoff <- with(params,{
+    array(c("Asympt" = uAsymp, "Progressive" = uProg, "DeadCause" = 0, "Dead" = 0, 
+            "Asympt" = uAsymp, "Progressive" = uProg,  "DeadCause" = 0, "Dead" = 0 ),
+          dim = c(1, n_states, n_treatments),
+          dimnames = list(from = "cost",
+                          to = c(s_names),
+                          t_names))
+})
+u_payoff
+```
+
+### Cost Payoffs
+
+-   For the **No Drug** strategy, tate occupancy in the Asymptomatic state confers a cost of `r params$cAsymp` per cycle.
+-   For the **With Drug** strategy, tate occupancy in the Asymptomatic state confers a cost of `r params$cAsymp + params$cDrug` per cycle.
+-   State occupancy in the Progressive disease state confers a cost of `r params$cProg` per cycle.
+
+```{r c_payoff}
+c_payoff <- with(params,{
+    array(c("Asympt" = cAsymp, "Progressive" = cProg, "DeadCause" = 0 , "Dead" = 0, 
+            "Asympt" = cAsymp+cDrug, "Progressive" = cProg, "DeadCause" = 0 , "Dead" = 0 ),
+          dim = c(1, n_states, n_treatments),
+          dimnames = list(from = "cost",
+                          to = c(s_names),
+                          t_names))
+})
+c_payoff
+```
+
+
+
