@@ -666,7 +666,7 @@ laws <-
     mutate(MODEL = ifelse(CODE == "invweibull","$\\mu[x] = 1/\\sigma * (x/M)^{[-M/\\sigma - 1]} / [\\exp((x/M)^{(-M/\\sigma)}) - 1]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "perks","$\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "wittstein","$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$",MODEL)) %>% 
-    mutate(MODEL = ifelse(CODE == "HP","$q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E log(x/F)^2} + G H^x$",MODEL)) %>% 
+    mutate(MODEL = ifelse(CODE == "HP","$q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "HP2","$q[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + GH^x / [1 + GH^x]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "HP3","$q[x] = A^{[(x + B)^C]} + D \\exp[-E \\log(x/F)^2] + GH^x / [1 + KGH^x]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "HP3","$q[x] = A^{[(x + B)^C]} + D \\exp[-E \\log(x/F)^2] + GH^x / [1 + KGH^x]$",MODEL)) %>% 
@@ -1115,7 +1115,7 @@ params =
 
 ```
 
-## Age-Dependent Transition Matrices
+## Age-Dependent Transition Matrices {.smaller}
 
 ```{r}
 #| echo: true
