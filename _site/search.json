@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "What They Didn’t Teach You About Decision Modeling",
     "section": "",
-    "text": "Workshop Schedule\n\n\nStart\nEnd\nTopic\nApplied Case Study\n\n\n\n\n9:00am\n9:20am\nIntroductions and Welcome\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model"
+    "text": "To Do\n\nAdd cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.\nChange the discount rate in the monthly time step too!\n\n\nWorkshop Schedule\n\n\nStart\n9:00am\nEnd\n9:20am\nTopic\nIntroductions and Welcome\nApplied Case Study\n\n\n\n\n\n\n\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\nConstructing an Alive-Dead model\n\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nAdvanced replication of Green et. al (2023) model.\n\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence\n\nExpand Green et. al (2023) model"
   },
   {
     "objectID": "about.html",
@@ -3651,14 +3651,14 @@
     "href": "slides/00_welcome-and-intros.html#the-big-picture",
     "title": "Welcome and Introductions",
     "section": "The Big Picture",
-    "text": "The Big Picture\n\nDecision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model.\nFor example, a model of \\(f_{cost}\\) and \\(f_{qaly}\\) are run versus \\(\\theta_{ref}\\) and \\(\\theta_{target}\\).\nThese runs will have error due to misspecification, and in differencing the error can mostly cancel. Let \\(g\\) represent the truth, thus \\(f(\\theta) = g(\\theta)+\\epsilon_{theta}\\)."
+    "text": "The Big Picture\n\nDecision thresholds methods, e.g. ICER, NMB, NHB all involve comparing a model run versus a reference run of the same model.\nFor example, a model of \\(f_{cost}\\) and \\(f_{qaly}\\) are run versus \\(\\theta_{ref}\\) and \\(\\theta_{target}\\).\nThese runs will have error due to misspecification, and in differencing the error can mostly cancel. Let \\(g\\) represent the truth, thus \\(f(\\theta) = g(\\theta)+\\epsilon_{\\theta}\\)."
   },
   {
     "objectID": "slides/00_welcome-and-intros.html#the-hopeful-big-picture",
     "href": "slides/00_welcome-and-intros.html#the-hopeful-big-picture",
     "title": "Welcome and Introductions",
     "section": "The Hopeful Big Picture",
-    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this perodically today.\n\n\n\nBack to Website"
+    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this periodically today."
   },
   {
     "objectID": "slides/01_mortality.html#us-life-table-2019",

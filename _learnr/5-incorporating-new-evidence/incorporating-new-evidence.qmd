@@ -1,30 +1,48 @@
 ---
-title: "Afternoon Case Study"
+title: "Applied Case Study: Progressive Disease Model"
+subtitle: "Replicating and Extending Green et al. (2023)"
+editor: visual
 editor_options: 
   chunk_output_type: console
+bibliography: ../../slides/references.bib
 ---
 
-- Add cycle adjustment (with alt_simp+1) to life expectancy calculations.
-- Change the discount rate in the monthly time step too!
 
 # Introduction
 
-The objective of this case study is to work through the process of constructing and then amending an existing Markov model to incorporate new evidence, health states, etc.
+The objective of this case study is to replicate and extend the model and results in @green2023health using tools developed in this workshop. 
+
+@green2023health provide a [link to the Excel file](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/ea65640a064d9d01f56295cbbab90ab4865c38fc/original_Excel_files/Media_343196_smxx.xlsm) as well as [code to execute the same model in R](https://github.com/Excel-R-tutorials/Markov-model-introduction/blob/main/Markov_model_realworld.R). The R code is written in base R, meaning that it does not require any loaded packages to execute. However, the model structure is somewhat complicated---requiring, for example, both state occupancy and transitions out of certain states to be tracked.[More specifically, in the @green2023health model there is an additional cost from transitioning from Progressive disease to death, but this cost does not apply if the cause of death was background mortality.]{.aside}
+
+The code provided below replicates the original model, but draws on various capabilities within the (now ubiquitous) `tidyverse` universe to both simplify and generalize the execution process. 
+
+The model is structured as follows:
+
+<div>
+
+<a href='//sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15'><img src="https://sketchviz.com/@graveja0/87115c93ff6ac666674b88e1b30aec15/696391f92d96cd0be0fe09157ba6247d0dd84cc9.sketchy.png" style="max-width: 100%;"/></a><br/>[Created on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
+
+</div>
+
+In this model, individuals can cycle into the death state in one of two ways:
+
+-   From the Asymptomatic state, in which case the probability of death is goverened by age-dependent mortality probabilities.
+-   From the Progressive Disease state, in which case the probability of death is govered both by age-dependent mortality, as well as a heightened probability of death from the disease. Notably, only transitions from the progressive state to death due to the disease (`tpDcm`) receive a one-time ($1,000) death cost.
+
+
+# 1. Set Up and Parameterize the Model
+
+Our first step is to load all required packages and define the parameters that govern the model.
+
+## Set Up Libraries and Functions
+
+We first load up all necessary packages and define functions for cycle adjustments based on [Simpson's Rule](https://en.wikipedia.org/wiki/Simpson%27s_rule). 
 
 ```{r setup, warning = FALSE, message = FALSE}
-#   without_drug with_drug
-# 1       14.367    16.501
-
-
-# 6093.4
-#  without_drug with_drug inc_qalys
-# 1         9215     10606    1390.7
-# without_drug with_drug inc_costs
-# 1     11833489  20307625   8474137
 
 library(tidyverse)
 library(demography)
-library(MortalityLaws)
+library(MortalityLaws) # devtools::install_github("mpascariu/MortalityLaws")
 library(directlabels)
 library(ggsci)
 library(hrbrthemes)
@@ -41,66 +59,76 @@ select =dplyr::select
 options("scipen" = 100, "digits" = 5)
 
 # Cycle adjustment function
-alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
-cycle_adj      <- function(x,h) h*sum(alt_simp_coef(length(x)) * x)
+alt_simp_coef =function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48
+cycle_adj      =function(x,h) h*sum(alt_simp_coef(length(x)) * x)
 
 ```
 
-# Parameterize
+## Parameterize
+
+We next parameterize the model.  The `params` list object below replicates the parameters in @green2023health. 
 
 ```{r parameterize}
 params = list(
-    t_names = c("without_drug", "with_drug"),   # Treatment names
-    n_treatments =2,                            # Number of treatments
+    t_names = c("without_drug", "with_drug"),      # Treatment names
+    n_treatments =2,                               # Number of treatments
     
-    s_names  = c("Asympt", "Progressive", "Dead"),           # State names
-    n_states = 3,                               # Number of states
+    s_names  = c("Asympt", "Progressive", "Dead"), # State names
+    n_states = 3,                                  # Number of states
     
-    n_cohort =1000,                             # Cohort size
-    cycle_length = 1,                         # Cycle length
-    initial_age = 55,                           # Cohort starting age
-    effect = 0.5,                               # Treatment Effect (drug) 
+    n_cohort =1000,                                # Cohort size
+    cycle_length = 1,                              # Cycle length
+    time_horizon = 45,                             # Model time horizon (in years)
+    initial_age = 55,                              # Cohort starting age
+    effect = 0.5,                                  # Treatment Effect (drug) 
     
-    cAsymp =500,                                # Cost of asympomatic state
-    cDeath =1000,                               # cost of death (progressive disease state only)
-    cDrug =1000,                                # Cost of drug
-    cProg =3000,                                # Cycle cost of progressive disease
+    cAsymp =500,                                   # Cost of asympomatic state
+    cDeath =1000,                                  # cost of death (progressive disease state only)
+    cDrug =1000,                                   # Cost of drug
+    cProg =3000,                                   # Cycle cost of progressive disease
     
-    uAsymp =0.95,                               # Asymptomatic state utility
-    uProg =0.75,                                # Progressive disease state utility
+    uAsymp =0.95,                                  # Asymptomatic state utility
+    uProg =0.75,                                   # Progressive disease state utility
     
-    oDr = 0.00,                                  # Discount rate (QALYs)
-    cDr = 0.00,                                  # Discount rate (costs)
+    oDr = 0.0,                                    # Discount rate (QALYs)
+    cDr = 0.0,                                    # Discount rate (costs)
     
-    tpDcm =0.15,                                # Death from progressive disease trans prob
-    tpProg =0.01,                               # Transition prob: progressive disease
-    tpDn =0.0379                                # Background mortality transition prob
+    tpDcm =0.15,                                   # Death from progressive disease trans prob
+    tpProg =0.01,                                  # Transition prob: progressive disease
+    tpDn =0.0379                                   # Background mortality transition prob
 )
-params <-  # Annual cycle
-    modifyList(params,list(n_cycles = 45/params$cycle_length))
-params12 <- # Monthly cycle
-    modifyList(params, list(cycle_length = 1/12, 
-                            n_cycles = 12 * 45,
-                            oDr = ((1 + params$oDr)^(1/12) - 1),
-                            cDr = ((1 + params$cDr)^(1/12) - 1)))
+```
 
+To retain flexibility to change the model time step (e.g., annual, monthly, daily) we will re-define some parameters that are functions of other paramters. 
+
+- `n_cycles` needs to be adapted for the (annual) time horizon and cycle length.
+- The supplied (annaual) discounting rates also must be adapted for shorter vs. longer cycle lengths. 
+
+```{r}
+params =
+    modifyList(params, with(params, {
+        list(
+            n_cycles = time_horizon / cycle_length,
+            oDr = ((1 + oDr)^(cycle_length) - 1),
+            cDr = ((1 + cDr)^(cycle_length) - 1)
+        )
+    }))
 ```
 
 ## Markovian Transition Rate Matrix
 
-```{r mR}
-# t = 1:params12$n_cycles
-# tt = params12$n_cycles
-# attach(params12)
-# 
-# t = 1:params$n_cycles
-# tt = params$n_cycles
-# attach(params)
+Our first step is to fill out the Markovian rate matrix. This matrix should be square with `n_states`=3 rows and columns. 
 
-fn_mRt_markov <- function(t, params) {
+```{r}
+
+```
+
+
+```{r mR-ans}
+fn_mRt_markov =function(t, params) {
   with(params, {
     lapply(t, function(tt) {
-      current_age <- initial_age + cycle_length * (tt) ; current_age
+      current_age =initial_age + cycle_length * (tt) ; current_age
       year = (tt) * cycle_length; year 
       
       # Get background mortality rate
@@ -113,10 +141,10 @@ fn_mRt_markov <- function(t, params) {
           "(74,84]" = 0.0912,
           "(84,100]" = 0.1958
         )
-       age_grp <- cut(current_age, breaks = c(34,44,54,64,74,84,100))
-       tpDn <- tpDn_lookup[age_grp]
+       age_grp =cut(current_age, breaks = c(34,44,54,64,74,84,100))
+       tpDn =tpDn_lookup[age_grp]
        
-       tpProg_ <- tpProg * ceiling(year)
+       tpProg_ =tpProg * ceiling(year)
        
        # Convert supplied probabilities back to rates. 
        rProg = -log(1 - tpProg_)
@@ -125,7 +153,7 @@ fn_mRt_markov <- function(t, params) {
        rDn = -log(1 - tpDn)
        
        # Define off-diagonal elements of rate matrix
-       mR_ <- 
+       mR_ = 
             array(data = c(
                            0, 0, 0, 
                            rProg, 0, 0,
@@ -140,81 +168,86 @@ fn_mRt_markov <- function(t, params) {
                                           to = s_names,
                                           t_names))
        # Balance out rate matrix
-       mR <- apply(mR_,3,function(x){
-            diag(x) <- -rowSums(x)
+       mR = apply(mR_,3,function(x){
+            diag(x) = -rowSums(x)
             x
         },simplify=FALSE)
 
     })
   })
 }
+```
 
-params$mRMarkov = fn_mRt_markov(1:params$n_cycles, params)
-params12$mRMarkov = fn_mRt_markov(1:params12$n_cycles, params12)
+```{r}
+params$mRMarkov = 
+    fn_mRt_markov(1:params$n_cycles, params)
 ```
 
 ## Add Non-Markovian Components to Rate Matrix
 
 ```{r}
-
-fn_mRt_nonmarkov <- function(R,params) {
+fn_mRt_nonmarkov = function(R,params) {
     R %>% map(~({
-        R_ <- .x
+        R_ = .x
         rDcm = -log(1 - params$tpDcm)
         lapply(R_,function(x) {
-            x_ <- cbind(x,"trDeadCause" = rep(0, params$n_states))
-            x_ <- rbind(x_,"trDeadCause" = rep(0,params$n_states+1))
+            x_ = cbind(x,"trDeadCause" = rep(0, params$n_states))
+            x_ = rbind(x_,"trDeadCause" = rep(0,params$n_states+1))
             x_["Progressive","trDeadCause"] = rDcm
             x_
         })
     }))
 }
-params$mR <- fn_mRt_nonmarkov(R =params$mRMarkov,params)
-params12$mR <- fn_mRt_nonmarkov(R =params12$mRMarkov,params12)
+```
 
+```{r}
+params$mR = fn_mRt_nonmarkov(R =params$mRMarkov,params)
 ```
 
 ## Transition Probability Matrix
 
 ```{r}
-fn_mP <- function(R, params) {
+fn_mP = function(R, params) {
     with(params, {
         R %>% map( ~ ({
             lapply(.x, function(x) {
-                tmp_ <- expm(x * cycle_length)
+                tmp_ = expm(x * cycle_length)
                 tmp_["trDeadCause", "trDeadCause"] = 0
                 tmp_
             })
         }))
     })
 }
+```
 
-params$mP <- fn_mP(params$mR, params)
-params12$mP <- fn_mP(params12$mR, params12)
+
+```{r}
+params$mP = 
+    fn_mP(params$mR, params)
 ```
 
 # Markov Trace
 
 ```{r}
-sim_cohort <- function(params) {
+sim_cohort = function(params) {
     with(params,{
         t_names %>% map( ~ ({
-            tr_ <- # Create the initial trace 
+            tr_ = # Create the initial trace 
                 t(c(n_cohort, rep(0, n_states)))
             
-            res <- # Iterate over the transition matrices (one for each cycle) and update 
+            res = # Iterate over the transition matrices (one for each cycle) and update 
                    # the trace by binding on the next cycle's. 
                 do.call(rbind, lapply(mP, function(tp) {
                     tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]), nrow = n_states + 1)
                 }))
             
-            res <- # Add an initial state occupancy as the top row.
+            res =# Add an initial state occupancy as the top row.
                 rbind(c(n_cohort, rep(0, n_states)), res)
             
-            res <- # The current res object is a list; convert to a numeric matrix.
+            res =# The current res object is a list; convert to a numeric matrix.
                 matrix(unlist(res), ncol = n_states + 1)
             
-            dimnames(res) <- # Define the dimension names of 
+            dimnames(res) = # Define the dimension names of 
                              # the matrix (row = cycle, column = state)
                 list(paste0(c(0:n_cycles)), colnames(mP[[1]][[1]]))
             res 
@@ -223,10 +256,11 @@ sim_cohort <- function(params) {
     })
      
 }
-trace <- # Create the trace given the parameters. 
+```
+
+```{r}
+trace = # Create the trace given the parameters. 
     sim_cohort(params)
-trace12 <- # Create the trace given the parameters. 
-    sim_cohort(params = params12)
 ```
 
 # Outcomes
@@ -234,38 +268,29 @@ trace12 <- # Create the trace given the parameters.
 ## Survival 
 
 ```{r}
-survival_payoff <- c("Asympt" = 1, "Progressive" = 1, "Dead" = 0 , "trDeadCause" = 0)
+survival_payoff = c("Asympt" = 1, "Progressive" = 1, "Dead" = 0 , "trDeadCause" = 0)
 survival = lapply(trace,function(tr) ((tr / params$n_cohort)%*% survival_payoff))
-survival12 = lapply(trace12,function(tr) (tr / params12$n_cohort)%*% survival_payoff)
+```
 
-df_surv <- data.frame(survival) %>% 
+```{r}
+df_surv = data.frame(survival) %>% 
     mutate(age = params$initial_age + (row_number()-1)*params$cycle_length) %>% 
     tibble() %>% 
     gather(strategy, value,-age) %>% 
     tibble()
-
-df_surv12 = 
-    data.frame(survival12) %>% 
-    mutate(age = params12$initial_age + (row_number()-1)*params12$cycle_length) %>% 
-    tibble() %>% 
-    gather(strategy, value,-age) %>% 
-    tibble()
-
 df_surv %>% 
     ggplot(aes(x = age, y = value, colour = strategy)) + geom_step() + 
     hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
     ggsci::scale_colour_aaas() + 
     directlabels::geom_dl(method = list("smart.grid"),aes(label = strategy)) + 
     theme(legend.position = "none") + 
-    labs(x = "Cycle", y = "Survival") +
-    geom_step(data = df_surv12)
+    labs(x = "Cycle", y = "Survival") 
 ```
 
 ## Life Expectancy
 
 ```{r}
 data.frame(lapply(survival,function(x) sum(x*alt_simp_coef(params$n_cycles+1))))*params$cycle_length
-data.frame(lapply(survival12,function(x) sum(x*alt_simp_coef(params12$n_cycles+1))))*params12$cycle_length
 ```
 
 ## Total QALYs and Costs
@@ -278,7 +303,7 @@ data.frame(lapply(survival12,function(x) sum(x*alt_simp_coef(params12$n_cycles+1
 -   State occupancy in the Progressive disease state confers a utility of `r params$uProg`.
 
 ```{r u_payoff}
-u_payoff <- with(params,{
+u_payoff = with(params,{
     array(c("Asympt" = uAsymp, "Progressive" = uProg,  "Dead" = 0, "trDeadCause" = 0 ,
             "Asympt" = uAsymp, "Progressive" = uProg,  "Dead" = 0, "trDeadCause" = 0),
           dim = c(1, n_states+1, n_treatments),
@@ -293,27 +318,18 @@ u_payoff
 #### Total QALYs
 
 ```{r}
-total_qalys_cycle <- 
-    map2(trace,u_payoff,~(.x[-1,] %*% t(.y)))
-total_qalys_cycle12 <- 
-    map2(trace12,u_payoff,~(.x[-1,] %*% t(.y)))
+total_qalys_cycle = 
+    map2(trace,u_payoff,~(.x %*% t(.y)))
 
-cycle_adjustments_qalys <- 
-    alt_simp_coef(params$n_cycles) * 1/(1+params$oDr)^(0:(params$n_cycles-1))
-cycle_adjustments_qalys12 <- 
-    alt_simp_coef(params12$n_cycles) * 1/(1+params12$oDr)^(0:(params12$n_cycles-1))
+cycle_adjustments_qalys = 
+    alt_simp_coef(params$n_cycles + 1) * 1/(1+params$oDr)^(0:(params$n_cycles))
 
-tot_qalys <- 
-    lapply(total_qalys_cycle,function(x) sum(x * cycle_adjustments_qalys ))
-tot_qalys <- 
+tot_qalys = 
+    lapply(total_qalys_cycle,function(x) sum(x * cycle_adjustments_qalys * params$cycle_length))
+tot_qalys = 
     cbind.data.frame(tot_qalys) %>% mutate(inc_qalys = with_drug - without_drug)
 tot_qalys
 
-tot_qalys12 <- 
-    lapply(total_qalys_cycle12,function(x) sum(x *cycle_adjustments_qalys12 * params12$cycle_length ))
-tot_qalys12 <- 
-    cbind.data.frame(tot_qalys12) %>% mutate(inc_qalys = with_drug - without_drug)
-tot_qalys12 
 ```
 
 
@@ -324,7 +340,7 @@ tot_qalys12
 -   State occupancy in the Progressive disease state confers a cost of `r params$cProg` per cycle.
 
 ```{r c_payoff}
-c_payoff <- with(params,{
+c_payoff = with(params,{
     cAsymp_ = cAsymp * cycle_length
     cProg_ = cProg * cycle_length
     cDrug_ = cDrug * cycle_length
@@ -337,38 +353,17 @@ c_payoff <- with(params,{
 }) %>% 
     apply(.,3,function(x) x, simplify = FALSE)
 c_payoff
-
-c_payoff12 <- with(params12,{
-    cAsymp_ = cAsymp * cycle_length
-    cProg_ = cProg * cycle_length
-    cDrug_ = cDrug * cycle_length
-    array(c("Asympt" = cAsymp_ , "Progressive" = cProg_,  "Dead" = 0, "trDeadCause" =  cDeath,
-            "Asympt" = cAsymp_+cDrug_, "Progressive" = cProg_,  "Dead" = 0 , "trDeadCause" = cDeath),
-          dim = c(1, n_states+1, n_treatments),
-          dimnames = list(from = "cost",
-                          to = c(s_names,"trDeadCause"),
-                          t_names))
-}) %>% 
-    apply(.,3,function(x) x, simplify = FALSE)
-c_payoff12
 ```
 
 
 
 ```{r}
-total_costs_cycle <- map2(trace,c_payoff,~(.x[-1,] %*% t(.y)))
-cycle_adjustments_costs <- alt_simp_coef(params$n_cycles) * 1/(1+params$cDr)^(0:(params$n_cycles-1))
+total_costs_cycle = map2(trace,c_payoff,~(.x %*% t(.y)))
+cycle_adjustments_costs = alt_simp_coef(params$n_cycles + 1) * 1/(1+params$cDr)^(0:(params$n_cycles))
 
-tot_costs <- lapply(total_costs_cycle,function(x) sum(x *cycle_adjustments_costs ))
-tot_costs <- cbind.data.frame(tot_costs) %>% mutate(inc_costs = with_drug - without_drug)
+tot_costs = lapply(total_costs_cycle,function(x) sum(x * cycle_adjustments_costs ))
+tot_costs = cbind.data.frame(tot_costs) %>% mutate(inc_costs = with_drug - without_drug)
 tot_costs
-
-total_costs_cycle12 <- map2(trace12,c_payoff12,~(.x[-1,] %*% t(.y)))
-cycle_adjustments_costs12 <- alt_simp_coef(params12$n_cycles) * 1/(1+params12$cDr)^(0:(params12$n_cycles-1))
-
-tot_costs12 <- lapply(total_costs_cycle12,function(x) sum(x *cycle_adjustments_costs12))
-tot_costs12 <- cbind.data.frame(tot_costs12) %>% mutate(inc_costs = with_drug - without_drug)
-tot_costs12
 ```
 
 
@@ -376,6 +371,5 @@ tot_costs12
 
 ```{r}
 tot_costs$inc_costs / tot_qalys$inc_qalys
-tot_costs12$inc_costs / tot_qalys12$inc_qalys
 ```
 
