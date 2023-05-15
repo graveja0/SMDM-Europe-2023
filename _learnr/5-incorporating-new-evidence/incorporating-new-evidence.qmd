@@ -78,7 +78,7 @@ params = list(
     n_states = 3,                                  # Number of states
     
     n_cohort =1000,                                # Cohort size
-    cycle_length = 1,                              # Cycle length
+    cycle_length = 1/12,                              # Cycle length
     time_horizon = 45,                             # Model time horizon (in years)
     initial_age = 55,                              # Cohort starting age
     effect = 0.5,                                  # Treatment Effect (drug) 
@@ -493,3 +493,168 @@ tot_costs
 ```{r}
 tot_costs$inc_costs / tot_qalys$inc_qalys
 ```
+
+
+# DRAFT: Alternative Approach: Eigenvalue Decomposition 
+
+This approach will not take the transition probabilities as marginal probabilities, but will use eigenvector decomposition to obtain the rate matrix from the transition probabiliyt matrix. 
+
+```{r}
+params2 = list(
+    t_names = c("without_drug", "with_drug"),      # Treatment names
+    n_treatments =2,                               # Number of treatments
+    
+    s_names  = c("Asympt", "Progressive", "DeadCause","Dead"), # State names
+    n_states = 4,                                  # Number of states
+    
+    n_cohort =1000,                                # Cohort size
+    cycle_length = params$cycle_length,                              # Cycle length
+    time_horizon = 45,                             # Model time horizon (in years)
+    initial_age = 55,                              # Cohort starting age
+    effect = 0.5,                                  # Treatment Effect (drug) 
+    
+    cAsymp =500,                                   # Cost of asympomatic state
+    cDeath =1000,                                  # cost of death (progressive disease state only)
+    cDrug =1000,                                   # Cost of drug
+    cProg =3000,                                   # Cycle cost of progressive disease
+    
+    uAsymp =0.95,                                  # Asymptomatic state utility
+    uProg =0.75,                                   # Progressive disease state utility
+    
+    oDr = 0.0,                                    # Discount rate (QALYs)
+    cDr = 0.0,                                    # Discount rate (costs)
+    
+    tpDcm =0.15,                                   # Death from progressive disease trans prob
+    tpProg =0.01,                                  # Transition prob: progressive disease
+    tpDn =0.0379                                   # Background mortality transition prob
+)
+
+params2 =
+    modifyList(params2, with(params2, {
+        list(
+            n_cycles = time_horizon / cycle_length,
+            oDr = ((1 + oDr)^(cycle_length) - 1),
+            cDr = ((1 + cDr)^(cycle_length) - 1)
+        )
+    }))
+
+fn_mRt_eigen =function(t, params) {
+    with(params, {
+        lapply(t, function(tt) {
+            
+            current_age =initial_age + cycle_length * tt
+            year = tt * cycle_length
+            
+            # Get background mortality rate
+            tpDn_lookup <-
+                c(
+                    "(34,44]" = 0.0017,
+                    "(44,54]" = 0.0044,
+                    "(54,64]" = 0.0138,
+                    "(64,74]" = 0.0379,
+                    "(74,84]" = 0.0912,
+                    "(84,100]" = 0.1958
+                )
+            age_grp =cut(current_age - tt * cycle_length, breaks = c(34,44,54,64,74,84,100))
+            tpDn =tpDn_lookup[age_grp]
+            
+            tpProg_ = tpProg * ceiling(year)
+            
+            # Convert supplied probabilities back to rates. 
+            rProg = tpProg_
+            rProgDrug = (tpProg_*(1-effect))
+            rDcm = tpDcm
+            rDn = tpDn
+            
+
+            mP_ = 
+                array(data = c(
+                    0, 0, 0, 0,
+                    rProg, 0, 0, 0,
+                    0 ,rDcm, 0, 0,
+                    rDn, rDn , 0,0,
+                    
+                    0, 0, 0, 0,
+                    rProgDrug, 0, 0, 0,
+                    0 ,rDcm, 0, 0,
+                    rDn, rDn , 0,0 ),
+                    
+                    dim = c(n_states, n_states, n_treatments),
+                    dimnames = list(from = s_names,
+                                    to = s_names,
+                                    t_names))
+            mP_ <- apply(mP_,3,simplify = FALSE, function(x) {
+                diag(x) = 1 - rowSums(x)
+                x
+            })
+            
+            mR_ <- 
+                lapply(mP_,function(x) {
+                V  = eigen(x)$vectors
+                iV = solve(V)
+                Ap = iV %*% x %*% V
+                lAp = diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+                R  = V %*% lAp %*% iV
+                R[abs(R) < 1e-6 ] <- 0
+                R
+            })
+            
+            
+            
+            # Balance out rate matrix
+            mR = lapply(mR_,function(x){
+                diag(x) = rep(0,nrow(x))
+                diag(x) = -rowSums(x)
+                dimnames(x) = list(c(s_names),
+                                c(s_names))
+                x
+            })
+            
+            
+            
+        })
+    })
+}
+
+fn_mRt_nonmarkov_eigen = function(R,params) {
+    R %>% map(~({
+        R_ = .x
+        rDcm = -log(1 - params$tpDcm)
+        lapply(R_,function(x) {
+            x_ = cbind(x,"trDeadCause" = rep(0, params$n_states))
+            x_ = rbind(x_,"trDeadCause" = rep(0,params$n_states+1))
+            x_["Progressive","trDeadCause"] = rDcm
+            x_
+        })
+    }))
+}
+
+params2$mRMarkov <- fn_mRt_eigen(t = 1:params2$n_cycles, params2)
+params2$mR = fn_mRt_nonmarkov_eigen(R =params2$mRMarkov,params2)
+params2$mP = fn_mP(R = params2$mR, params2)
+
+trace_eigen = # Create the trace given the parameters. 
+    sim_cohort(params2)
+
+survival_payoff_eigen = c("Asympt" = 1, "Progressive" = 1, "DeadCause" = 0,  "Dead" = 0 , "trDeadCause" = 0)
+survival_eigen = lapply(trace_eigen,function(tr) ((tr / params2$n_cohort)%*% survival_payoff_eigen))
+
+df_surv_eigen = data.frame(survival_eigen) %>% 
+    mutate(age = params2$initial_age + (row_number()-1)*params2$cycle_length) %>% 
+    tibble() %>% 
+    gather(strategy, value,-age) %>% 
+    tibble()
+df_surv %>% 
+    ggplot(aes(x = age, y = value, colour = strategy)) + geom_step() + 
+    hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+    ggsci::scale_colour_aaas() + 
+    directlabels::geom_dl(method = list("smart.grid"),aes(label = strategy)) + 
+    theme(legend.position = "none") + 
+    labs(x = "Cycle", y = "Survival") +
+    geom_step(data = df_surv_eigen, lty = 2)
+
+
+
+```
+
+

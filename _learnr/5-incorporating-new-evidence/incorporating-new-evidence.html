@@ -176,7 +176,7 @@ div.csl-indent {
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_states =</span> <span class="dv">3</span>,                                  <span class="co"># Number of states</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    </span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_cohort =</span><span class="dv">1000</span>,                                <span class="co"># Cohort size</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle_length =</span> <span class="dv">1</span>,                              <span class="co"># Cycle length</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle_length =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">12</span>,                              <span class="co"># Cycle length</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_horizon =</span> <span class="dv">45</span>,                             <span class="co"># Model time horizon (in years)</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">initial_age =</span> <span class="dv">55</span>,                              <span class="co"># Cohort starting age</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">effect =</span> <span class="fl">0.5</span>,                                  <span class="co"># Treatment Effect (drug) </span></span>
@@ -295,7 +295,7 @@ div.csl-indent {
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>current_age <span class="ot">=</span> <span class="fu">with</span>(params, initial_age <span class="sc">+</span> cycle_length <span class="sc">*</span> tt)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>current_age</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 56</code></pre>
+<pre><code>[1] 55.083</code></pre>
 </div>
 </div>
 <p>We next find the death probability from the lookup table based on age at the begnning of the cycle. We also convert this probability to a rate.</p>
@@ -531,17 +531,17 @@ trDeadCause  0.000000   0.0000000 0.000000     0.00000</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>$without_drug
              Asympt Progressive     Dead trDeadCause
-Asympt      0.97634   0.0091011 0.014561   0.0007645
-Progressive 0.00000   0.8382700 0.161730   0.1489906
-Dead        0.00000   0.0000000 1.000000   0.0000000
-trDeadCause 0.00000   0.0000000 0.000000   0.0000000
+Asympt      0.99801  0.00083057 0.001163  0.00000564
+Progressive 0.00000  0.98540628 0.014594  0.01344418
+Dead        0.00000  0.00000000 1.000000  0.00000000
+trDeadCause 0.00000  0.00000000 0.000000  0.00000000
 
 $with_drug
-             Asympt Progressive    Dead trDeadCause
-Asympt      0.98127   0.0045509 0.01418  0.00038194
-Progressive 0.00000   0.8382700 0.16173  0.14899063
-Dead        0.00000   0.0000000 1.00000  0.00000000
-trDeadCause 0.00000   0.0000000 0.00000  0.00000000</code></pre>
+             Asympt Progressive      Dead  trDeadCause
+Asympt      0.99843  0.00041433 0.0011602 0.0000028133
+Progressive 0.00000  0.98540628 0.0145937 0.0134441789
+Dead        0.00000  0.00000000 1.0000000 0.0000000000
+trDeadCause 0.00000  0.00000000 0.0000000 0.0000000000</code></pre>
 </div>
 </div>
 </section>
@@ -586,21 +586,21 @@ trDeadCause 0.00000   0.0000000 0.00000  0.00000000</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>$without_drug
    Asympt Progressive   Dead trDeadCause
-0 1000.00      0.0000  0.000      0.0000
-1  976.34      9.1011 14.561      0.7645
-2  943.61     25.3982 30.995      2.8513
-3  902.67     47.0470 50.285      5.9554
-4  854.60     72.2854 73.112      9.7837
-5  800.67     99.4620 99.869     14.0584
+0 1000.00     0.00000 0.0000    0.000000
+1  998.01     0.83057 1.1630    0.005640
+2  996.02     1.64736 2.3358    0.016795
+3  994.03     2.45059 3.5181    0.027765
+4  992.05     3.24044 4.7099    0.038552
+5  990.07     4.01711 5.9110    0.049160
 
 $with_drug
    Asympt Progressive   Dead trDeadCause
-0 1000.00      0.0000  0.000     0.00000
-1  981.27      4.5509 14.180     0.38194
-2  958.05     12.7455 29.204     1.42822
-3  930.66     23.7622 45.581     2.99850
-4  899.46     36.8568 63.686     4.96566
-5  864.87     51.3568 83.774     7.21466</code></pre>
+0 1000.00     0.00000 0.0000   0.0000000
+1  998.43     0.41433 1.1602   0.0028133
+2  996.85     0.82196 2.3245   0.0083792
+3  995.28     1.22299 3.4930   0.0138550
+4  993.72     1.61752 4.6655   0.0192421
+5  992.15     2.00564 5.8420   0.0245418</code></pre>
 </div>
 </div>
 </section>
@@ -690,7 +690,7 @@ from   Asympt Progressive Dead trDeadCause
 <span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>tot_qalys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  without_drug with_drug inc_qalys
-1        13654     17195    3541.6</code></pre>
+1        13652     17194    3542.3</code></pre>
 </div>
 </div>
 </section>
@@ -719,12 +719,12 @@ from   Asympt Progressive Dead trDeadCause
 <pre><code>$without_drug
       to
 from   Asympt Progressive Dead trDeadCause
-  cost    500        3000    0        1000
+  cost 41.667         250    0        1000
 
 $with_drug
       to
 from   Asympt Progressive Dead trDeadCause
-  cost   1500        3000    0        1000</code></pre>
+  cost    125         250    0        1000</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -736,7 +736,7 @@ from   Asympt Progressive Dead trDeadCause
 <span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>tot_costs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  without_drug with_drug inc_costs
-1     20476177  35859224  15383047</code></pre>
+1     20500257  35870141  15369885</code></pre>
 </div>
 </div>
 </section>
@@ -747,11 +747,172 @@ from   Asympt Progressive Dead trDeadCause
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>tot_costs<span class="sc">$</span>inc_costs <span class="sc">/</span> tot_qalys<span class="sc">$</span>inc_qalys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 4343.5</code></pre>
+<pre><code>[1] 4339</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="draft-alternative-approach-eigenvalue-decomposition" class="level1">
+<h1>DRAFT: Alternative Approach: Eigenvalue Decomposition</h1>
+<p>This approach will not take the transition probabilities as marginal probabilities, but will use eigenvector decomposition to obtain the rate matrix from the transition probabiliyt matrix.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">t_names =</span> <span class="fu">c</span>(<span class="st">"without_drug"</span>, <span class="st">"with_drug"</span>),      <span class="co"># Treatment names</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_treatments =</span><span class="dv">2</span>,                               <span class="co"># Number of treatments</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">s_names  =</span> <span class="fu">c</span>(<span class="st">"Asympt"</span>, <span class="st">"Progressive"</span>, <span class="st">"DeadCause"</span>,<span class="st">"Dead"</span>), <span class="co"># State names</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_states =</span> <span class="dv">4</span>,                                  <span class="co"># Number of states</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_cohort =</span><span class="dv">1000</span>,                                <span class="co"># Cohort size</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle_length =</span> params<span class="sc">$</span>cycle_length,                              <span class="co"># Cycle length</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_horizon =</span> <span class="dv">45</span>,                             <span class="co"># Model time horizon (in years)</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">initial_age =</span> <span class="dv">55</span>,                              <span class="co"># Cohort starting age</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">effect =</span> <span class="fl">0.5</span>,                                  <span class="co"># Treatment Effect (drug) </span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">cAsymp =</span><span class="dv">500</span>,                                   <span class="co"># Cost of asympomatic state</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">cDeath =</span><span class="dv">1000</span>,                                  <span class="co"># cost of death (progressive disease state only)</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">cDrug =</span><span class="dv">1000</span>,                                   <span class="co"># Cost of drug</span></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">cProg =</span><span class="dv">3000</span>,                                   <span class="co"># Cycle cost of progressive disease</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">uAsymp =</span><span class="fl">0.95</span>,                                  <span class="co"># Asymptomatic state utility</span></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">uProg =</span><span class="fl">0.75</span>,                                   <span class="co"># Progressive disease state utility</span></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">oDr =</span> <span class="fl">0.0</span>,                                    <span class="co"># Discount rate (QALYs)</span></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">cDr =</span> <span class="fl">0.0</span>,                                    <span class="co"># Discount rate (costs)</span></span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">tpDcm =</span><span class="fl">0.15</span>,                                   <span class="co"># Death from progressive disease trans prob</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">tpProg =</span><span class="fl">0.01</span>,                                  <span class="co"># Transition prob: progressive disease</span></span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">tpDn =</span><span class="fl">0.0379</span>                                   <span class="co"># Background mortality transition prob</span></span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>params2 <span class="ot">=</span></span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">modifyList</span>(params2, <span class="fu">with</span>(params2, {</span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list</span>(</span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_cycles =</span> time_horizon <span class="sc">/</span> cycle_length,</span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a>            <span class="at">oDr =</span> ((<span class="dv">1</span> <span class="sc">+</span> oDr)<span class="sc">^</span>(cycle_length) <span class="sc">-</span> <span class="dv">1</span>),</span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a>            <span class="at">cDr =</span> ((<span class="dv">1</span> <span class="sc">+</span> cDr)<span class="sc">^</span>(cycle_length) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a>    }))</span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a>fn_mRt_eigen <span class="ot">=</span><span class="cf">function</span>(t, params) {</span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">with</span>(params, {</span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lapply</span>(t, <span class="cf">function</span>(tt) {</span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a>            current_age <span class="ot">=</span>initial_age <span class="sc">+</span> cycle_length <span class="sc">*</span> tt</span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a>            year <span class="ot">=</span> tt <span class="sc">*</span> cycle_length</span>
+<span id="cb46-45"><a href="#cb46-45" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-46"><a href="#cb46-46" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Get background mortality rate</span></span>
+<span id="cb46-47"><a href="#cb46-47" aria-hidden="true" tabindex="-1"></a>            tpDn_lookup <span class="ot">&lt;-</span></span>
+<span id="cb46-48"><a href="#cb46-48" aria-hidden="true" tabindex="-1"></a>                <span class="fu">c</span>(</span>
+<span id="cb46-49"><a href="#cb46-49" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(34,44]"</span> <span class="ot">=</span> <span class="fl">0.0017</span>,</span>
+<span id="cb46-50"><a href="#cb46-50" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(44,54]"</span> <span class="ot">=</span> <span class="fl">0.0044</span>,</span>
+<span id="cb46-51"><a href="#cb46-51" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(54,64]"</span> <span class="ot">=</span> <span class="fl">0.0138</span>,</span>
+<span id="cb46-52"><a href="#cb46-52" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(64,74]"</span> <span class="ot">=</span> <span class="fl">0.0379</span>,</span>
+<span id="cb46-53"><a href="#cb46-53" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(74,84]"</span> <span class="ot">=</span> <span class="fl">0.0912</span>,</span>
+<span id="cb46-54"><a href="#cb46-54" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"(84,100]"</span> <span class="ot">=</span> <span class="fl">0.1958</span></span>
+<span id="cb46-55"><a href="#cb46-55" aria-hidden="true" tabindex="-1"></a>                )</span>
+<span id="cb46-56"><a href="#cb46-56" aria-hidden="true" tabindex="-1"></a>            age_grp <span class="ot">=</span><span class="fu">cut</span>(current_age <span class="sc">-</span> tt <span class="sc">*</span> cycle_length, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">34</span>,<span class="dv">44</span>,<span class="dv">54</span>,<span class="dv">64</span>,<span class="dv">74</span>,<span class="dv">84</span>,<span class="dv">100</span>))</span>
+<span id="cb46-57"><a href="#cb46-57" aria-hidden="true" tabindex="-1"></a>            tpDn <span class="ot">=</span>tpDn_lookup[age_grp]</span>
+<span id="cb46-58"><a href="#cb46-58" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-59"><a href="#cb46-59" aria-hidden="true" tabindex="-1"></a>            tpProg_ <span class="ot">=</span> tpProg <span class="sc">*</span> <span class="fu">ceiling</span>(year)</span>
+<span id="cb46-60"><a href="#cb46-60" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-61"><a href="#cb46-61" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert supplied probabilities back to rates. </span></span>
+<span id="cb46-62"><a href="#cb46-62" aria-hidden="true" tabindex="-1"></a>            rProg <span class="ot">=</span> tpProg_</span>
+<span id="cb46-63"><a href="#cb46-63" aria-hidden="true" tabindex="-1"></a>            rProgDrug <span class="ot">=</span> (tpProg_<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>effect))</span>
+<span id="cb46-64"><a href="#cb46-64" aria-hidden="true" tabindex="-1"></a>            rDcm <span class="ot">=</span> tpDcm</span>
+<span id="cb46-65"><a href="#cb46-65" aria-hidden="true" tabindex="-1"></a>            rDn <span class="ot">=</span> tpDn</span>
+<span id="cb46-66"><a href="#cb46-66" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-67"><a href="#cb46-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-68"><a href="#cb46-68" aria-hidden="true" tabindex="-1"></a>            mP_ <span class="ot">=</span> </span>
+<span id="cb46-69"><a href="#cb46-69" aria-hidden="true" tabindex="-1"></a>                <span class="fu">array</span>(<span class="at">data =</span> <span class="fu">c</span>(</span>
+<span id="cb46-70"><a href="#cb46-70" aria-hidden="true" tabindex="-1"></a>                    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-71"><a href="#cb46-71" aria-hidden="true" tabindex="-1"></a>                    rProg, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-72"><a href="#cb46-72" aria-hidden="true" tabindex="-1"></a>                    <span class="dv">0</span> ,rDcm, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-73"><a href="#cb46-73" aria-hidden="true" tabindex="-1"></a>                    rDn, rDn , <span class="dv">0</span>,<span class="dv">0</span>,</span>
+<span id="cb46-74"><a href="#cb46-74" aria-hidden="true" tabindex="-1"></a>                    </span>
+<span id="cb46-75"><a href="#cb46-75" aria-hidden="true" tabindex="-1"></a>                    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-76"><a href="#cb46-76" aria-hidden="true" tabindex="-1"></a>                    rProgDrug, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-77"><a href="#cb46-77" aria-hidden="true" tabindex="-1"></a>                    <span class="dv">0</span> ,rDcm, <span class="dv">0</span>, <span class="dv">0</span>,</span>
+<span id="cb46-78"><a href="#cb46-78" aria-hidden="true" tabindex="-1"></a>                    rDn, rDn , <span class="dv">0</span>,<span class="dv">0</span> ),</span>
+<span id="cb46-79"><a href="#cb46-79" aria-hidden="true" tabindex="-1"></a>                    </span>
+<span id="cb46-80"><a href="#cb46-80" aria-hidden="true" tabindex="-1"></a>                    <span class="at">dim =</span> <span class="fu">c</span>(n_states, n_states, n_treatments),</span>
+<span id="cb46-81"><a href="#cb46-81" aria-hidden="true" tabindex="-1"></a>                    <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="at">from =</span> s_names,</span>
+<span id="cb46-82"><a href="#cb46-82" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">to =</span> s_names,</span>
+<span id="cb46-83"><a href="#cb46-83" aria-hidden="true" tabindex="-1"></a>                                    t_names))</span>
+<span id="cb46-84"><a href="#cb46-84" aria-hidden="true" tabindex="-1"></a>            mP_ <span class="ot">&lt;-</span> <span class="fu">apply</span>(mP_,<span class="dv">3</span>,<span class="at">simplify =</span> <span class="cn">FALSE</span>, <span class="cf">function</span>(x) {</span>
+<span id="cb46-85"><a href="#cb46-85" aria-hidden="true" tabindex="-1"></a>                <span class="fu">diag</span>(x) <span class="ot">=</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">rowSums</span>(x)</span>
+<span id="cb46-86"><a href="#cb46-86" aria-hidden="true" tabindex="-1"></a>                x</span>
+<span id="cb46-87"><a href="#cb46-87" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb46-88"><a href="#cb46-88" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-89"><a href="#cb46-89" aria-hidden="true" tabindex="-1"></a>            mR_ <span class="ot">&lt;-</span> </span>
+<span id="cb46-90"><a href="#cb46-90" aria-hidden="true" tabindex="-1"></a>                <span class="fu">lapply</span>(mP_,<span class="cf">function</span>(x) {</span>
+<span id="cb46-91"><a href="#cb46-91" aria-hidden="true" tabindex="-1"></a>                V  <span class="ot">=</span> <span class="fu">eigen</span>(x)<span class="sc">$</span>vectors</span>
+<span id="cb46-92"><a href="#cb46-92" aria-hidden="true" tabindex="-1"></a>                iV <span class="ot">=</span> <span class="fu">solve</span>(V)</span>
+<span id="cb46-93"><a href="#cb46-93" aria-hidden="true" tabindex="-1"></a>                Ap <span class="ot">=</span> iV <span class="sc">%*%</span> x <span class="sc">%*%</span> V</span>
+<span id="cb46-94"><a href="#cb46-94" aria-hidden="true" tabindex="-1"></a>                lAp <span class="ot">=</span> <span class="fu">diag</span>(<span class="fu">log</span>(<span class="fu">diag</span>(Ap)), <span class="fu">nrow</span>(Ap), <span class="fu">ncol</span>(Ap))</span>
+<span id="cb46-95"><a href="#cb46-95" aria-hidden="true" tabindex="-1"></a>                R  <span class="ot">=</span> V <span class="sc">%*%</span> lAp <span class="sc">%*%</span> iV</span>
+<span id="cb46-96"><a href="#cb46-96" aria-hidden="true" tabindex="-1"></a>                R[<span class="fu">abs</span>(R) <span class="sc">&lt;</span> <span class="fl">1e-6</span> ] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb46-97"><a href="#cb46-97" aria-hidden="true" tabindex="-1"></a>                R</span>
+<span id="cb46-98"><a href="#cb46-98" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb46-99"><a href="#cb46-99" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-100"><a href="#cb46-100" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-101"><a href="#cb46-101" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-102"><a href="#cb46-102" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Balance out rate matrix</span></span>
+<span id="cb46-103"><a href="#cb46-103" aria-hidden="true" tabindex="-1"></a>            mR <span class="ot">=</span> <span class="fu">lapply</span>(mR_,<span class="cf">function</span>(x){</span>
+<span id="cb46-104"><a href="#cb46-104" aria-hidden="true" tabindex="-1"></a>                <span class="fu">diag</span>(x) <span class="ot">=</span> <span class="fu">rep</span>(<span class="dv">0</span>,<span class="fu">nrow</span>(x))</span>
+<span id="cb46-105"><a href="#cb46-105" aria-hidden="true" tabindex="-1"></a>                <span class="fu">diag</span>(x) <span class="ot">=</span> <span class="sc">-</span><span class="fu">rowSums</span>(x)</span>
+<span id="cb46-106"><a href="#cb46-106" aria-hidden="true" tabindex="-1"></a>                <span class="fu">dimnames</span>(x) <span class="ot">=</span> <span class="fu">list</span>(<span class="fu">c</span>(s_names),</span>
+<span id="cb46-107"><a href="#cb46-107" aria-hidden="true" tabindex="-1"></a>                                <span class="fu">c</span>(s_names))</span>
+<span id="cb46-108"><a href="#cb46-108" aria-hidden="true" tabindex="-1"></a>                x</span>
+<span id="cb46-109"><a href="#cb46-109" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb46-110"><a href="#cb46-110" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-111"><a href="#cb46-111" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-112"><a href="#cb46-112" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb46-113"><a href="#cb46-113" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb46-114"><a href="#cb46-114" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb46-115"><a href="#cb46-115" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-116"><a href="#cb46-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-117"><a href="#cb46-117" aria-hidden="true" tabindex="-1"></a>fn_mRt_nonmarkov_eigen <span class="ot">=</span> <span class="cf">function</span>(R,params) {</span>
+<span id="cb46-118"><a href="#cb46-118" aria-hidden="true" tabindex="-1"></a>    R <span class="sc">%&gt;%</span> <span class="fu">map</span>(<span class="sc">~</span>({</span>
+<span id="cb46-119"><a href="#cb46-119" aria-hidden="true" tabindex="-1"></a>        R_ <span class="ot">=</span> .x</span>
+<span id="cb46-120"><a href="#cb46-120" aria-hidden="true" tabindex="-1"></a>        rDcm <span class="ot">=</span> <span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> params<span class="sc">$</span>tpDcm)</span>
+<span id="cb46-121"><a href="#cb46-121" aria-hidden="true" tabindex="-1"></a>        <span class="fu">lapply</span>(R_,<span class="cf">function</span>(x) {</span>
+<span id="cb46-122"><a href="#cb46-122" aria-hidden="true" tabindex="-1"></a>            x_ <span class="ot">=</span> <span class="fu">cbind</span>(x,<span class="st">"trDeadCause"</span> <span class="ot">=</span> <span class="fu">rep</span>(<span class="dv">0</span>, params<span class="sc">$</span>n_states))</span>
+<span id="cb46-123"><a href="#cb46-123" aria-hidden="true" tabindex="-1"></a>            x_ <span class="ot">=</span> <span class="fu">rbind</span>(x_,<span class="st">"trDeadCause"</span> <span class="ot">=</span> <span class="fu">rep</span>(<span class="dv">0</span>,params<span class="sc">$</span>n_states<span class="sc">+</span><span class="dv">1</span>))</span>
+<span id="cb46-124"><a href="#cb46-124" aria-hidden="true" tabindex="-1"></a>            x_[<span class="st">"Progressive"</span>,<span class="st">"trDeadCause"</span>] <span class="ot">=</span> rDcm</span>
+<span id="cb46-125"><a href="#cb46-125" aria-hidden="true" tabindex="-1"></a>            x_</span>
+<span id="cb46-126"><a href="#cb46-126" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb46-127"><a href="#cb46-127" aria-hidden="true" tabindex="-1"></a>    }))</span>
+<span id="cb46-128"><a href="#cb46-128" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-129"><a href="#cb46-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-130"><a href="#cb46-130" aria-hidden="true" tabindex="-1"></a>params2<span class="sc">$</span>mRMarkov <span class="ot">&lt;-</span> <span class="fu">fn_mRt_eigen</span>(<span class="at">t =</span> <span class="dv">1</span><span class="sc">:</span>params2<span class="sc">$</span>n_cycles, params2)</span>
+<span id="cb46-131"><a href="#cb46-131" aria-hidden="true" tabindex="-1"></a>params2<span class="sc">$</span>mR <span class="ot">=</span> <span class="fu">fn_mRt_nonmarkov_eigen</span>(<span class="at">R =</span>params2<span class="sc">$</span>mRMarkov,params2)</span>
+<span id="cb46-132"><a href="#cb46-132" aria-hidden="true" tabindex="-1"></a>params2<span class="sc">$</span>mP <span class="ot">=</span> <span class="fu">fn_mP</span>(<span class="at">R =</span> params2<span class="sc">$</span>mR, params2)</span>
+<span id="cb46-133"><a href="#cb46-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-134"><a href="#cb46-134" aria-hidden="true" tabindex="-1"></a>trace_eigen <span class="ot">=</span> <span class="co"># Create the trace given the parameters. </span></span>
+<span id="cb46-135"><a href="#cb46-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sim_cohort</span>(params2)</span>
+<span id="cb46-136"><a href="#cb46-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-137"><a href="#cb46-137" aria-hidden="true" tabindex="-1"></a>survival_payoff_eigen <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Asympt"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"Progressive"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"DeadCause"</span> <span class="ot">=</span> <span class="dv">0</span>,  <span class="st">"Dead"</span> <span class="ot">=</span> <span class="dv">0</span> , <span class="st">"trDeadCause"</span> <span class="ot">=</span> <span class="dv">0</span>)</span>
+<span id="cb46-138"><a href="#cb46-138" aria-hidden="true" tabindex="-1"></a>survival_eigen <span class="ot">=</span> <span class="fu">lapply</span>(trace_eigen,<span class="cf">function</span>(tr) ((tr <span class="sc">/</span> params2<span class="sc">$</span>n_cohort)<span class="sc">%*%</span> survival_payoff_eigen))</span>
+<span id="cb46-139"><a href="#cb46-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-140"><a href="#cb46-140" aria-hidden="true" tabindex="-1"></a>df_surv_eigen <span class="ot">=</span> <span class="fu">data.frame</span>(survival_eigen) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-141"><a href="#cb46-141" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">age =</span> params2<span class="sc">$</span>initial_age <span class="sc">+</span> (<span class="fu">row_number</span>()<span class="sc">-</span><span class="dv">1</span>)<span class="sc">*</span>params2<span class="sc">$</span>cycle_length) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-142"><a href="#cb46-142" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb46-143"><a href="#cb46-143" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gather</span>(strategy, value,<span class="sc">-</span>age) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-144"><a href="#cb46-144" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>()</span>
+<span id="cb46-145"><a href="#cb46-145" aria-hidden="true" tabindex="-1"></a>df_surv <span class="sc">%&gt;%</span> </span>
+<span id="cb46-146"><a href="#cb46-146" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age, <span class="at">y =</span> value, <span class="at">colour =</span> strategy)) <span class="sc">+</span> <span class="fu">geom_step</span>() <span class="sc">+</span> </span>
+<span id="cb46-147"><a href="#cb46-147" aria-hidden="true" tabindex="-1"></a>    hrbrthemes<span class="sc">::</span><span class="fu">theme_ipsum_pub</span>(<span class="at">base_family =</span> <span class="st">"Arial"</span>) <span class="sc">+</span> </span>
+<span id="cb46-148"><a href="#cb46-148" aria-hidden="true" tabindex="-1"></a>    ggsci<span class="sc">::</span><span class="fu">scale_colour_aaas</span>() <span class="sc">+</span> </span>
+<span id="cb46-149"><a href="#cb46-149" aria-hidden="true" tabindex="-1"></a>    directlabels<span class="sc">::</span><span class="fu">geom_dl</span>(<span class="at">method =</span> <span class="fu">list</span>(<span class="st">"smart.grid"</span>),<span class="fu">aes</span>(<span class="at">label =</span> strategy)) <span class="sc">+</span> </span>
+<span id="cb46-150"><a href="#cb46-150" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb46-151"><a href="#cb46-151" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Cycle"</span>, <span class="at">y =</span> <span class="st">"Survival"</span>) <span class="sc">+</span></span>
+<span id="cb46-152"><a href="#cb46-152" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_step</span>(<span class="at">data =</span> df_surv_eigen, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="incorporating-new-evidence_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 
-</section>
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
