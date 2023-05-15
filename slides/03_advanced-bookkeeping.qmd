@@ -922,7 +922,8 @@ fn_mPt <- function(t, params) {
   with(params, {
     h = cycle_length # Time step
     lapply(t, function(tt) {
-      current_age <- initial_age  + (tt) * cycle_length - 1
+      #current_age <- initial_age  + (tt) * cycle_length - 1
+      current_age <- initial_age  + cycle_length * (tt - 1) 
       cycle = (tt) * cycle_length
       
       # Get background mortality rate

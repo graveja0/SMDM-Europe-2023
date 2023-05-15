@@ -540,7 +540,7 @@ total_life_exp = cycle_adj(life_exp_cycle) # <3>
 3.  Define a function for cycle adjustment.[^2]
 :::
 
-[^2]: We use the alternative Simpson's method here for higher accuracy. The half-cycle correction is Newton's trapezoid method. See: Elbasha, Chhatwal, 2016 MDM. 
+[^2]: We use the alternative Simpson's method here for higher accuracy. The half-cycle correction is Newton's trapezoid method. See: Elbasha, Chhatwal, 2016 MDM.
 
 ```{r}
 #| echo: true
