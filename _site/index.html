@@ -157,7 +157,13 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#to-do" id="toc-to-do" class="nav-link active" data-scroll-target="#to-do"><strong>To Do</strong></a></li>
+  </ul>
+</nav>
     <div class="quarto-margin-footer"><div class="margin-footer-item">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -186,24 +192,33 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<section id="to-do" class="level1">
+<h1><strong>To Do</strong></h1>
+<ul>
+<li>Add cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.</li>
+<li>Change the discount rate in the monthly time step too!</li>
+</ul>
 <table class="table">
 <caption>Workshop Schedule</caption>
-<thead>
-<tr class="header">
-<th>Start</th>
-<th>End</th>
-<th>Topic</th>
-<th>Applied Case Study</th>
-</tr>
-</thead>
 <tbody>
 <tr class="odd">
-<td>9:00am</td>
-<td>9:20am</td>
-<td><a href="./slides/00_welcome-and-intros.html">Introductions and Welcome</a></td>
+<td><h1 id="start">Start</h1>
+<p>9:00am</p></td>
+<td><h1 id="end">End</h1>
+<p>9:20am</p></td>
+<td><h1 id="topic">Topic</h1>
+<p><a href="./slides/00_welcome-and-intros.html">Introductions and Welcome</a></p></td>
+<td><h1 id="applied-case-study">Applied Case Study</h1></td>
 <td></td>
 </tr>
 <tr class="even">
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
 <td>9:20am</td>
 <td>10:30 am</td>
 <td><a href="./slides/01_mortality.html">Cause-Specific and Cause-Deleted Mortality</a></td>
@@ -211,53 +226,61 @@ ul.task-list li input[type="checkbox"] {
 <li><a href="https://graves-vanderbilt.shinyapps.io/1-mortality-modeling/">Mortality modeling in R</a></li>
 <li><a href="https://graves-vanderbilt.shinyapps.io/2_alive-dead/">Constructing an Alive-Dead model</a></li>
 </ol></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>10:30am</td>
 <td>11:00am</td>
 <td>BREAK</td>
 <td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>11:00am</td>
 <td>12:30pm</td>
 <td><a href="./slides/02_competing-events.html">Embedding and Competing Events</a></td>
 <td><ol start="3" type="1">
 <li><a href="https://graves-vanderbilt.shinyapps.io/3_cvd-model/">Natural History Cardiovascular Disease Model</a></li>
 </ol></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>12:30pm</td>
 <td>2:00pm</td>
 <td>LUNCH BREAK</td>
 <td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>2:00pm</td>
 <td>3:30pm</td>
 <td><a href="./slides/03_advanced-bookkeeping.html">Advanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States</a></td>
 <td><ol start="4" type="1">
-<li>Advanced replication of Green et. al (2023) model.</li>
+<li><a href="https://client.login.posit.cloud/oauth/login?show_auth=0&amp;show_login=1">Advanced replication of Green et. al</a> (2023) model.</li>
 </ol></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>3:30pm</td>
 <td>4:00pm</td>
 <td>BREAK</td>
 <td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>4:00pm</td>
 <td>5:30pm</td>
 <td><a href="./slides/04_incorporating-new-evidence-and-uncertainty.html">Incorporating New Evidence</a></td>
 <td><ol start="5" type="1">
-<li>Expand Green et. al (2023) model</li>
+<li><a href="https://client.login.posit.cloud/oauth/login?show_auth=0&amp;show_login=1">Expand Green et. al (2023) model</a></li>
 </ol></td>
+<td></td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -508,7 +531,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"loop":true,"openEffect":"zoom","selector":".lightbox","descPosition":"bottom","closeEffect":"zoom"});</script>
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","openEffect":"zoom","loop":true,"closeEffect":"zoom","descPosition":"bottom"});</script>
 
 
 
