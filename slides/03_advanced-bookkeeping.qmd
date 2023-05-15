@@ -854,120 +854,137 @@ trace <- sim_cohort(params)
 
 ```
 
-# Green et al. (2023)
+# Probabilities to Rates
 
-## Green et al. (2023)
+-   Inverse problem exists of having a transition probability model specified and needing the rates. 
+-   The rate matrix does not always exist, and this is the usual case.
+-   Cause: Statistical error in observation, jump over states. 
+-   Two methods exist, eigenvalue method and Higham method.
 
-```{dot}
-digraph G {
-    layout = neato;
-    Asymptomatic [pos="0,0!"];
-    "Progressive\nDisease" [pos="2,1!"]; 
-    Dead [pos="1,-1!"]
-    Asymptomatic -> Asymptomatic ;
-    "Progressive\nDisease" -> "Progressive\nDisease";
-    Asymptomatic -> "Progressive\nDisease" [label="tpProg * (1-effect)"]; 
-    "Progressive\nDisease" -> Dead [label="   tpDcm+tpDn" fontcolor="black"];
-    Asymptomatic -> Dead [label="tpDn"];
-    Dead -> Dead ;
-}
-```
+## HIV Model
 
-## Two Strategies
 
-1.  Without drug
-2.  Drug that confers a 50% reduction in the probability of transitioning to progressive disease.
-
-## Complicating Factors
-
--   Higher rate of death from progressive disease, with a cost (\$1,000) associated with it.
--   But can also die of background causes from progressive disease.
-
-## Parameterize
 
 ```{r}
-params = list(
-    t_names = c("without_drug", "with_drug"),   # Treatment names
-    n_treatments =2,                            # Number of treatments
-    s_names  = c("Asympt", "Progressive", 
-                 "DeadCause","Dead"),           # State names
-    n_states = 4,                               # Number of states
-    n_cohort =1000,                             # Cohort size
-    cycle_length = 1,                                  # Cycle length
-    initial_age = 55,                           # Cohort starting age
-    effect = 0.5,                               # Treatment Effect (drug) 
-    cAsymp =500,                                # Cost of asympomatic state
-    cDeath =1000,                               # cost of death (progressive disease state only)
-    cDrug =1000,                                # Cost of drug
-    cProg =3000,                                # Cycle cost of progressive disease
-    uAsymp =0.95,                               # Asymptomatic state utility
-    uProg =0.75,                                # Progressive disease state utility
-    oDr = 0,                                    # Discount rate (QALYs)
-    cDr = 0,                                    # Discount rate (costs)
-    tpDcm =0.15,                                # Death from progressive disease trans prob
-    tpProg =0.01,                               # Transition prob: progressive disease
-    tpDn =0.0379                                # Background mortality transition prob
+m_P <- matrix(c(0.721, 0.202, 0.067, 0.010,
+                0.000, 0.581, 0.407, 0.012,
+                0.000, 0.000, 0.750, 0.250,
+                0.000, 0.000, 0.000, 1.000), 
+              nrow=4, byrow=TRUE,
+              dimnames=list(c("A", "B", "C", "D"),
+                            c("A", "B", "C", "D")))
+m_P  
+```
+
+::: nonincremental
+-  Original paper specified probabilities observed.
+-  A (Healthly) -> B (cd4 < 200) -> C (AIDS) -> D (Death)
+-  Note there are "jumpover" transitions. 
+-  From '*Decision Modelling for Health Economic Evaluation*' by Briggs, Claxton, Sculpher.
+:::
+
+## Eigenvalue Method
+
+```{r}
+#| echo: true
+V  <- eigen(m_P)$vectors
+iV <- solve(V)
+Ap <- iV %*% m_P %*% V
+lAp <- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+R  <- V %*% lAp %*% iV
+R[abs(R) < 1e-6 ] <- 0
+rownames(R) <- c("A", "B", "C", "D")
+colnames(R) <- c("A", "B", "C", "D")
+round(R,3)
+```
+
+-  Note there is a negative rate from B -> D. 
+-  This is a transition from D -> B and should be moved to the other side of the matrix.
+-  Negative rates imply that identification of the closest 
+
+
+## Eigenvalue Method (cont.)
+
+```{r}
+round(R, 3)
+```
+
+-  Note rates from A->C, A->D are relatively small, implying these are from statistical noise in observation.
+-  `expm::logm` Higham method returns same as Eigenvalue method.
+
+## Reestimating Rates
+
+
+-  Imposition of structural assumptions and fitting to raw data would likely result in better rate estimates.
+-  We could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. A->B->C->D constrains model.
+-  We use the reported data from the paper at year 1
+-  MSM Method: https://chjackson.github.io/msm/msmcourse/
+
+## Reestimating Rates (MSM Method)
+
+
+```{r}
+#| echo: true
+library(msm)
+x <- rbind(
+  # Start in state 1 at time 0.
+  data.frame(
+    ptnum=1:1000, years=rep(0, 1000), state=rep(1, 1000)
+  ),
+  # Observed at year 1 new state.
+  data.frame(
+    ptnum=1:1000, years=rep(1, 1000),
+    state=c(rep(1, 721), rep(2, 202),
+            rep(3, 67),  rep(4, 10))
+  )
 )
-params <- modifyList(params,list(n_cycles = 46/params$cycle))
+x <- x[order(x$ptnum, x$years),]
+
 ```
 
-## Age-Specific Transition Matrices
+## Reestimating Rates (Structural Assumption)
 
 ```{r}
-attach(params)
-t = 1:params$n_cycles
-tt = 1
-
-fn_mPt <- function(t, params) {
-  with(params, {
-    h = cycle_length # Time step
-    lapply(t, function(tt) {
-      #current_age <- initial_age  + (tt) * cycle_length - 1
-      current_age <- initial_age  + cycle_length * (tt - 1) 
-      cycle = (tt) * cycle_length
-      
-      # Get background mortality rate
-      tpDn_lookup <-
-        c(
-          "(34,44]" = 0.0017,
-          "(44,54]" = 0.0044,
-          "(54,64]" = 0.0138,
-          "(64,74]" = 0.0379,
-          "(74,84]" = 0.0912,
-          "(84,100]" = 0.1958
-        )
-       age_grp <- cut(current_age, breaks = c(34,44,54,64,74,84,100))
-       tpDn <- tpDn_lookup[age_grp]
-       
-       tpProg_ <- tpProg * (cycle); tpProg_
-       
-       # Define off-diagonal elements of rate matrix
-       mR_ <- 
-            array(data = c(
-                           0, 0, 0, 0,
-                           -log(1-tpProg_), 0, 0, 0,
-                           0, -log(1-tpDcm), 0, 0,
-                           -log(1 - tpDn), -log(1 - tpDn), 0, 0,
-                           
-                           0, 0, 0, 0,
-                           -log(1-(tpProg_*(1-effect))), 0, 0, 0,
-                           0, -log(1-tpDcm), 0, 0,
-                           -log(1 - tpDn), -log(1 - tpDn), 0, 0),
-                  
-                          dim = c(n_states, n_states, n_treatments),
-                          dimnames = list(from = s_names,
-                                          to = s_names,
-                                          t_names))
-       # Balance out rate matrix
-       mR <- apply(mR_,3,function(x){
-            diag(x) <- -rowSums(x)
-            x
-        },simplify=FALSE)
-
-       mP_ <- # Embed the transition probability matrix
-         lapply(mR, expm)
-      
-    })
-  })
-}
+#| echo: true
+statetable.msm(state, ptnum, data=x)
+Q.init <- rbind(rbind(c(0, 0.3, 0, 0),
+                      c(0, 0, 0.6, 0),
+                      c(0, 0, 0, 0.3),
+                      c(0, 0, 0, 0)))
 ```
+
+::: nonincremental
+-  Q represents structural assumptions and estimate
+-  Estimates were taken from Eigenvalue method
+:::
+
+## Reestimating Rates (Likelihood Fit)
+
+```{r}
+#| echo: true
+hiv.msm <- msm(state ~ years, subject = ptnum, data = x, qmatrix = Q.init)
+hiv.msm
+```
+
+::: nonincremental
+-  All positive.
+-  Provides 95% confidence intervals for a PSA.
+:::
+
+## Reestimating Rates (Transition Probabilities)
+
+```{r}
+#| echo: true
+round(pmatrix.msm(hiv.msm, t=1), 3)
+m_P
+```
+
+## Conclusions
+
+-  Identifying rate matrix from transition probability matrix in presence of error/jump over is in general not possible.
+-  The matrix `log` methods can result in impossible models. 
+-  Using observed data one can fit rate data using likelihood, e.g. `msm`.
+-  Structural assumptions can be imposed. 
+-  95% confidence intervals result. 
+
+
