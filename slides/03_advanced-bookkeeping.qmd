@@ -1009,4 +1009,3 @@ c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
 -  Structural assumptions can be imposed and may be necessary.
 -  95% confidence intervals result. 
 
-
