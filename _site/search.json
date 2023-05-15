@@ -4324,5 +4324,68 @@
     "title": "Competing Risks",
     "section": "What Is Commonly Taught",
     "text": "What Is Commonly Taught\n\nConvert each rate to a probability for the time step using \\(p = 1-\\exp(-rt)\\).\nPlace the probabilities within a transition matrix \\(\\mathbf{P}\\).\nDiagonal elements of \\(\\mathbf{P}\\): 1 - (row sum of nondiagonal elements)."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#hiv-model",
+    "href": "slides/03_advanced-bookkeeping.html#hiv-model",
+    "title": "Advanced Bookkeeping",
+    "section": "HIV Model",
+    "text": "HIV Model\n\n\n      A     B     C     D\nA 0.721 0.202 0.067 0.010\nB 0.000 0.581 0.407 0.012\nC 0.000 0.000 0.750 0.250\nD 0.000 0.000 0.000 1.000\n\n\n\n\nOriginal paper specified probabilities observed.\nA (Healthly) -&gt; B (cd4 &lt; 200) -&gt; C (AIDS) -&gt; D (Death)\nNote there are “jumpover” transitions.\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#eigenvalue-method",
+    "href": "slides/03_advanced-bookkeeping.html#eigenvalue-method",
+    "title": "Advanced Bookkeeping",
+    "section": "Eigenvalue Method",
+    "text": "Eigenvalue Method\n\nV  &lt;- eigen(m_P)$vectors\niV &lt;- solve(V)\nAp &lt;- iV %*% m_P %*% V\nlAp &lt;- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))\nR  &lt;- V %*% lAp %*% iV\nR[abs(R) &lt; 1e-6 ] &lt;- 0\nrownames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\ncolnames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\nround(R,3)\n\n       A      B      C      D\nA -0.327  0.311  0.002  0.013\nB  0.000 -0.543  0.615 -0.072\nC  0.000  0.000 -0.288  0.288\nD  0.000  0.000  0.000  0.000\n\n\n\nNote there is a negative rate from B -&gt; D.\nThis is a transition from D -&gt; B and should be moved to the other side of the matrix.\nThe negative rate implies an identifiability issue."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#eigenvalue-method-cont.",
+    "href": "slides/03_advanced-bookkeeping.html#eigenvalue-method-cont.",
+    "title": "Advanced Bookkeeping",
+    "section": "Eigenvalue Method (cont.)",
+    "text": "Eigenvalue Method (cont.)\n\n\n       A      B      C      D\nA -0.327  0.311  0.002  0.013\nB  0.000 -0.543  0.615 -0.072\nC  0.000  0.000 -0.288  0.288\nD  0.000  0.000  0.000  0.000\n\n\n\nNote rates from A-&gt;C, A-&gt;D are relatively small, implying these are from statistical noise in observation.\nexpm::logm Higham method returns same as Eigenvalue method.\nTweaking rates to get a proper model is ad-hoc and difficult."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates",
+    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates",
+    "title": "Advanced Bookkeeping",
+    "section": "Reestimating Rates",
+    "text": "Reestimating Rates\n\nImposition of structural assumptions and fitting to raw data would likely result in better rate estimates.\nWe could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. A-&gt;B-&gt;C-&gt;D constrains model.\nWe use the reported data from the paper at year 1\nMSM Method: https://chjackson.github.io/msm/msmcourse/"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-msm-method",
+    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-msm-method",
+    "title": "Advanced Bookkeeping",
+    "section": "Reestimating Rates (MSM Method)",
+    "text": "Reestimating Rates (MSM Method)\n\nlibrary(msm)\nx &lt;- rbind(\n  # Start in state 1 at time 0.\n  data.frame(\n    ptnum=1:1000, years=rep(0, 1000), state=rep(1, 1000)\n  ),\n  # Observed at year 1 new state.\n  data.frame(\n    ptnum=1:1000, years=rep(1, 1000),\n    state=c(rep(1, 721), rep(2, 202),\n            rep(3, 67),  rep(4, 10))\n  )\n)\nx &lt;- x[order(x$ptnum, x$years),]"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-structural-assumption",
+    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-structural-assumption",
+    "title": "Advanced Bookkeeping",
+    "section": "Reestimating Rates (Structural Assumption)",
+    "text": "Reestimating Rates (Structural Assumption)\n\nstatetable.msm(state, ptnum, data=x)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0, 0),\n                      c(0, 0, 0.6, 0),\n                      c(0, 0, 0, 0.3),\n                      c(0, 0, 0, 0)))\n\n\n\nQ represents structural assumptions and estimate\nEstimates were taken from Eigenvalue method"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-likelihood-fit",
+    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-likelihood-fit",
+    "title": "Advanced Bookkeeping",
+    "section": "Reestimating Rates (Likelihood Fit)",
+    "text": "Reestimating Rates (Likelihood Fit)\n\nhiv.msm &lt;- msm(state ~ years, subject = ptnum, data = x, qmatrix = Q.init)\nhiv.msm\n\n\nCall:\nmsm(formula = state ~ years, subject = ptnum, data = x, qmatrix = Q.init)\n\nMaximum likelihood estimates\n\nTransition intensities\n                  Baseline                 \nState 1 - State 1 -0.3271 (-0.3680,-0.2907)\nState 1 - State 2  0.3271 ( 0.2907, 0.3680)\nState 2 - State 2 -0.6454 (-0.8181,-0.5092)\nState 2 - State 3  0.6454 ( 0.5092, 0.8181)\nState 3 - State 3 -0.3982 (-0.7562,-0.2097)\nState 3 - State 4  0.3982 ( 0.2097, 0.7562)\n\n-2 * log-likelihood:  1572.2 \n\n\n\n\nAll positive.\nProvides 95% confidence intervals for a PSA."
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities",
+    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities",
+    "title": "Advanced Bookkeeping",
+    "section": "Reestimating Rates (Transition Probabilities)",
+    "text": "Reestimating Rates (Transition Probabilities)\n\nround(pmatrix.msm(hiv.msm, t=1), 3)\n\n        State 1 State 2 State 3 State 4\nState 1   0.721   0.202   0.067   0.010\nState 2   0.000   0.524   0.384   0.092\nState 3   0.000   0.000   0.672   0.328\nState 4   0.000   0.000   0.000   1.000\n\nm_P\n\n      A     B     C     D\nA 0.721 0.202 0.067 0.010\nB 0.000 0.581 0.407 0.012\nC 0.000 0.000 0.750 0.250\nD 0.000 0.000 0.000 1.000"
+  },
+  {
+    "objectID": "slides/03_advanced-bookkeeping.html#conclusions",
+    "href": "slides/03_advanced-bookkeeping.html#conclusions",
+    "title": "Advanced Bookkeeping",
+    "section": "Conclusions",
+    "text": "Conclusions\n\nIdentifying rate matrix from transition probability matrix in presence of error/jump over is in general not possible.\nThe matrix log methods can result in impossible models.\nUsing observed data one can fit rate data using likelihood, e.g. msm.\nStructural assumptions can be imposed.\n95% confidence intervals result.\n\n\n\nBack to Website"
   }
 ]
