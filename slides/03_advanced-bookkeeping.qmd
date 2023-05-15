@@ -900,7 +900,7 @@ round(R,3)
 
 -  Note there is a negative rate from B -> D. 
 -  This is a transition from D -> B and should be moved to the other side of the matrix.
--  Negative rates imply that identification of the closest 
+-  The negative rate implies an identifiability issue. 
 
 
 ## Eigenvalue Method (cont.)
@@ -911,6 +911,7 @@ round(R, 3)
 
 -  Note rates from A->C, A->D are relatively small, implying these are from statistical noise in observation.
 -  `expm::logm` Higham method returns same as Eigenvalue method.
+- Tweaking rates to get a proper model is ad-hoc and difficult.
 
 ## Reestimating Rates
 
