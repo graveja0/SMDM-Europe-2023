@@ -948,10 +948,10 @@ x <- x[order(x$ptnum, x$years),]
 ```{r}
 #| echo: true
 statetable.msm(state, ptnum, data=x)
-Q.init <- rbind(rbind(c(0, 0.3, 0, 0),
-                      c(0, 0, 0.6, 0),
-                      c(0, 0, 0, 0.3),
-                      c(0, 0, 0, 0)))
+Q.init <- rbind(rbind(c(0, 0.3, 0,   0),    # A -> B only
+                      c(0, 0,   0.6, 0),    # B -> C only
+                      c(0, 0,   0,   0.3),  # C -> D only
+                      c(0, 0,   0,   0)))
 ```
 
 ::: nonincremental
@@ -995,7 +995,7 @@ c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
 ```
 
 ::: nonincremental
--  Resulting expecation after 1 cycle is nearly identical.
+-  Resulting expectation after 1 cycle is nearly identical.
 -  The msm method has bits down at 4th decimal. Round off made them identical.
 -  Only a tiny bit of error induced stability issues converting from probability to rate.
 :::
