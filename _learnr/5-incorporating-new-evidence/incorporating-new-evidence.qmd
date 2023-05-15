@@ -4,6 +4,8 @@ subtitle: "Replicating and Extending Green et al. (2023)"
 editor: source
 editor_options: 
   chunk_output_type: console
+reference-location: margin
+self-contained: true  
 bibliography: ../../slides/references.bib
 ---
 
