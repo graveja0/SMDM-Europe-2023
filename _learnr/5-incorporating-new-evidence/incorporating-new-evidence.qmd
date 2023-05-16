@@ -416,9 +416,7 @@ Using a continuous generator in this example requires that we split out death fr
 The adapted model diagram is provided below.
 
 <div>
-
-<a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src="https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/9a3873291c108c030b908711a4c353aa9deb0a38.sketchy.png" style="max-width: 100%;"/></a><br/>[Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
-
+<a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src='https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/71ddc1363eeda5c57ead746f05ade1c1c852398f.sketchy.png' style='max-width: 100%;'></a><br/><span style='font-size: 80%;color:#555;'>Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a></span>
 </div>
 
 ```{r}
@@ -613,7 +611,7 @@ paramsB$mP[[1]]
 
 ## B4. Construct the Trace
 
-Again we can use the function defined in @sec-b4 to construct the trace for each strategy:
+Again we can use the function defined in @sec-a4 to construct the trace for each strategy:
 
 ```{r}
 traceB = # Create the trace given the parameters. 
