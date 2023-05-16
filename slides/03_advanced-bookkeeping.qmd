@@ -1000,7 +1000,7 @@ c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
 ## Conclusions
 
 -   Identifying rate matrix from transition probability matrix in presence of error/jump over is in general not possible.
--   The matrix `log` methods can result in impossible models.
+-   The matrix `log` methods (eigen/Higham) usually results in impossible models.
 -   Using observed data one can fit rate data using likelihood, e.g. `msm`.
 -   Structural assumptions can be imposed and may be necessary.
 -   95% confidence intervals result.
