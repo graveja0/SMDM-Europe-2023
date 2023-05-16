@@ -623,7 +623,7 @@ traceB = # Create the trace given the parameters.
 
 ## Compare State Occupancy
 
-@fig-compare plots state occupancy by cycle for strategy A (conversion) vs. strategy B (solving for the generator matrix). As the figure shows, the two strategies yield broadly similar results, but there are slight differences in state occupancy. 
+@fig-compare takes the constructed traces for each method and strategy and plots state occupancy by cycle. As the figure shows, the two embedding strategies yield broadly similar results, but there are slight differences. 
 
 ```{r}
 #| code-fold: true
@@ -641,7 +641,7 @@ df_traceA <-
   separate(measure, into=c("null","state"), sep = "without_drug_|with_drug_",remove = F) %>% 
   select(-null) %>% 
   mutate(strategy = ifelse(grepl("without_drug",measure),"without_drug","with_drug")) %>% 
-  mutate(method = "Conversion")
+  mutate(method = "Rate Conversion")
 
 df_traceB <- 
   cbind.data.frame(traceB) %>% 
@@ -674,32 +674,67 @@ df_traceA %>%
 
 # Outcomes
 
+Our final step is to calculate model outcomes such as life expectancy, discounted QALYs and costs, and ICERs.
+
 ## Survival
+
+@fig-survival constructs survival curves using a "payoff" of 1 if the individual is alive and 0 otherwise.[Note that the code also normalizes state ocucpancy by the initial cohort size so that survival is expressed in terms of a fraction of the cohort, rather than in terms of a count of indiviudals]{.aside}
 
 ```{r}
 survival_payoff = c("Asympt" = 1, "Progressive" = 1, "Dead" = 0 , "trDeadCause" = 0)
 survival = lapply(trace,function(tr) ((tr / params$n_cohort)%*% survival_payoff))
+
+survival_payoffB = c("Asympt" = 1, "Progressive" = 1, "DeadCause" = 0, "Dead" = 0 , "trDeadCause" = 0)
+survivalB = lapply(traceB,function(tr) ((tr / paramsB$n_cohort)%*% survival_payoffB))
 ```
 
 ```{r}
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 6
+#| fig-cap: Survival Curves by Strategy and Method
+#| label: fig-survival
 df_surv = data.frame(survival) %>% 
     mutate(age = params$initial_age + (row_number()-1)*params$cycle_length) %>% 
     tibble() %>% 
     gather(strategy, value,-age) %>% 
-    tibble()
+    tibble() %>% 
+    mutate(method = "Rate Conversion")
+
+df_survB = data.frame(survivalB) %>% 
+    mutate(age = paramsB$initial_age + (row_number()-1)*paramsB$cycle_length) %>% 
+    tibble() %>% 
+    gather(strategy, value,-age) %>% 
+    tibble() %>% 
+    mutate(method = "Higham")
+
 df_surv %>% 
-    ggplot(aes(x = age, y = value, colour = strategy)) + geom_step() + 
+  bind_rows(df_survB) %>% 
+    ggplot(aes(x = age, y = value, colour = strategy, lty=method)) + geom_step() + 
     hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
-    ggsci::scale_colour_aaas() + 
-    directlabels::geom_dl(method = list("smart.grid"),aes(label = strategy)) + 
-    theme(legend.position = "none") + 
+    ggsci::scale_colour_aaas(name="") + 
+    scale_linetype(name = "") + 
+    directlabels::geom_dl(data = df_surv, method = list("smart.grid"),aes(label = strategy)) + 
+    theme(legend.position = "bottom") + 
     labs(x = "Cycle", y = "Survival") 
 ```
 
 ## Life Expectancy
 
+Life expectancy is calculated by summing up the survival curves after applying a cycle correction based on [Simpson's Rule](https://en.wikipedia.org/wiki/Simpson%27s_rule).
+
 ```{r}
-data.frame(lapply(survival,function(x) sum(x*alt_simp_coef(params$n_cycles+1))))*params$cycle_length
+# Rate Conversion Method
+(data.frame(lapply(survival,function(x) sum(x*alt_simp_coef(params$n_cycles+1))))*params$cycle_length) %>% 
+  data.frame() %>% 
+  mutate(diff = with_drug - without_drug)
+```
+
+```{r}
+# Higham Method
+(data.frame(lapply(survivalB,function(x) sum(x*alt_simp_coef(paramsB$n_cycles+1))))*paramsB$cycle_length) %>% 
+    data.frame() %>% 
+  mutate(diff = with_drug - without_drug)
 ```
 
 ## Total QALYs and Costs
