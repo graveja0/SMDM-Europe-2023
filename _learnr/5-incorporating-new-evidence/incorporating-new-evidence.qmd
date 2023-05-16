@@ -23,21 +23,27 @@ The model is structured as follows:
 
 </div>
 
-In this model, individuals begin in an `Asymptomatic` disease state and are at risk of transitioning to a `Progressive Disease` state in a given cycle with probability `tpProg`. Individuals can also progress to a death state based on background causes (`tpDn`) or due to a heightened risk of death due to progressive disease (`tpDcm`). 
+In this model, individuals begin in an `Asymptomatic` disease state and are at risk of transitioning to a `Progressive Disease` state in a given cycle with probability `tpProg`. Individuals can also progress to a death state based on background causes (`tpDn`) or due to a heightened risk of death due to progressive disease (`tpDcm`).
 
-The model considers the costs and benefits of two strategies: 
+The model considers the costs and benefits of two strategies:
 
-1. **Without Drug:** a base case in which individuals incur a cost of Asymptomatic disease ($500/year), an (annual) \$3,000 cost of progressive disease, and a one-time (\$1,000) cost if they die from progressive disease. Utility payoffs are set at 0.95 in the Asymptomatic state, and 0.75 in the Progressive Disease State.
+1.  **Without Drug:** a base case in which individuals incur a cost of Asymptomatic disease (\$500/year), an (annual) \$3,000 cost of progressive disease, and a one-time (\$1,000) cost if they die from progressive disease. Utility payoffs are set at 0.95 in the Asymptomatic state, and 0.75 in the Progressive Disease State.
 
-2. **With Drug**: a strategy in which a drug is available in the Asymptomatic state. This drug costs \$1,000 per year and lowers the probability of entering the Progressive Disease state by 50%. All other costs and utilities are the same as in the **No Drug** strategy. 
+2.  **With Drug**: a strategy in which a drug is available in the Asymptomatic state. This drug costs \$1,000 per year and lowers the probability of entering the Progressive Disease state by 50%. All other costs and utilities are the same as in the **No Drug** strategy.
 
 The code provided below replicates the original model, but draws on various capabilities within the (now ubiquitous) `tidyverse` universe to both simplify and generalize the execution process.
 
-# 1. Set Up and Parameterize the Model
+We will consider model replication through two methods:
 
-Our first step is to load all required packages and define the parameters that govern the model.
+#### A. Using the supplied transition probabilities as marginal (total) probabilities.
 
-## Set Up Libraries and Functions
+This approach will embed a transition rate matrix after converting the supplied (annual) probabilities into rates.
+
+#### B. Using @highamFunctionsMatricesTheory2008
+
+This approach will begin from a transition probability matrix as constructed using the supplied transition probabilities. We'll then calculate the principal logarithm of the matrix based on the methods in @highamFunctionsMatricesTheory2008 and use the [resulting intensity (generator) matrix](https://www.maths.manchester.ac.uk/~higham/talks/napier_log14.pdf) as the basis for the final transition probability matrix.
+
+# 0. Set Up and Parameterize the Model
 
 We first load up all necessary packages and define functions for cycle adjustments based on [Simpson's Rule](https://en.wikipedia.org/wiki/Simpson%27s_rule).
 
@@ -80,7 +86,7 @@ params = list(
     n_states = 3,                                  # Number of states
     
     n_cohort =1000,                                # Cohort size
-    cycle_length = 1/12,                              # Cycle length
+    cycle_length = 1,                              # Cycle length
     time_horizon = 45,                             # Model time horizon (in years)
     initial_age = 55,                              # Cohort starting age
     effect = 0.5,                                  # Treatment Effect (drug) 
@@ -105,9 +111,9 @@ params = list(
 To retain flexibility to change the model time step (e.g., annual, monthly, daily) we next add and re-define some parameters that are functions of other parameters. For example:
 
 -   `n_cycles` should be flexibly adapted so that it can respond if we set a different cycle length while keeping the simulation time horizon the same.
--   Similarly, the define (annual) discounting rates also must be adapted for shorter vs. longer cycle lengths.
+-   Similarly, the defined (annual) discounting rates also must be adapted for shorter vs. longer cycle lengths.
 
-These changes will become important later when we check how robust our results are to shortening the cycle length. 
+These changes will become important later when we check how robust our results are to shortening the cycle length.
 
 ```{r}
 params =
@@ -120,13 +126,19 @@ params =
     }))
 ```
 
-## Markovian Transition Rate Matrix
+# A. Construct the Model Using Rate Conversion
 
-Our first step is to fill out the Markovian rate matrix. This matrix should be square with `n_states`=3 rows and columns. 
+The first approach we will consider will take the supplied transition probabilities (i.e., parameters with the `tp` prefix) and convert them to rates. Note that by doing so, we are making an assumption that there are no competing events operating on the transition probabilities (see [Lecture 2](../slides/02_competing-events.qmd)).
+
+Once we have converted to continuous rates, we will then re-embed the transition probability matrix so that it will capture compound transitions across three or more states in a cycle.
+
+## A1. Markovian Transition Rate Matrix 
+
+Our first step is to fill out the Markovian rate matrix. This matrix should be square with `n_states`=3 rows and columns.
 
 To run our model, we must construct a separate transition matrix for every cycle. This is because several transition probabilities are a function of age:
 
-- Background mortality is based on the following lookup table of death probabilities by age group:
+-   Background mortality is based on the following lookup table of death probabilities by age group:
 
 ```{r}
 #| code-fold: true
@@ -145,9 +157,9 @@ tpDn_lookup %>%
   kable_styling(full_width = FALSE)
 ```
 
-- The probability of disease progression increases by 0.01 per year. 
+-   The probability of disease progression increases by 0.01 per year.
 
-To incorporate these dynamics, we'll define a function that takes as its inputs a vector of cycles (`t`) as well as the parameter list object defined above. 
+To incorporate these dynamics, we'll define a function that takes as its inputs a vector of cycles (`t`) as well as the parameter list object defined above.
 
 We'll begin with an annual time step, so the cycle vector `t` should be defined as 1:45, since we're working over a 45 year time horizon.
 
@@ -155,22 +167,23 @@ We'll begin with an annual time step, so the cycle vector `t` should be defined 
 t = 1:45
 ```
 
-We next need to iterate over each of these cycles and define a rate matrix specific to that cycle. Each iteration will be indexed by `tt`. 
+We next need to iterate over each of these cycles and define a rate matrix specific to that cycle. Each iteration will be indexed by `tt`.
 
-To demonstrate how to construct the rate matrix for the first cycle, let's set `tt` to 1. 
+To demonstrate how to construct the rate matrix for the first cycle, let's set `tt` to 1.
 
 ```{r}
 tt = 1
 ```
 
-At `tt` = 1, we need to figure out the current age of the cohort at the end of the cycle. This is useful to extract the correct death transition probability. 
+At `tt` = 1, we need to figure out the current age of the cohort at the end of the cycle. This is useful to extract the correct death transition probability.
 
 ```{r}
 current_age = with(params, initial_age + cycle_length * tt)
 current_age
 ```
 
-We next find the death probability from the lookup table based on age at the begnning of the cycle. We also convert this probability to a rate. 
+We next find the death probability from the lookup table based on age at the begnning of the cycle. We also convert this probability to a rate.
+
 ```{r}
 age_grp = with(params,cut(current_age - tt * cycle_length, breaks = c(34,44,54,64,74,84,100)))
 tpDn = tpDn_lookup[age_grp]
@@ -227,7 +240,7 @@ mR = apply(mR_,3,function(x){
 mR
 ```
 
-We now have a transition rate matrix constructed for the first cycle!  Our next step is to repeat this process for every cycle. The function below generalizes the above process and returns a list object with a different transition rate matrix for each cycle and strategy. 
+We now have a transition rate matrix constructed for the first cycle! Our next step is to repeat this process for every cycle. The function below generalizes the above process and returns a list object with a different transition rate matrix for each cycle and strategy.
 
 ```{r mR-ans}
 fn_mRt_markov =function(t, params) {
@@ -292,20 +305,20 @@ params$mRMarkov =
 params$mRMarkov[[1]]
 ```
 
-## Add Non-Markovian Components to Rate Matrix
+## A2. Add Non-Markovian Components to Rate Matrix {#sec-a2}
 
-Because transitions to death from the progressive disease state incur a one-time death cost of $1,000, we need to track the number of transitions to death in the model. We'll do so by adding a non-Markovian transition state. 
+Because transitions to death from the progressive disease state incur a one-time death cost of \$1,000, we need to track the number of transitions to death in the model. We'll do so by adding a non-Markovian transition state.
 
 The basic procedure is to take the Markovian rate matrix defined above, and then add a transition state to the matrix. Note that the Markovian rate matrix is already balanced (i.e., the diagonal elements equal the negative row sum of off-diagonal elements). We will keep this part in tact and simply add a new column and row for the non-Markovian tracking state.
 
-The function below takes as its input the parameter list object and the Markovian rate matrix (`R`) and adds in a new tracking state called `trDeadCause`. This tracker has a rate defined by the rate of transition from `Progressive Disease` to `Death`, i.e., `rDcm`. 
+The function below takes as its input the parameter list object and the Markovian rate matrix (`R`) and adds in a new tracking state called `trDeadCause`. This tracker has a rate defined by the rate of transition from `Progressive Disease` to `Death`, i.e., `rDcm`.
 
 ```{r}
 fn_mRt_nonmarkov = function(R,params) {
-    R %>% map(~({
+    R %>% map(~({  # Outer loop is over cycles in the model
         R_ = .x
         rDcm = -log(1 - params$tpDcm)
-        lapply(R_,function(x) {
+        lapply(R_,function(x) {  # Inner loop is over strategies
             x_ = cbind(x,"trDeadCause" = rep(0, params$n_states))
             x_ = rbind(x_,"trDeadCause" = rep(0,params$n_states+1))
             x_["Progressive","trDeadCause"] = rDcm
@@ -316,14 +329,15 @@ fn_mRt_nonmarkov = function(R,params) {
 ```
 
 We can see now that the transition rate matrix has been augmented to include a non-markovian transition state tracker:
+
 ```{r}
 params$mR = fn_mRt_nonmarkov(R =params$mRMarkov,params)
 params$mR[[1]]
 ```
 
-## Transition Probability Matrix
+## A3. Transition Probability Matrix {#sec-a3}
 
-Our final step is to embed the transition probability matrix using matrix exponentiation. 
+Our final step is to embed the transition probability matrix using matrix exponentiation.
 
 We also have an added step of zeroing out the probability of transition from `trDeadCause` to `trDeadCause` because the model only counts the cost of death from Progressive Disease once, when the transition occurs. However, when we initially embed the matrix, this transition probability will be set to 1.0.[Recall that if we left this transition probability in tact at 1.0, our `trDeadCause` state would be an *accumulator* that counts the total number of transitions up to a given cycle, not the total number of transitions within that cycle.]{.aside}
 
@@ -341,7 +355,7 @@ fn_mP = function(R, params) {
 }
 ```
 
-You'll see in the transition probability matrices for the first cycle below that the transition health state (`trDeadCause`) has a "jumpover" transition probability from the Asymptomatic state. This reflects the fact that there are some compound transitions within a cycle (i.e., transition from Asymptomatic to Progressive Disease to Death from Progressive Disease): 
+You'll see in the transition probability matrices for the first cycle below that the transition health state (`trDeadCause`) has a "jumpover" transition probability from the Asymptomatic state. This reflects the fact that there are some compound transitions within a cycle (i.e., transition from Asymptomatic to Progressive Disease to Death from Progressive Disease):
 
 ```{r}
 params$mP = 
@@ -349,7 +363,7 @@ params$mP =
 params$mP[[1]]
 ```
 
-# Markov Trace
+## A4. Markov Trace {#sec-a4}
 
 With our cycle-specific transition probabilities constructed we can construct a full trace. We do so by defining a function `sim_cohort()` and feeding our parameter object into it:
 
@@ -384,10 +398,278 @@ sim_cohort = function(params) {
 ```
 
 Let's now construct the trace
+
 ```{r}
 trace = # Create the trace given the parameters. 
     sim_cohort(params)
 lapply(trace,head)
+```
+
+# B. Solving for the Generator Matrix
+
+As an alternative approach, we can construct the model by taking the matrix logarithm of the transition probability matrix supplied in the original model. This provides us with the continuous generator matrix calculated above in step A1.
+
+## B0. Parameterize the Model
+
+Using a continuous generator in this example requires that we split out death from Progressive Disease and death from background causes. Why? Because there are two transition probabilities to death operating on individuals in the Progressive Disease state, and we need to find the underlying rates for each; if we bundled them together into a single transition probability, we'd have an identifiability issue---there are any number of combinations of rates that can yield the same (total) probability!
+
+The adapted model diagram is provided below.
+
+<div>
+
+<a href='//sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a'><img src="https://sketchviz.com/@graveja0/27cb6a8afd59496135e83cd52894349a/9a3873291c108c030b908711a4c353aa9deb0a38.sketchy.png" style="max-width: 100%;"/></a><br/>[Hosted on <a href='//sketchviz.com/' style='color:#555;'>Sketchviz</a>]{style="font-size: 80%;color:#555;"}
+
+</div>
+
+```{r}
+paramsB <- modifyList(params,list(
+    s_names  = c("Asympt", "Progressive", "DeadCause","Dead"), # State names
+    n_states = 4                                              # Number of states
+))
+```
+
+## B1. Markovian Rate Matrix
+
+Mirroring step A1 above, let's construct the generator rate matrix for the first cycle.
+
+We begin with the transition probability matrix constructed using the probabilities supplied in the paramters list:
+
+```{r}
+mP_ =  with(paramsB,{
+  array(data = c(
+        0, 0, 0, 0,
+        tpProg_, 0, 0, 0,
+        0 ,tpDcm, 0, 0,
+        tpDn, tpDn , 0,0,
+        
+        0, 0, 0, 0,
+        tpProg_*(1-effect), 0, 0, 0,
+        0 ,tpDcm, 0, 0,
+        tpDn, tpDn , 0,0 ),
+        
+        dim = c(n_states, n_states, n_treatments),
+        dimnames = list(from = s_names,
+                        to = s_names,
+                        t_names))
+})
+
+mP_ <- apply(mP_,3,simplify = FALSE, function(x) {
+                diag(x) = 1 - rowSums(x)
+                x
+            })
+mP_
+```
+
+We'll now use the Higham method to calculate the generator matrix:
+
+```{r}
+mR_ = lapply(mP_,function(x) {
+  x_ = expm::logm(x)
+  dimnames(x_) = list(paramsB$s_names, paramsB$s_names)
+  x_})
+mR_
+```
+
+Note that becaue the original transition probability matrix did not capture a continuous time process (it ruled out any compound transitions from the Asymptomatic to Progressive Disease Death state in a single cycle), we end up with a negative rate in the \[`Asymptomatic`,`DeathCause`\] cell.
+
+::: {.column-margin}
+
+Note that we can also obtain the same matrices using eigenvector decomposition to solve for the continuous generator matrix:
+
+```{r}
+mR_ <- 
+      lapply(mP_,function(x) {
+        V  = eigen(x)$vectors
+        iV = solve(V)
+        Ap = iV %*% x %*% V
+        lAp = diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+        R  = V %*% lAp %*% iV
+        R[abs(R) < 1e-6 ] <- 0
+        R
+    })
+mR_
+```
+
+:::
+
+Let's zero out the negative rates and allow them to accumulate (for now) in the diagonal. 
+
+```{r}
+mR_ = lapply(mP_,function(x) {
+  # Zero out negative cells 
+  x_ = expm::logm(x)
+  x_[x_<0] = 0
+  # Rebalance the matrix by first zeroing out the diagonal
+  diag(x_) = rep(0,nrow(x_))
+  # New diagonal is the negative row sum
+  diag(x_) = -rowSums(x_)
+  dimnames(x_) = list(paramsB$s_names, paramsB$s_names)
+  x_})
+mR_
+```
+
+Let's now wrap everything into a function that will perform the above for any cycle:
+
+```{r}
+fn_mRtB =function(t, params) {
+    with(params, {
+        lapply(t, function(tt) {
+            
+            current_age =initial_age + cycle_length * tt
+            year = tt * cycle_length
+            
+            # Get background mortality rate
+            tpDn_lookup <-
+                c(
+                    "(34,44]" = 0.0017,
+                    "(44,54]" = 0.0044,
+                    "(54,64]" = 0.0138,
+                    "(64,74]" = 0.0379,
+                    "(74,84]" = 0.0912,
+                    "(84,100]" = 0.1958
+                )
+            age_grp =cut(current_age - tt * cycle_length, breaks = c(34,44,54,64,74,84,100))
+            tpDn =tpDn_lookup[age_grp]
+            
+            tpProg_ = tpProg * ceiling(year)
+            
+            # Convert supplied probabilities back to rates. 
+            rProg = tpProg_
+            tpProgDrug = (tpProg_*(1-effect))
+            rDcm = tpDcm
+            rDn = tpDn
+            
+            mP_ = 
+                array(data = c(
+                    0, 0, 0, 0,
+                    tpProg_, 0, 0, 0,
+                    0 ,tpDcm, 0, 0,
+                    tpDn, tpDn , 0,0,
+                    
+                    0, 0, 0, 0,
+                    tpProgDrug, 0, 0, 0,
+                    0 ,tpDcm, 0, 0,
+                    tpDn, tpDn , 0,0 ),
+                    
+                    dim = c(n_states, n_states, n_treatments),
+                    dimnames = list(from = s_names,
+                                    to = s_names,
+                                    t_names))
+            mP_ <- apply(mP_,3,simplify = FALSE, function(x) {
+                diag(x) = 1 - rowSums(x)
+                x
+            })
+            
+            mR_ = lapply(mP_,function(x) {
+              # Zero out negative cells 
+              x_ = expm::logm(x)
+              x_[x_<0] = 0
+              # Rebalance the matrix by first zeroing out the diagonal
+              diag(x_) = rep(0,nrow(x_))
+              # New diagonal is the negative row sum
+              diag(x_) = -rowSums(x_)
+              dimnames(x_) = list(paramsB$s_names, paramsB$s_names)
+              x_
+              })
+            
+            
+        
+        mR_
+            
+        })
+    })
+}
+```
+
+```{r}
+paramsB$mRMarkov = 
+  fn_mRtB(t = 1:paramsB$n_cycles, paramsB)
+```
+
+## B2. Add Non-Markovian Components to Rate Matrix
+
+For this step we can simply use the function we defined in @sec-a2 above. 
+
+```{r}
+paramsB$mR = 
+  fn_mRt_nonmarkov(R =paramsB$mRMarkov,paramsB)
+paramsB$mR[[1]]
+```
+
+## B3. Transition Probability Matrix
+
+We can similarly use the same function as defined in @sec-b3 to embed the transition probability matrix. 
+
+```{r}
+paramsB$mP = 
+  fn_mP(R = paramsB$mR, paramsB)
+```
+
+Let's look at the matrix for the first cycle. Note that through the embedding process we have accounted for compound transitions in the [`Asympt`,`DeadCause`] cell!
+
+```{r}
+paramsB$mP[[1]]
+```
+
+## B4. Construct the Trace
+
+Again we can use the function defined in @sec-b4 to construct the trace for each strategy:
+
+```{r}
+traceB = # Create the trace given the parameters. 
+    sim_cohort(paramsB)
+```
+
+
+## Compare State Occupancy
+
+@fig-compare plots state occupancy by cycle for strategy A (conversion) vs. strategy B (solving for the generator matrix). As the figure shows, the two strategies yield broadly similar results, but there are slight differences in state occupancy. 
+
+```{r}
+#| code-fold: true
+#| label: fig-compare
+#| fig-width: 10
+#| fig-height: 6
+#| fig-cap: Comparison of State Occupancy Across Embedding Strategy Methods
+
+df_traceA <- 
+  cbind.data.frame(trace) %>% 
+  janitor::clean_names(.) %>% 
+  as_tibble() %>% 
+  mutate(cycle = row_number()-1) %>% 
+  gather(measure,occupancy,-cycle) %>% 
+  separate(measure, into=c("null","state"), sep = "without_drug_|with_drug_",remove = F) %>% 
+  select(-null) %>% 
+  mutate(strategy = ifelse(grepl("without_drug",measure),"without_drug","with_drug")) %>% 
+  mutate(method = "Conversion")
+
+df_traceB <- 
+  cbind.data.frame(traceB) %>% 
+  janitor::clean_names(.) %>% 
+  as_tibble() %>% 
+  # Must add death states together to make them comparable to strategy A. 
+  mutate(without_drug_dead = without_drug_dead_cause  + without_drug_dead ) %>% 
+  mutate(with_drug_dead = with_drug_dead_cause  + with_drug_dead ) %>% 
+  select(-without_drug_dead_cause,-with_drug_dead_cause) %>% 
+  mutate(cycle = row_number()-1) %>% 
+  gather(measure,occupancy,-cycle) %>% 
+  separate(measure, into=c("null","state"), sep = "without_drug_|with_drug_",remove = F) %>% 
+  select(-null) %>% 
+  mutate(strategy = ifelse(grepl("without_drug",measure),"without_drug","with_drug")) %>% 
+  mutate(method = "Higham")
+  
+df_traceA %>% 
+  bind_rows(df_traceB) %>% 
+  filter(!grepl("^tr",state)) %>% 
+  ggplot(aes(x = cycle, y = occupancy, colour = factor(state),lty=factor(method)))  + 
+  geom_line()  +
+  facet_grid(~strategy) + 
+  theme_ipsum_pub(base_family = "Arial") + 
+  scale_colour_aaas(name = "") + 
+  scale_linetype(name="") +
+  theme(legend.position = "bottom")
+
+  
 ```
 
 # Outcomes
@@ -496,10 +778,9 @@ tot_costs
 tot_costs$inc_costs / tot_qalys$inc_qalys
 ```
 
+# DRAFT: Alternative Approach: Eigenvalue Decomposition
 
-# DRAFT: Alternative Approach: Eigenvalue Decomposition 
-
-This approach will not take the transition probabilities as marginal probabilities, but will use eigenvector decomposition to obtain the rate matrix from the transition probabiliyt matrix. 
+This approach will not take the transition probabilities as marginal probabilities, but will use eigenvector decomposition to obtain the rate matrix from the transition probability matrix.
 
 ```{r}
 params2 = list(
@@ -655,8 +936,47 @@ df_surv %>%
     labs(x = "Cycle", y = "Survival") +
     geom_step(data = df_surv_eigen, lty = 2)
 
+u_payoff2 = with(params2,{
+    array(c("Asympt" = uAsymp, "Progressive" = uProg,  "DeadCause" = 0, "Dead" = 0, "trDeadCause" = 0 ,
+            "Asympt" = uAsymp, "Progressive" = uProg,  "DeadCause" = 0, "Dead" = 0, "trDeadCause" = 0),
+          dim = c(1, n_states+1, n_treatments),
+          dimnames = list(from = "cost",
+                          to = c(s_names,"trDeadCause"),
+                          t_names))
+}) %>% 
+    apply(.,3,function(x) x, simplify = FALSE)
 
+c_payoff2 = with(params2,{
+    cAsymp_ = cAsymp * cycle_length
+    cProg_ = cProg * cycle_length
+    cDrug_ = cDrug * cycle_length
+    array(c("Asympt" = cAsymp_ , "Progressive" = cProg_,  "DeadCause" = 0, "Dead" = 0, "trDeadCause" =  cDeath,
+            "Asympt" = cAsymp_+cDrug_, "Progressive" = cProg_,  "DeadCause" = 0,"Dead" = 0 , "trDeadCause" = cDeath),
+          dim = c(1, n_states+1, n_treatments),
+          dimnames = list(from = "cost",
+                          to = c(s_names,"trDeadCause"),
+                          t_names))
+}) %>% 
+    apply(.,3,function(x) x, simplify = FALSE)
 
+total_qalys_cycle2 = 
+    map2(trace_eigen,u_payoff2,~(.x %*% t(.y)))
+
+cycle_adjustments_qalys2 = 
+    alt_simp_coef(params2$n_cycles + 1) * 1/(1+params2$oDr)^(0:(params2$n_cycles))
+
+tot_qalys2 = 
+    lapply(total_qalys_cycle2,function(x) sum(x * cycle_adjustments_qalys2 * params2$cycle_length))
+tot_qalys2 = 
+    cbind.data.frame(tot_qalys2) %>% mutate(inc_qalys = with_drug - without_drug)
+tot_qalys2
+
+total_costs_cycle2 = map2(trace_eigen,c_payoff2,~(.x %*% t(.y)))
+cycle_adjustments_costs2 = alt_simp_coef(params2$n_cycles + 1) * 1/(1+params2$cDr)^(0:(params2$n_cycles))
+
+tot_costs2 = lapply(total_costs_cycle2,function(x) sum(x * cycle_adjustments_costs2 ))
+tot_costs2 = cbind.data.frame(tot_costs2) %>% mutate(inc_costs = with_drug - without_drug)
+tot_costs2
+
+tot_costs2$inc_costs / tot_qalys2$inc_qalys
 ```
-
-
