@@ -120,6 +120,7 @@ $$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\ve
 - Transfinite scaling stabilizes optimization
 - For probabilities, this is the $\text{logit}(p)=\log \frac{p}{1-p}$.
 - Tweaking parameters to converge can still happen.
+- Another example of theory versus practice.
 :::
 
 $$\min_{\vec{\theta} \in \mathcal{R}}\,\, (\text{logit} (F(x_1|\vec{\theta}))-\text{logit} (p_1))^2+(\text{logit} (F(x_2|\vec{\theta}))-\text{logit} (p_2))^2$$
