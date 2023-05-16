@@ -4365,7 +4365,7 @@
     "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-structural-assumption",
     "title": "Advanced Bookkeeping",
     "section": "Reestimating Rates (Structural Assumption)",
-    "text": "Reestimating Rates (Structural Assumption)\n\nstatetable.msm(state, ptnum, data=x)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0, 0),\n                      c(0, 0, 0.6, 0),\n                      c(0, 0, 0, 0.3),\n                      c(0, 0, 0, 0)))\n\n\n\nQ represents structural assumptions and estimate\nEstimates were taken from Eigenvalue method\nRelaxing structural assumptions does not converge"
+    "text": "Reestimating Rates (Structural Assumption)\n\nstatetable.msm(state, ptnum, data=x)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0,   0),    # A -&gt; B only\n                      c(0, 0,   0.6, 0),    # B -&gt; C only\n                      c(0, 0,   0,   0.3),  # C -&gt; D only\n                      c(0, 0,   0,   0)))\n\n\n\nQ represents structural assumptions and estimate\nEstimates were taken from Eigenvalue method\nRelaxing structural assumptions does not converge"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-likelihood-fit",
@@ -4393,6 +4393,6 @@
     "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities-1",
     "title": "Advanced Bookkeeping",
     "section": "Reestimating Rates (Transition Probabilities)",
-    "text": "Reestimating Rates (Transition Probabilities)\n\nc(1000, 0, 0, 0) %*% m_P\n\n       A   B  C  D\n[1,] 721 202 67 10\n\nc(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)\n\n     State 1 State 2 State 3 State 4\n[1,]     721     202      67      10\n\n\n\n\nResulting expecation after 1 cycle is nearly identical.\nThe msm method has bits down at 4th decimal. Round off made them identical.\nOnly a tiny bit of error induced stability issues converting from probability to rate."
+    "text": "Reestimating Rates (Transition Probabilities)\n\nc(1000, 0, 0, 0) %*% m_P\n\n       A   B  C  D\n[1,] 721 202 67 10\n\nc(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)\n\n     State 1 State 2 State 3 State 4\n[1,]     721     202      67      10\n\n\n\n\nResulting expectation after 1 cycle is nearly identical.\nThe msm method has bits down at 4th decimal. Round off made them identical.\nOnly a tiny bit of error induced stability issues converting from probability to rate."
   }
 ]

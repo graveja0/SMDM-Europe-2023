@@ -1,14 +1,14 @@
 ---
 title: "A Unified Framework for Decision Analysis"
 subtitle: "The PAN-DA Framework"
+self-contained: true
 ---
 
-Decision analytic modeling methods have seen substantial growth in both complexity and scope---so much so that tackling any given decision problem requires that practitioners first work through an implicit “methodological decision tree” to guide decisions on various modeling approaches available for use (e.g., discrete time Markov, discrete event simulation, microsimulation, etc.). 
+Decision analytic modeling methods have seen substantial growth in both complexity and scope---so much so that tackling any given decision problem requires that practitioners first work through an implicit "methodological decision tree" to guide decisions on various modeling approaches available for use (e.g., discrete time Markov, discrete event simulation, microsimulation, etc.).
 
-This traditional "pathway" is envisioned in the figure below. The figure makes clear that the practitioner often starts with a **decision problem**--that is, research question that aims to quantify the cost and health impacts of a new health technology, treatment, policy, etc. 
+This traditional "pathway" is envisioned in the figure below. The figure makes clear that the practitioner often starts with a **decision problem**--that is, research question that aims to quantify the cost and health impacts of a new health technology, treatment, policy, etc.
 
 Based both on the expertise and training of the modeler, as well as the decision problem itself, a decision is made over which modeling approach to use: a deterministic, cohort-based approach (e.g., discrete time Markov) or Monte Carlo-based approach (e.g., discrete event simulation, microsimulation, etc.)
-
 
 ```{mermaid,fig-cap="Test"}
 
@@ -101,4 +101,3 @@ Rshiny & micro & markov & des & run & summarize
 end
 style rshiny fill:#fadea7,::
 ```
-
