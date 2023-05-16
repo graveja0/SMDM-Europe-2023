@@ -81,7 +81,7 @@ abline(v=1.69, col='red')
  
 $$\min_{x_1, x_2 \in \mathcal{R}}\,\, (F(x_1)-p_1)^2+(F(x_2)-p_2)^2$$
 
-# Normal Example via Optim
+## Normal via Optim
 
 ```{r}
 #| echo: true
@@ -95,7 +95,51 @@ fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
 optim(c(1, 0.4),
       fn,
       gr = function(x) pracma::grad(fn, x),
-      lower=c(-Inf, 1e-3),
+      lower=c(-Inf, 1e-4),
+      method = "L-BFGS-B",
+      control=list(factr=1e-10, maxit=100))$par
+
+```
+
+## Normal via Optim
+
+::: nonincremental
+-  Note that the function is on the probability scale.
+-  We have seen issues with probability scale estimators.
+-  This becomes numerical unstable in the tails.
+-  Optimizer will search the tails.
+-  While analytically correct, is not numerically stable.
+:::
+
+$$\min_{x_1, x_2 \in \mathcal{R}}\,\, (F(x_1)-p_1)^2+(F(x_2)-p_2)^2$$
+
+## Stable Optimization
+
+::: nonincremental
+- Earlier `optim` of normal doesn't work for a lot of parameter guesses.
+- Log scale has better stable and works for a much wider range.
+- Tweaking parameters to converge still happens.
+:::
+
+$$\min_{x_1, x_2 \in \mathcal{R}}\,\, (\log(F(x_1))-\log(p_1))^2+(\log(F(x_2))-\log(p_2))^2$$
+
+## Optim Example
+
+
+
+```{r}
+#| echo: true
+library(pracma)
+norm <- function(x1, p1, x2, p2, mu, sigma)
+ (pnorm(x1, mu, sigma, log.p=TRUE)-log(p1))^2 +
+ (pnorm(x2, mu, sigma, log.p=TRUE)-log(p2))^2
+
+fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
+
+optim(c(1, 1),
+      fn,
+      gr = function(x) pracma::grad(fn, x),
+      lower=c(-Inf, 1e-4),
       method = "L-BFGS-B",
       control=list(factr=1e-10, maxit=100))$par
 
