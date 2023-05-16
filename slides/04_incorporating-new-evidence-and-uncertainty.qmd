@@ -75,13 +75,18 @@ abline(v=1.69, col='red')
 ## General Optimization Technique
 
 ::: nonincremental
--  General solution, requires CDF, $F$.
+-  General solution, requires cumulative distribution function (CDF), $F$.
 -  https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R 
 :::
  
 $$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
 
 ## Normal via Optim
+
+::: nonincremental
+-  **Not the right answer!**
+-  Expected 1.30000 0.19898
+:::
 
 ```{r}
 #| echo: true
@@ -92,7 +97,7 @@ norm <- function(x1, p1, x2, p2, mu, sigma)
 
 fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
 
-optim(c(1, 0.4),
+optim(c(0.5, 0.1),
       fn,
       gr = function(x) pracma::grad(fn, x),
       lower=c(-Inf, 1e-4),
@@ -101,14 +106,15 @@ optim(c(1, 0.4),
 
 ```
 
+
 ## Normal via Optim
 
 ::: nonincremental
 -  Note that the function is on the probability scale.
--  We have seen issues with probability scale estimators.
--  This becomes numerical unstable in the tails.
--  Optimizer will search the tails.
--  While analytically correct, is not numerically stable.
+-  We have seen issues with probability before.
+-  This becomes numerical unstable in the tails--a lot of structure is packed in a tiny amount of space.
+-  Optimizer will search the tails, and fail.
+-  While analytically correct it is not numerically stable.
 :::
 
 $$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
@@ -123,7 +129,7 @@ $$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\ve
 - Example of theory versus practice.
 :::
 
-$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (\text{logit} (F(x_1|\vec{\theta}))-\text{logit} (p_1))^2+(\text{logit} (F(x_2|\vec{\theta}))-\text{logit} (p_2))^2$$
+$$\min_{\vec{\theta} \in \mathcal{R}} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\theta}))-\text{logit} (p_i))^2$$
 
 ## Transfinite Example
 
@@ -139,7 +145,7 @@ norm <- function(x1, p1, x2, p2, mu, sigma)
 
 fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
 
-optim(c(1, 0.2),
+optim(c(0.5, 0.1),
       fn,
       gr = function(x) pracma::grad(fn, x),
       lower=c(-Inf, 1e-5),
@@ -147,6 +153,13 @@ optim(c(1, 0.2),
       control=list(factr=1e-10, maxit=100))$par
 
 ```
+
+## Summary on Distribution Fitting
+
+- Use analytical formulas if they exist.
+- Optimize on logit scale.
+- Avoid log/exp of probabilities, use `log=TRUE`.
+- Plot results for visual check.
 
 # Copulas
 
