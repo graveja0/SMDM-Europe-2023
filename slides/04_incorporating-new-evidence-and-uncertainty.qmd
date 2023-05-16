@@ -79,7 +79,7 @@ abline(v=1.69, col='red')
 -  https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R 
 :::
  
-$$\min_{x_1, x_2 \in \mathcal{R}}\,\, (F(x_1)-p_1)^2+(F(x_2)-p_2)^2$$
+$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
 
 ## Normal via Optim
 
@@ -111,35 +111,37 @@ optim(c(1, 0.4),
 -  While analytically correct, is not numerically stable.
 :::
 
-$$\min_{x_1, x_2 \in \mathcal{R}}\,\, (F(x_1)-p_1)^2+(F(x_2)-p_2)^2$$
+$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
 
 ## Stable Optimization
 
 ::: nonincremental
 - Earlier `optim` of normal doesn't work for a lot of parameter guesses.
-- Log scale has better stable and works for a much wider range.
-- Tweaking parameters to converge still happens.
+- Transfinite scaling stabilizes optimization
+- For probabilities, this is the $\text{logit}(p)=\log \frac{p}{1-p}$.
+- Tweaking parameters to converge can still happen.
 :::
 
-$$\min_{x_1, x_2 \in \mathcal{R}}\,\, (\log(F(x_1))-\log(p_1))^2+(\log(F(x_2))-\log(p_2))^2$$
+$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (\text{logit} (F(x_1|\vec{\theta}))-\text{logit} (p_1))^2+(\text{logit} (F(x_2|\vec{\theta}))-\text{logit} (p_2))^2$$
 
-## Optim Example
-
-
+## Transfinite Example
 
 ```{r}
 #| echo: true
-library(pracma)
+Tf <- function(x, mu, sigma)
+    pnorm(x, mu, sigma, log=TRUE) -
+    pnorm(x, mu, sigma, log=TRUE, lower.tail=FALSE)
+
 norm <- function(x1, p1, x2, p2, mu, sigma)
- (pnorm(x1, mu, sigma, log.p=TRUE)-log(p1))^2 +
- (pnorm(x2, mu, sigma, log.p=TRUE)-log(p2))^2
+ (Tf(x1, mu, sigma)-(log(p1)-log(1-p1)) )^2 +
+ (Tf(x2, mu, sigma)-(log(p2)-log(1-p2)) )^2
 
 fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
 
-optim(c(1, 1),
+optim(c(1, 0.2),
       fn,
       gr = function(x) pracma::grad(fn, x),
-      lower=c(-Inf, 1e-4),
+      lower=c(-Inf, 1e-5),
       method = "L-BFGS-B",
       control=list(factr=1e-10, maxit=100))$par
 
