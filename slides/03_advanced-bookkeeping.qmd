@@ -997,7 +997,7 @@ c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
 ::: nonincremental
 -  Resulting expectation after 1 cycle is nearly identical.
 -  The msm method has bits down at 4th decimal. Round off made them identical.
--  Only a tiny bit of error induced stability issues converting from probability to rate.
+-  Only a tiny bit of error (721 vs. 721.0002) makes `log` numerically unstable converting from probability to rate.
 :::
 
 
