@@ -186,6 +186,7 @@ Pexp0 %>%
 
 -   Augmenting the transition matrix with non-markovian rows and columns can facilitate accurate counting and bookkeeping.
 -   Depending on the objective, can include non-markovian **accumulators** and/or **transition states**.
+- **Tunnel states** are also non-Markovian, but occupy a middle ground between transition states and accumulators.
 
 ## Non-Markovian Elements
 
@@ -344,7 +345,7 @@ Pexp %>%
 ## Non-Markovian Accumulators
 
 -   Note that the Markovian submatrix still has rows that sum to one.
--   Also note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy {{< fa arrow-right >}} CVD cell in lecture 2!
+-   Also note that the accumulator captures the same transition probability that was (incorrectly) placed in the Healthy {{< fa arrow-right >}} CVD cell in [lecture 2](https://graveja0.github.io/SMDM-Europe-2023/slides/02_competing-events.html#/title-slide)!
     -   Recall that this probability is the **marginal** probability of transition (i.e., all transitions into CVD state). So it's exactly what we want to accumulate!
 
 ```{r}
@@ -665,9 +666,9 @@ total_costs
 
 ## Tunnel States
 
--   Process for constructing is similar, with a "catch."
--   We are already accounting for transitions to death in the primary Markovian submatrix.
--   But for accurate bookkeeping purposes (e.g., QALYs and costs) we still need to net them out.
+- Because we hold individuals "captive" in the tunnel state (unless they exit to background death), tunnel states are non-Markovian.
+- If we built them into the rate matrix, then embedded that into a transition probability matrix, we'd have compound transitions through the tunnel!
+- We therefore must define tunnel states in the probability space, not the rate space. 
 
 ## Tunnel States
 
@@ -718,7 +719,7 @@ R_
 ## Tunnel States
 
 ::: nonincremental
--   For now, just include zeros.\
+-   For now, just include zeros.
 :::
 
 ```{r, echo = TRUE}

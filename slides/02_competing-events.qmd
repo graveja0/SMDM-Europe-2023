@@ -1183,7 +1183,7 @@ In the presence of competing events (mortality), using standard conversion formu
 
 ## Rate Misspecification Conclusions
 
--   Existing publication's decision thresholds are generally okay if they misspecified rates.
+-   Existing publications' decision thresholds are generally okay if they misspecified rates.
 -   Check the maximum rate of an event as a rough estimate of potential bias.
 -   Rule of thumb, on the error plot use the estimated rate for full time scale of simulation, i.e. one step is entire simulation.
 

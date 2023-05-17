@@ -29,6 +29,7 @@ bibliography: slides/references.bib
 - get rid of blog
 - Add cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.
 - Change the discount rate in the monthly time step too!
+- Receiving bucket for tunnel states that are purely accounting exercises. 
 
 
 
