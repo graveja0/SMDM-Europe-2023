@@ -13,6 +13,8 @@ lightbox: auto
 bibliography: slides/references.bib
 ---
 
+[Workshop Website](https://graveja0.github.io/SMDM-Europe-2023/)
+
 # To Do
 
 - Work on Lec 0 
