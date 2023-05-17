@@ -1,6 +1,6 @@
 ---
 title: "Incorporating New Evidence and Uncertainty"
-subtitle: "Solving for PSA Parameters and Copula-Based PSA Sampling"
+subtitle: "Backwards Conversion, Solving for PSA Parameters and Copula-Based PSA Sampling"
 editor: source
 format:
   revealjs:
@@ -15,9 +15,382 @@ self-contained: true
 bibliography: references.bib
 ---
 
+
 ```{r setup}
 source("./manifest.r")
 ```
+
+```{=html}
+<style>
+.nobullet li {
+  list-style-type: none;
+}
+</style>
+```
+
+
+## Learning Objectives
+
+1. Back-convert an existing transition probability matrix to incorporate new health states, strategies, and evidence.
+2. Solve for probabilisitic sensitivity analysis (PSA) distribution parameters.
+3. Sample correlated PSA distributions using copulas. 
+
+## 1. Backwards Conversion {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
+
+- Lectures 2 and 3 emphasized the importance of the transition rate matrix as the central "hub" of a Markov model.
+- If starting a model from scratch, can simply define or estimate rates, and use them to construct the rate matrix.
+
+## 1. Backwards Conversion
+
+- What if we have a model that is already defined in terms of a transition probability matrix? 
+- How can we convert back to a rate matrix to add new health states, transition states, accumulators, etc. as needed?
+- Also useful if we want to keep everything the same, but change the model time step (e.g., see @chhatwalChangingCycleLengths2016)
+
+## 1. Backwards Conversion
+
+- We will next show you several ways to work backwards. 
+- Boils down to solving for the continuous "generator matrix" for the observed transition probability matrix.
+
+## A Word of Warning
+
+- "Identifiability" may be an issue. 
+- If a transition probability matrix is defined incorrectly (e.g., no jumpover probabilities), the generator matrix may not exist.
+- Identifiability is a more general issue, however. 
+
+## Working Example: HIV Model
+
+Transition probability matrix: 
+
+```{r}
+mP = matrix(c(0.721, 0.202, 0.067, 0.010,
+                0.000, 0.581, 0.407, 0.012,
+                0.000, 0.000, 0.750, 0.250,
+                0.000, 0.000, 0.000, 1.000), 
+              nrow=4, byrow=TRUE,
+              dimnames=list(c("Healthy", "LowCD4", "AIDS", "Death"),
+                            c("Healthy", "LowCD4", "AIDS", "Death")))
+mP  
+```
+
+::: nonincremental
+-   From '*Decision Modelling for Health Economic Evaluation*' by Briggs, Claxton, Sculpher.
+:::
+
+## Two Methods to Solve for the Generator
+
+::: nobullet
+- A. Compute the matrix logarithm of the transition probability matrix $P$.
+
+- B. Maximum likelihood-based approach.
+:::
+
+## A. Matrix Logarithm of P
+
+- In mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix. 
+- A matrix has a logarithm *if and only if* if it is invertible.
+
+
+## A. Matrix Logarithm of P
+
+::: nonincremental
+- In mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix. 
+- A matrix has a logarithm *if and only if* if it is invertible.
+:::
+
+$$ R = \log P $$
+
+## A. Matrix Logarithm of P
+
+- The $\log$ can be found using spectral or eigenvalue decomposition. 
+- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+
+## A. Matrix Logarithm of P
+
+::: nonincremental
+- The $\log$ can be found using spectral or eigenvalue decomposition. 
+- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+:::
+
+$$A' = V^{-1} A V$$ 
+
+## A. Matrix Logarithm of P
+
+::: nonincremental
+- The $\log$ can be found using spectral or eigenvalue decomposition. 
+- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+:::
+
+$$A' = V^{-1} A V$$ 
+
+$$\log P = V (\log A') V^{-1}$$
+
+## A. Matrix Logarithm of P
+
+```{r}
+#| echo: true
+#| eval: false
+V  <- eigen(mP)$vectors
+iV <- solve(V)
+Ap <- iV %*% mP %*% V
+lAp <- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+R  <- V %*% lAp %*% iV
+R[abs(R) < 1e-6 ] <- 0
+dimnames(R) = dimnames(mP)
+round(R,3)
+```
+
+
+
+## A. Matrix Logarithm of P
+
+```{r}
+#| echo: true
+V  <- eigen(mP)$vectors
+iV <- solve(V)
+Ap <- iV %*% mP %*% V
+lAp <- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))
+R  <- V %*% lAp %*% iV
+R[abs(R) < 1e-6 ] <- 0
+dimnames(R) = dimnames(mP)
+round(R,3)
+```
+
+
+## A. Matrix Logarithm of P
+
+```{r}
+round(R, 3)
+```
+
+- Note there is a negative rate from LowCD4 -\> Death!
+- This is a transition from Death -\> LowCD4 and should be moved to the other side of the matrix.
+
+## A. Matrix Logarithm of P
+
+```{r}
+round(R, 3)
+```
+
+-   The negative rate implies an identifiable issue.
+-   Note rates from Healthy-\>AIDS, Healthy-\>Death are relatively small, implying these are from statistical noise in observation.
+
+## A. Matrix Logarithm of P
+
+-   `expm::logm` @highamFunctionsMatricesTheory2008 method returns same as eigenvalue method.
+-   Tweaking rates to get a proper model is ad-hoc and difficult.
+
+
+## A. Matrix Logarithm of P
+::: nonincremental
+-   `expm::logm` @highamFunctionsMatricesTheory2008 method returns same as eigenvalue method.
+-   Tweaking rates to get a proper model is ad-hoc and difficult.
+:::
+
+```{r}
+#| echo: true
+#| eval: false
+
+R = expm::logm(mP)
+```
+
+
+```{r}
+R <- logm(mP)
+dimnames(R) = dimnames(mP)
+round(R,3)
+```
+
+
+## B. Multi-State Model Based Approach
+
+-   Imposition of structural assumptions and fitting to raw data can result in better rate estimates.
+-   We could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. Healthy-\>LowCD4-\>AIDS-\>Death constrains model.
+-   We use the reported data from the original model at year 1
+-   MSM Method: https://chjackson.github.io/msm/msmcourse/
+
+## B. Multi-State Model Based Approach
+
+Steps:
+
+1. Run the original model for a single cycle. 
+2. Construct psuedo-data from the resulting trace based on a cohort with reasonable size (e.g., 1,000 patients)
+3. Estimate transition hazards in the pseudo-data based on a multistate model.
+4. Use the estimated transition hazards to construct the rate matrix.
+
+## 1. Run the original model for a single cycle. 
+
+```{r}
+#| echo: true
+#| eval: true
+
+tr0 <- 
+  c("Healthy" = 1000,"LowCD4" = 0, "AIDS" = 0, "Death" = 0)
+tr1 <- 
+  tr0 %*% mP 
+
+tr <- 
+    rbind.data.frame(tr0, tr1) %>%
+    mutate(cycle = c(0, 1)) %>% 
+    select(cycle,everything())
+tr
+
+```
+
+## 2. Construct psuedo-data
+
+::: columns
+
+::: {.column width="66%"}
+```{r}
+#| echo: true
+#| eval: true
+
+tr <- 
+    rbind.data.frame(tr0, tr1) %>%
+    mutate(cycle = c(0, 1)) %>% 
+    gather(state,count,-cycle) %>% 
+    mutate(count = round(count,0)) %>% 
+    arrange(cycle) %>% 
+    lapply(.,rep,.$count) %>% 
+    cbind.data.frame() %>% 
+    as_tibble() %>% 
+    mutate(state = factor(state,
+      levels = c("Healthy","LowCD4","AIDS","Death"))) %>% 
+    arrange(cycle,state) %>% 
+    mutate(ptnum = rep(1:1000,2)) %>% 
+    select(-count) %>% 
+    arrange(ptnum,cycle) %>% 
+    mutate(state = as.numeric(state)) %>% 
+    select(ptnum,cycle,state)
+```
+
+:::
+
+::: {.column width="33%"}
+```{r}
+tr 
+```
+
+:::
+
+
+:::
+
+## 3. Fit Multistate Model
+
+```{r}
+#| echo: true
+#| eval: true
+library(msm)
+
+# Define the state table for the multistate model
+statetable.msm(state, ptnum, data=tr)
+
+# Initial rate guesses based on the eigenvalue method
+Q.init <- rbind(rbind(c(0, 0.3, 0,   0),    
+                      c(0, 0,   0.6, 0),    
+                      c(0, 0,   0,   0.3),  
+                      c(0, 0,   0,   0)))
+dimnames(Q.init) = dimnames(mP)
+
+# Fit the model
+hiv.msm <- 
+  msm(state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)
+```
+
+## 3. Fit Multistate Model
+
+```{r}
+#| echo: true
+#| eval: true
+hiv.msm
+```
+
+## 4. Construct the Rate Matrix
+
+```{r}
+#| echo: true
+#| eval: true
+Rmsm <- msm::qmatrix.msm(hiv.msm, ci = "none")
+```
+
+## 5. Embed the Transition Probability Matrix
+
+::: columns
+
+::: {.column}
+
+Multistate-Model:
+
+```{r}
+#| echo: true
+#| eval: true
+round(expm(Rmsm),3)
+```
+:::
+
+::: {.column}
+
+Original Model Matrix:
+```{r}
+#| echo: true
+#| eval: true
+round(mP,3)
+```
+:::
+
+:::
+
+## Comparison
+
+```{r}
+#| echo: true
+
+# Original Model
+c(1000, 0, 0, 0) %*% mP
+
+# MSM-Based Model
+c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
+```
+
+-  Resulting expectation after 1 cycle is nearly identical.
+-  The msm method has bits down at 4th decimal. Round off made them identical.
+-  Only a tiny bit of error (721 vs. 721.0005) makes `log` numerically unstable converting from probability to rate.
+
+## Key Takeaways
+
+- By imposing some constraints on the underlying transitions, we were able to yield a generator matrix that makes sense!
+- Our multistate model-based generator matrix closely approximates the original transition probability matrix, but does not imply negative rates that bring people back from death. 
+
+## Key Takeaways
+
+::: columns
+
+::: {.column}
+
+Multistate-Model:
+
+```{r}
+#| echo: true
+#| eval: true
+round(logm(mP),3)
+```
+:::
+
+::: {.column}
+
+Original Model Matrix:
+```{r}
+#| echo: true
+#| eval: true
+round(Rmsm,3)
+```
+:::
+
+:::
+
+
+# 2. Solving for PSA Distributions
 
 # Some PSA Notes
 
