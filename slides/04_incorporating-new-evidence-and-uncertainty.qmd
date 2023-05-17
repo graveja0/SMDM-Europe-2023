@@ -1,6 +1,7 @@
 ---
 title: "Incorporating New Evidence and Uncertainty"
 subtitle: "Solving for PSA Parameters and Copula-Based PSA Sampling"
+editor: source
 format:
   revealjs:
     transition: fade
@@ -158,6 +159,28 @@ optim(c(0.5, 0.1),
 - Optimize on logit scale.
 - Again, avoid $\log$ on probabilities, use `log=TRUE`.
 - Plot results for visual check.
+
+## Scenario
+
+- Your model has a rate `rH_CVD` and you want to define a probabilistic sensitivity analysis (PSA) distribution around it.
+
+
+## ParameterSolver
+
+- [Link](https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6)
+
+## Common PSA Distributions
+
+| Parameter Type                  | Distribution     |
+|---------------------------------|------------------|
+| Probability                     | beta             |
+| Rate                            | gamma            |
+| Utility weight                  | beta             |
+| Right skew (e.g., cost)         | gamma, lognormal |
+| Relative risks or hazard ratios | lognormal        |
+| Odds Ratio                      | logistic         |
+
+
 
 # Copulas
 
