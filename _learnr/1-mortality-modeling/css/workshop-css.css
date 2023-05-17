@@ -1,0 +1,10 @@
+/******
+dplyr learnr tutorial
+*******/
+
+/*-------- Code chunk header panel ---------*/
+.panel-default > .panel-heading {
+    color: white;
+    background-color: darkslateblue;
+    border: 0;
+}

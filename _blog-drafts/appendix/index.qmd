@@ -1,5 +1,6 @@
 ---
 title: "Supplemental Appendix"
+editor: source
 subtitle: Comparison of Decision Modeling Approaches for Health Technology and Policy   Evaluation
 author: John Graves, Shawn Garbett, Zilu Zhou, Jonathan Schildcrout, Josh Peterson
 ---
