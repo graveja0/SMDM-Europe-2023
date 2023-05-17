@@ -3042,7 +3042,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copulas-and-psa-sampling-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Copulas and PSA Sampling",
-    "text": "Copulas and PSA Sampling\n\nCopula: a multivariate cumulative distribution function with uniform marginals."
+    "text": "Copulas and PSA Sampling\n\nCopula: a multivariate cumulative distribution function with uniform marginals.\n\n\n\nBack to Website"
   },
   {
     "objectID": "slides/01_mortality.html#approaches-to-modeling-mortality-1",
@@ -4394,5 +4394,26 @@
     "title": "Advanced Bookkeeping",
     "section": "Reestimating Rates (Transition Probabilities)",
     "text": "Reestimating Rates (Transition Probabilities)\n\nc(1000, 0, 0, 0) %*% m_P\n\n       A   B  C  D\n[1,] 721 202 67 10\n\nc(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)\n\n     State 1 State 2 State 3 State 4\n[1,]     721     202      67      10\n\n\n\n\nResulting expectation after 1 cycle is nearly identical.\nThe msm method has bits down at 4th decimal. Round off made them identical.\nOnly a tiny bit of error induced stability issues converting from probability to rate."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-draw-psa-values",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-draw-psa-values",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "How Do We Draw PSA Values?",
+    "text": "How Do We Draw PSA Values?\n\n\n\nParameter Type\nDistribution\n\n\n\n\nProbability\nbeta\n\n\nRate\ngamma\n\n\nUtility weight\nbeta\n\n\nRight skew (e.g., cost)\ngamma, lognormal\n\n\nRelative risks or hazard ratios\nlognormal\n\n\nOdds Ratio\nlogistic"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#scenario",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#scenario",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Scenario",
+    "text": "Scenario\n\nYour model has a rate rH_CVD and you want to define a probabilistic sensitivity analysis (PSA) distribution around it."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#common-psa-distributions",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#common-psa-distributions",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Common PSA Distributions",
+    "text": "Common PSA Distributions\n\n\n\nParameter Type\nDistribution\n\n\n\n\nProbability\nbeta\n\n\nRate\ngamma\n\n\nUtility weight\nbeta\n\n\nRight skew (e.g., cost)\ngamma, lognormal\n\n\nRelative risks or hazard ratios\nlognormal\n\n\nOdds Ratio\nlogistic"
   }
 ]

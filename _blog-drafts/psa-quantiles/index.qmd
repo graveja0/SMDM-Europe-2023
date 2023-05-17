@@ -1,6 +1,6 @@
 ---
 title: "Parameters for Distributions"
-editor: visual
+editor: source
 editor_options: 
   chunk_output_type: console
 ---
