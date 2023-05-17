@@ -1,5 +1,6 @@
 ---
 title: "Welcome and Introductions"
+editor: source
 format:
   revealjs:
     transition: fade

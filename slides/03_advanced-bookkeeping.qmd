@@ -1,6 +1,7 @@
 ---
 title: "Advanced Bookkeeping"
 subtitle: "Non-Markovian Accumulators, Transition States, and Backwards Conversion"
+editor: source
 format:
   revealjs:
     transition: fade

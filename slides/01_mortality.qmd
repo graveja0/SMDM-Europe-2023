@@ -1,5 +1,6 @@
 ---
 title: "1. Coping with Mortality"
+editor: source
 format:
   revealjs:
     transition: fade
