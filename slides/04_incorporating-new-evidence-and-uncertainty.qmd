@@ -124,22 +124,25 @@ optim(c(0.5, 0.1),
 ```
 
 
+
 ## Normal via Optim
 
 ::: nonincremental
 -  Note that the function is on the probability scale.
 -  We have seen issues with probability before.
--  This becomes numerical unstable in the tails--a lot of structure is packed in a tiny amount of space.
--  Optimizer will search the tails, and fail.
--  While analytically correct it is not numerically stable.
+-  Note the gradient of the tails.  
+
 :::
 
-$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
+```{r}
+curve(pnorm(x), from=-10, to=10, lwd=3, col='red')
+```
+
 
 ## Stable Optimization
 
 ::: nonincremental
-- Earlier `optim` of normal doesn't work for a lot of parameter guesses.
+- Analytically correct formula is not numerically stable.
 - Transfinite scaling stabilizes optimization.
 - For probabilities, this is the $\text{logit}(p)=\log \frac{p}{1-p}=\log p - \log (1-p)$.
 - Tweaking parameters to converge can still happen.
@@ -174,7 +177,7 @@ optim(c(0.5, 0.1),
 ## Summary on Distribution Fitting
 
 - Use analytical formulas if they exist.
-- Optimize on logit scale.
+- Optimize on $\text{logit}$ scale.
 - Again, avoid $\log$ on probabilities, use `log=TRUE`.
 - Plot results for visual check.
 
