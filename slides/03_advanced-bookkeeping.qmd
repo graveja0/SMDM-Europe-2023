@@ -685,26 +685,23 @@ We'll start with the original transition rate matrix:
 
 ```{r}
 params$mR <- 
-  with(params,{
-    r_CVD_D <- hr_CVD * r_H_D
-    R_ <- 
-      array(data = c(0, 0, 0,  
-                 r_H_CVD,0, 0,
-                 r_H_D,r_H_D + r_CVD_D,0,
-                 r_H_D, 0,0),
-          dim = c(n_states, n_states, n_treatments),
+    with(params,{
+        r_CVD_D <- hr_CVD * r_H_D
+        R_ <- 
+            array(data = c(0, 0, 0,  
+                           r_H_CVD,0, 0,
+                           r_H_D,r_H_D + r_CVD_D,0,
+                           r_H_D, 0,0),
+                  dim = c(n_states, n_states, n_treatments),
                   dimnames = list(from = s_names,
                                   to = s_names,
                                   t_names))
-    R <- apply(R_,3, simplify=FALSE,function(x) {
-      diag(x) = -rowSums(x)
-      x * cycle
+        R <- apply(R_,3, simplify=FALSE,function(x) {
+            diag(x) = -rowSums(x)
+            x * cycle
+        })
+        R    
     })
-  R    
-  })
-R_ <- params$mR
-
-R_
 ```
 
 ```{r, echo = TRUE}
@@ -726,8 +723,8 @@ R_
 
 ```{r, echo = TRUE}
 R <- 
-  cbind(R_,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0),"NULL" = c(0,0,0)) %>% 
-  rbind(.,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0), "NULL" = c(0,0,0,0,0,0))  
+    cbind(R_,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0),"NULL" = c(0,0,0)) %>% 
+    rbind(.,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0), "NULL" = c(0,0,0,0,0,0))  
 R
 ```
 
@@ -735,123 +732,165 @@ R
 
 ::: nonincremental
 -   We then fill in the appropriate transition rate for entry into the tunnel.
+-   We zero out the transition from healthy to CVD since this can only occur after 2 years.
 :::
 
 ```{r, echo = TRUE}
 R["Healthy","tunCVDy1"] = R["Healthy","CVD"]
+R["Healthy","CVD"] = 0
 R
 ```
 
 ## Tunnel State
 
 ::: nonincremental
--   Embed using matrix exponentiation to obtain the initial transition probability matrix.
--   Note that we need to TK
+- We now need to embed the transition probability matrix because tunnel states can only be defined on the probability scale.
+- Intuition: if we defined the tunnel state in the rate matrix, when we embed we'd end up with compound transitions that the tunnel state rules out (i.e., Healthy to tunCVDy1)
 :::
+
+## Tunnel State
+
+- We embed and rearrange the initial matrix to reflect the time sequencing through the tunnel state. 
 
 ```{r, echo = TRUE, eval = TRUE}
 P_ = expm(R)  
-P_["tunCVDy1","NULL"] = P_["CVD","Dead"]
-P_["tunCVDy1","tunCVDy1"] = 0
-P_["tunCVDy1","tunCVDy2"] = 1 - P_["tunCVDy1","NULL"]
-P_["tunCVDy2","tunCVDy2"] = 0
-P_["tunCVDy2","NULL"] = 1
-P = P_[-which(rownames(P_)=="NULL"),-which(colnames(P_)=="NULL")]
-P
+P = P_[c("Healthy","tunCVDy1","tunCVDy2","CVD","Dead"),c("Healthy","tunCVDy1","tunCVDy2","CVD","Dead")]
 ```
 
-## Transition States
-
 ```{r}
-P_ = expm(R)  
-P_["tunCVDy1","NULL"] = P_["CVD","Dead"]
-P_["tunCVDy1","tunCVDy1"] = 0
-P_["tunCVDy1","tunCVDy2"] = 1 - P_["tunCVDy1","NULL"]
-P_["tunCVDy2","tunCVDy2"] = 0
-P_["tunCVDy2","NULL"] = 1
-P = P_[-which(rownames(P_)=="NULL"),-which(colnames(P_)=="NULL")]
 Pexp <-
   P %>%
   round(., 3) %>%
   data.frame() %>% 
-  rownames_to_column()  
-
+  rownames_to_column() %>% 
+  mutate_all(as.character) 
 
 Pexp %>% 
-  kable(col.names = c("",params$s_names,"tunCVDy1","tunCVDy2")) %>% 
+  kable(col.names = c("","Healthy","tunCVDy1","tunCVDy2","CVD","Dead")) %>% 
   kable_styling(full_width=FALSE) %>% 
-  kable_paper() %>% 
-  column_spec(2:4, color ="black", background = ifelse(Pexp$rowname %in% params$s_names,"#a2cc99",
-                                                       ifelse(Pexp$rowname=="tunCVDy1","#e8b0d1","#a29af5"))) %>% 
-  column_spec(5, color = "black", background = ifelse(Pexp$rowname %in% c("tunCVDy1",params$s_names),"#e8b0d1","#e8b0d1")) 
+  kable_paper()
 
 ```
 
--   Note that the Markovian submatrix still has rows that sum to one.
+## Tunnel State
+
+::: nonincremental
+- Unlike a transition state or accumulator, we need to allow for exit from the tunnel to death in the cycle. 
+:::
+
+```{r, echo = TRUE, eval = TRUE}
+# It is possible to exit the tunnel state to death. 
+P["tunCVDy1","Dead"] = P["CVD","Dead"]
+```
+
+## Tunnel State
+
+::: nonincremental
+- Unlike a transition state or accumulator, we need to allow for exit from the tunnel to death in the cycle. 
+:::
+
+```{r, echo = TRUE, eval = TRUE}
+# It is possible to exit the tunnel state to death. 
+P["tunCVDy1","Dead"] = P["CVD","Dead"]
+```
 
 ```{r}
-R_ <- params$mR
-R <- lapply(R_, function(x) {
-    tmp_ = cbind(x,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0),"NULL" = c(0,0,0)) 
-    tmp_ = rbind(tmp_,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0), "NULL" = c(0,0,0,0,0,0))  
-    tmp_["Healthy","tunCVDy1"] = tmp_["Healthy","CVD"]
-    tmp_
-  })
+Pexp <-
+  P %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  mutate_all(as.character) %>% 
+  mutate(Dead = cell_spec(Dead,"html",color = ifelse(rowname=="tunCVDy1","red","black")))
 
-params$mR <- 
-  with(params,{
+Pexp %>% 
+  kable(col.names = c("","Healthy","tunCVDy1","tunCVDy2","CVD","Dead"),escape = FALSE) %>% 
+  kable_styling("hover", "striped", full_width = F)  %>% 
+  kable_paper()
 
-    r_CVD_D <- hr_CVD * r_H_D
-    
-    R_ <- 
-      array(data = c(0, 0, 0,  
-                 r_H_CVD,0, 0,
-                 r_H_D,r_H_D + r_CVD_D,0,
-                 r_H_D, 0,0),
-          dim = c(n_states, n_states, n_treatments),
-                  dimnames = list(from = s_names,
-                                  to = s_names,
-                                  t_names))
-     R <- apply(R_,3, simplify=FALSE,function(x) {
-      diag(x) = -rowSums(x)
-      tmp_ = cbind(x,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0),"NULL" = c(0,0,0)) 
-      tmp_ = rbind(tmp_,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0), "NULL" = c(0,0,0,0,0,0))  
-      tmp_["Healthy","tunCVDy1"] = tmp_["Healthy","CVD"]
-      tmp_ * cycle
-    })
-  R    
-  })
+# highlight tunCVDy1 -> Dead cell
+```
 
-params$mP <- 1:params$n_cycles %>% map(~({
-  lapply(params$mR,function(x) {
-    P_ = expm(x)  
-    P_["tunCVDy1","NULL"] = P_["CVD","Dead"]
-    P_["tunCVDy1","tunCVDy1"] = 0
-    P_["tunCVDy1","tunCVDy2"] = 1 - P_["tunCVDy1","NULL"]
-    P_["tunCVDy2","tunCVDy2"] = 0
-    P_["tunCVDy2","NULL"] = 1
-    P = P_[-which(rownames(P_)=="NULL"),-which(colnames(P_)=="NULL")]
-    P
-    })
- 
-  }))
+## Tunnel State
 
-sim_cohort <- function(params) {
-  
- params$t_names %>% map(~({ 
-    tr_ <- t(c(params$n_cohort,rep(0,params$n_states+1))) 
-    
-    res <- do.call(rbind,lapply(params$mP, function(tp) {
-        tr_ <<- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_states+2)
-    }))
-    
-    res <- rbind(c(params$n_cohort,rep(0,params$n_states+1)),res) 
-    dimnames(res) <- list(paste0(c(0:params$n_cycles)), c(params$s_names,"tunCVDy1","tunCVDy2"))
-    res
-  })) %>% 
-    set_names(params$t_names)
+::: nonincremental
+- We also must force exit into the next tunnel state. 
+:::
+
+```{r, echo = TRUE, eval = TRUE}
+P["tunCVDy1","tunCVDy1"] = 0
+P["tunCVDy1","tunCVDy2"] = 1 - P["CVD","Dead"]
+```
+
+```{r}
+Pexp <-
+  P %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  mutate_all(as.character) %>% 
+  mutate(tunCVDy1 = cell_spec(tunCVDy1,"html",color = ifelse(rowname=="tunCVDy1","red","black"))) %>% 
+  mutate(tunCVDy2 = cell_spec(tunCVDy2,"html",color = ifelse(rowname=="tunCVDy1","red","black")))
+
+Pexp %>% 
+  kable(col.names = c("","Healthy","tunCVDy1","tunCVDy2","CVD","Dead"),escape = FALSE) %>% 
+  kable_styling("hover", "striped", full_width = F)  %>% 
+  kable_paper()
+```
+
+
+## Tunnel State
+
+::: nonincremental
+- We repeat a similar exercise for the 2nd year in the tunnel. 
+  - Allow for exit to death.
+  - Force entry into the CVD state after the cycle. 
+:::
+
+```{r, echo = TRUE, eval = TRUE}
+P["tunCVDy2","Dead"] = P["CVD","Dead"]
+P["tunCVDy2","tunCVDy2"] = 0
+P["tunCVDy2","CVD"] = 1 - P["CVD","Dead"]
+```
+
+```{r}
+Pexp <-
+  P %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  mutate_all(as.character) %>% 
+  mutate(Dead = cell_spec(Dead,"html",color = ifelse(rowname=="tunCVDy2","red","black"))) %>% 
+  mutate(tunCVDy2 = cell_spec(tunCVDy2,"html",color = ifelse(rowname=="tunCVDy2","red","black"))) %>% 
+  mutate(CVD = cell_spec(CVD,"html",color = ifelse(rowname=="tunCVDy2","red","black")))
+
+Pexp %>% 
+  kable(col.names = c("","Healthy","tunCVDy1","tunCVDy2","CVD","Dead"),escape = FALSE) %>% 
+  kable_styling("hover", "striped", full_width = F)  %>% 
+  kable_paper()
+```
+
+
+# Your Turn!
+
+
+## Progressive Disease Model
+
+```{dot}
+#| fg-align: center
+digraph G {
+    layout = neato;
+    Asymptomatic [pos="0,0!"];
+    "Progressive\nDisease" [pos="2,1!"]; 
+    Dead [pos="1,-1!"]
+    Asymptomatic -> Asymptomatic ;
+    "Progressive\nDisease" -> "Progressive\nDisease";
+    Asymptomatic -> "Progressive\nDisease" [label="tpProg * (1-effect)"]; 
+    "Progressive\nDisease" -> Dead [label="   tpDcm+tpDn" fontcolor="black"];
+    Asymptomatic -> Dead [label="tpDn"];
+    Dead -> Dead ;
 }
-trace <- sim_cohort(params)
 
 ```
 
+Source: @green2023health

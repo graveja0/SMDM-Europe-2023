@@ -3487,6 +3487,7 @@ border: 0;
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>rProgDrug <span class="ot">=</span> <span class="fu">with</span>(params,<span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> (tpProg_ <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> effect))))</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>rDcm <span class="ot">=</span> <span class="fu">with</span>(params,<span class="sc">-</span><span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> tpDcm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>These are the formulas we recommended against using in general, but this is from a published reference model that didn’t start from rates and there is no literature to refer back too with rates. We use these for didactic purposes here.</p>
 <div class="page-columns page-full"><p>We can now collect all of these rates within rate matrices—one matrix for each strategy.</p><div class="no-row-height column-margin column-container"><span class>Note that to fill in a matrix you must go column by column. Therefore, the code here specifies each column in each row.</span></div></div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mR_ <span class="ot">=</span> </span>
@@ -4013,7 +4014,7 @@ trDeadCause  0.000000   0.0000000   0.00000 0.000000     0.00000</code></pre>
 </section>
 <section id="b3.-transition-probability-matrix" class="level2">
 <h2 class="anchored" data-anchor-id="b3.-transition-probability-matrix">B3. Transition Probability Matrix</h2>
-<p>We can similarly use the same function as defined in <strong>?@sec-b3</strong> to embed the transition probability matrix.</p>
+<p>We can similarly use the same function as defined in <a href="#sec-a3">Section 3.3</a> to embed the transition probability matrix.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>paramsB<span class="sc">$</span>mP <span class="ot">=</span> </span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fn_mP</span>(<span class="at">R =</span> paramsB<span class="sc">$</span>mR, paramsB)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
