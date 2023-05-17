@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "What They Didn’t Teach You About Decision Modeling",
     "section": "",
-    "text": "To Do\n\nWork on Lec 0\n\nmake sure to include a web survey for email addressses to add to posit cloud\n\nLec 3 already is jam packed; lets punt on tunnel states\nNeed learning objectives at top of every lecture and case study\nSolve for PSA parameters given mean and SD\nLook over 1st, 2nd and 3rd case study\n\nAdd in msm based method if possible?\n\nCreate brief Learnr for PSA solver and copula-based sampling\nadd in useful links to website\nget rid of blog\nAdd cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.\nChange the discount rate in the monthly time step too!\n\n\nWorkshop Schedule\n\n\nStart\n9:00am\nEnd\n9:20am\nTopic\nIntroductions and Welcome\nApplied Case Study\n\n\n\n\n\n\n\n\n\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\n\n\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nProgressive Disease Model (Green et al. 2023) model.\n\n\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence"
+    "text": "Workshop Website\n\nTo Do\n\nWork on Lec 0\n\nmake sure to include a web survey for email addressses to add to posit cloud\n\nLec 3 already is jam packed; lets punt on tunnel states\nNeed learning objectives at top of every lecture and case study\nSolve for PSA parameters given mean and SD\nLook over 1st, 2nd and 3rd case study\n\nAdd in msm based method if possible?\n\nCreate brief Learnr for PSA solver and copula-based sampling\nadd in useful links to website\nget rid of blog\nAdd cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.\nChange the discount rate in the monthly time step too!\n\n\nWorkshop Schedule\n\n\nStart\n9:00am\nEnd\n9:20am\nTopic\nIntroductions and Welcome\nApplied Case Study\n\n\n\n\n\n\n\n\n\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\n\n\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nProgressive Disease Model (Green et al. 2023) model.\n\n\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence"
   },
   {
     "objectID": "blog/posts/green-et-al-replication/green-et-al-replication.html",
@@ -196,6 +196,216 @@
     "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this periodically today.\n\n\n\nBack to Website"
   },
   {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#learning-objectives",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#learning-objectives",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nBack-convert an existing transition probability matrix to incorporate new health states, strategies, and evidence.\nSolve for probabilisitic sensitivity analysis (PSA) distribution parameters.\nSample correlated PSA distributions using copulas."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Backwards Conversion",
+    "text": "1. Backwards Conversion\n\nLectures 2 and 3 emphasized the importance of the transition rate matrix as the central “hub” of a Markov model.\nIf starting a model from scratch, can simply define or estimate rates, and use them to construct the rate matrix."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Backwards Conversion",
+    "text": "1. Backwards Conversion\n\nWhat if we have a model that is already defined in terms of a transition probability matrix?\nHow can we convert back to a rate matrix to add new health states, transition states, accumulators, etc. as needed?\nAlso useful if we want to keep everything the same, but change the model time step (e.g., see Chhatwal, Jayasuriya, and Elbasha (2016))"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion-2",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#backwards-conversion-2",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Backwards Conversion",
+    "text": "1. Backwards Conversion\n\nWe will next show you several ways to work backwards.\nBoils down to solving for the continuous “generator matrix” for the observed transition probability matrix."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a-word-of-warning",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a-word-of-warning",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A Word of Warning",
+    "text": "A Word of Warning\n\nAs you’ll see, it’s not always going to work perfectly.\nIf a transition probability matrix is defined incorrectly (e.g., no jumpover probabilities), the generator matrix may not exist.\nIdentifiability is a more general issue, however."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#working-example-hiv-model",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#working-example-hiv-model",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Working Example: HIV Model",
+    "text": "Working Example: HIV Model\nTransition probability matrix:\n\n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000\n\n\n\n\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#three-methods-to-solve-for-the-generator",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#three-methods-to-solve-for-the-generator",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Three Methods to Solve for the Generator",
+    "text": "Three Methods to Solve for the Generator\n\n\nA. Compute the matrix logarithm of the transition probability matrix \\(P\\).\nB. Maximum likelihood-based approach.\nC. Convert the supplied transition probabilities to rates one-by-one.\n(You should probably try all three.)"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\nIn mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix.\nA matrix has a logarithm if and only if if it is invertible."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\nIn mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix.\nA matrix has a logarithm if and only if if it is invertible.\n\n\n\\[ R = \\log P \\]"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-2",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-2",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\nThe \\(\\log\\) can be found using spectral or eigenvalue decomposition.\nIf \\(V\\) is a matrix where equal column is an eigenvector of \\(T_{prob}\\), then"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-3",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-3",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\nThe \\(\\log\\) can be found using spectral or eigenvalue decomposition.\nIf \\(V\\) is a matrix where equal column is an eigenvector of \\(T_{prob}\\), then\n\n\n\\[A' = V^{-1} A V\\]"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-4",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-4",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\nThe \\(\\log\\) can be found using spectral or eigenvalue decomposition.\nIf \\(V\\) is a matrix where equal column is an eigenvector of \\(T_{prob}\\), then\n\n\n\\[A' = V^{-1} A V\\]\n\\[\\log P = V (\\log A') V^{-1}\\]"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-5",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-5",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\nV  &lt;- eigen(mP)$vectors\niV &lt;- solve(V)\nAp &lt;- iV %*% mP %*% V\nlAp &lt;- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))\nR  &lt;- V %*% lAp %*% iV\nR[abs(R) &lt; 1e-6 ] &lt;- 0\ndimnames(R) = dimnames(mP)\nround(R,3)"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-6",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-6",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\nV  &lt;- eigen(mP)$vectors\niV &lt;- solve(V)\nAp &lt;- iV %*% mP %*% V\nlAp &lt;- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))\nR  &lt;- V %*% lAp %*% iV\nR[abs(R) &lt; 1e-6 ] &lt;- 0\ndimnames(R) = dimnames(mP)\nround(R,3)\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-7",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-7",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000\n\n\n\nNote there is a negative rate from LowCD4 -&gt; Death!\nThis is a transition from Death -&gt; LowCD4 and should be moved to the other side of the matrix."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000\n\n\n\nThe negative rate implies an identifiable issue.\nNote rates from Healthy-&gt;AIDS, Healthy-&gt;Death are relatively small, implying these are from statistical noise in observation."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-9",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-9",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\nexpm::logm Higham (2008) method returns same as eigenvalue method.\nTweaking rates to get a proper model is ad-hoc and difficult."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-10",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-10",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "A. Matrix Logarithm of P",
+    "text": "A. Matrix Logarithm of P\n\n\nexpm::logm Higham (2008) method returns same as eigenvalue method.\nTweaking rates to get a proper model is ad-hoc and difficult.\n\n\n\nR = expm::logm(mP)\n\n\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "B. Multi-State Model Based Approach",
+    "text": "B. Multi-State Model Based Approach\n\nImposition of structural assumptions and fitting to raw data can result in better rate estimates.\nWe could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. Healthy-&gt;LowCD4-&gt;AIDS-&gt;Death constrains model.\nWe use the reported data from the original model at year 1\nMSM Method: https://chjackson.github.io/msm/msmcourse/"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "B. Multi-State Model Based Approach",
+    "text": "B. Multi-State Model Based Approach\nSteps:\n\nRun the original model for a single cycle.\nConstruct psuedo-data from the resulting trace based on a cohort with reasonable size (e.g., 1,000 patients)\nEstimate transition hazards in the pseudo-data based on a multistate model.\nUse the estimated transition hazards to construct the rate matrix."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#run-the-original-model-for-a-single-cycle.",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#run-the-original-model-for-a-single-cycle.",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Run the original model for a single cycle.",
+    "text": "1. Run the original model for a single cycle.\n\ntr0 &lt;- \n  c(\"Healthy\" = 1000,\"LowCD4\" = 0, \"AIDS\" = 0, \"Death\" = 0)\ntr1 &lt;- \n  tr0 %*% mP \n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    select(cycle,everything())\ntr\n\n  cycle Healthy LowCD4 AIDS Death\n1     0    1000      0    0     0\n2     1     721    202   67    10"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-psuedo-data",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-psuedo-data",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "2. Construct psuedo-data",
+    "text": "2. Construct psuedo-data\n\n\n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    gather(state,count,-cycle) %&gt;% \n    mutate(count = round(count,0)) %&gt;% \n    arrange(cycle) %&gt;% \n    lapply(.,rep,.$count) %&gt;% \n    cbind.data.frame() %&gt;% \n    as_tibble() %&gt;% \n    mutate(state = factor(state,\n      levels = c(\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"))) %&gt;% \n    arrange(cycle,state) %&gt;% \n    mutate(ptnum = rep(1:1000,2)) %&gt;% \n    select(-count) %&gt;% \n    arrange(ptnum,cycle) %&gt;% \n    mutate(state = as.numeric(state)) %&gt;% \n    select(ptnum,cycle,state)\n\n\n\n\n# A tibble: 2,000 × 3\n   ptnum cycle state\n   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1     1     0     1\n 2     1     1     1\n 3     2     0     1\n 4     2     1     1\n 5     3     0     1\n 6     3     1     1\n 7     4     0     1\n 8     4     1     1\n 9     5     0     1\n10     5     1     1\n# ℹ 1,990 more rows"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "3. Fit Multistate Model",
+    "text": "3. Fit Multistate Model\n\nlibrary(msm)\n\n# Define the state table for the multistate model\nstatetable.msm(state, ptnum, data=tr)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\n# Initial rate guesses based on the eigenvalue method\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0,   .0001),    \n                      c(0, 0,   0.6, 0.01),    \n                      c(0, 0,   0,   0.3),  \n                      c(0, 0,   0,   0)))\ndimnames(Q.init) = dimnames(mP)\n\n# Fit the model\nhiv.msm &lt;- \n  msm(state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "3. Fit Multistate Model",
+    "text": "3. Fit Multistate Model\n\nhiv.msm\n\n\nCall:\nmsm(formula = state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)\n\nMaximum likelihood estimates\n\nTransition intensities\n                  Baseline                          \nHealthy - Healthy -0.32712 ( -3.680e-01, -2.907e-01)\nHealthy - LowCD4   0.32702 (  1.354e-01,  7.898e-01)\nHealthy - Death    0.00010 (  0.000e+00,        Inf)\nLowCD4 - LowCD4   -0.64477 ( -1.139e+01, -3.650e-02)\nLowCD4 - AIDS      0.63465 (  9.115e-06,  4.419e+04)\nLowCD4 - Death     0.01012 ( 8.238e-299, 1.242e+294)\nAIDS - AIDS       -0.34837 ( -3.805e+40, -3.189e-42)\nAIDS - Death       0.34837 (  3.189e-42,  3.805e+40)\n\n-2 * log-likelihood:  1572.2"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-the-rate-matrix",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-the-rate-matrix",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "4. Construct the Rate Matrix",
+    "text": "4. Construct the Rate Matrix\n\nRmsm &lt;- msm::qmatrix.msm(hiv.msm, ci = \"none\")\nround(Rmsm,3)\n\n        Healthy LowCD4   AIDS Death\nHealthy  -0.327  0.327  0.000 0.000\nLowCD4    0.000 -0.645  0.635 0.010\nAIDS      0.000  0.000 -0.348 0.348\nDeath     0.000  0.000  0.000 0.000"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#embed-the-transition-probability-matrix",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#embed-the-transition-probability-matrix",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "5. Embed the Transition Probability Matrix",
+    "text": "5. Embed the Transition Probability Matrix\n\n\nMultistate-Model:\n\nround(expm(Rmsm),3)\n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.525 0.388 0.088\nAIDS      0.000  0.000 0.706 0.294\nDeath     0.000  0.000 0.000 1.000\n\n\n\nOriginal Model Matrix:\n\nround(mP,3)\n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#comparison",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#comparison",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Comparison",
+    "text": "Comparison\n\n# Original Model\nc(1000, 0, 0, 0) %*% mP\n\n     Healthy LowCD4 AIDS Death\n[1,]     721    202   67    10\n\n# MSM-Based Model\nc(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)\n\n     Healthy LowCD4 AIDS Death\n[1,]     721    202   67    10\n\n\n\nResulting expectation after 1 cycle is nearly identical.\nThe msm method has bits down at 4th decimal. Round off made them identical.\nOnly a tiny bit of error (721 vs. 721.0005) makes log numerically unstable converting from probability to rate."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nBy imposing some constraints on the underlying transitions, we were able to yield a generator matrix that makes sense!\nCritically, our multistate model-based generator matrix closely approximates the original transition probability matrix, but does not imply negative rates that bring people back from death."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\n\nMultistate-Model:\n\nround(logm(mP),3)\n\n       [,1]   [,2]   [,3]   [,4]\n[1,] -0.327  0.311  0.002  0.013\n[2,]  0.000 -0.543  0.615 -0.072\n[3,]  0.000  0.000 -0.288  0.288\n[4,]  0.000  0.000  0.000  0.000\n\n\n\nOriginal Model Matrix:\n\nround(Rmsm,3)\n\n        Healthy LowCD4   AIDS Death\nHealthy  -0.327  0.327  0.000 0.000\nLowCD4    0.000 -0.645  0.635 0.010\nAIDS      0.000  0.000 -0.348 0.348\nDeath     0.000  0.000  0.000 0.000"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways-2",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#key-takeaways-2",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Key Takeaways",
+    "text": "Key Takeaways\n\nWith a reasonable generator matrix defined, we can now augment the model as we see fit:\n\nAdd additional health states.\nAdd new strategies with evidence on efficiacy drawn from the literature (e.g., hazard rates).\nAdd accumulators and transition states.\nChange the cycle length.\n\nOnce done with the above, just embed the new matrix."
+  },
+  {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#scenario",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#scenario",
     "title": "Incorporating New Evidence and Uncertainty",
@@ -235,7 +445,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#general-optimization-technique",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "General Optimization Technique",
-    "text": "General Optimization Technique\n\n\nGeneral solution, requires cumulative distribution function (CDF), \\(F\\).\nhttps://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R\n\n\n\\[\\min_{\\vec{\\theta} \\in \\mathcal{R}}\\,\\, (F(x_1|\\vec{\\theta})-p_1)^2+(F(x_2|\\vec{\\theta})-p_2)^2\\]"
+    "text": "General Optimization Technique\n\n\nGeneral solution, requires cumulative distribution function (CDF), \\(F\\).\nhttps://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R\n\n\n\\[\\min_{\\vec{\\theta} \\in R}\\,\\, (F(x_1|\\vec{\\theta})-p_1)^2+(F(x_2|\\vec{\\theta})-p_2)^2\\]"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-via-optim",
@@ -256,7 +466,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#stable-optimization",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Stable Optimization",
-    "text": "Stable Optimization\n\n\nAnalytically correct formula is not numerically stable.\nTransfinite scaling stabilizes optimization.\nFor probabilities, this is the \\(\\text{logit}(p)=\\log \\frac{p}{1-p}=\\log p - \\log (1-p)\\).\nTweaking parameters to converge can still happen.\nExample of theory versus practice.\n\n\n\\[\\min_{\\vec{\\theta} \\in \\mathcal{R}} \\sum_{i \\in 1,2}\\,\\, (\\text{logit} (F(x_i|\\vec{\\theta}))-\\text{logit} (p_i))^2\\]"
+    "text": "Stable Optimization\n\n\nAnalytically correct formula is not numerically stable.\nTransfinite scaling stabilizes optimization.\nFor probabilities, this is the \\(\\text{logit}(p)=\\log \\frac{p}{1-p}=\\log p - \\log (1-p)\\).\nTweaking parameters to converge can still happen.\nExample of theory versus practice.\n\n\n\\[\\min_{\\vec{\\theta} \\in R} \\sum_{i \\in 1,2}\\,\\, (\\text{logit} (F(x_i|\\vec{\\theta}))-\\text{logit} (p_i))^2\\]"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example",
@@ -298,14 +508,14 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copulas-and-psa-sampling-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Copulas and PSA Sampling",
-    "text": "Copulas and PSA Sampling\n\nCopula: a multivariate cumulative distribution function with uniform marginals.\n\n\n\nBack to Website"
+    "text": "Copulas and PSA Sampling\n\nCopula: a multivariate cumulative distribution function with uniform marginals.\n\n\n\nBack to Website\n\n\n\nChhatwal, Jagpreet, Suren Jayasuriya, and Elamin H. Elbasha. 2016. “Changing Cycle Lengths in State-Transition Models: Challenges and Solutions.” Medical Decision Making 36 (8): 952–64. https://doi.org/10.1177/0272989X16656165.\n\n\nHigham, Nicholas J. 2008. Functions of Matrices: Theory and Computation. SIAM."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#learning-objectives",
     "href": "slides/03_advanced-bookkeeping.html#learning-objectives",
     "title": "Advanced Bookkeeping",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nEstablish the transition rate matrix as the central “hub” of the modeling process.\nInclude transition states and accumulators to accurately track and count events, costs, and QALYs.\nBackwards convert an existing Markov model to facilitate new health states, new strategies, or new settings."
+    "text": "Learning Objectives\n\nEstablish the transition rate matrix as the central “hub” of the modeling process.\nInclude transition states and accumulators to accurately track and count events, costs, and QALYs.\nDemonstrate how to include tunnel states."
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#transition-rate-matrix",
@@ -634,7 +844,7 @@
     "href": "slides/03_advanced-bookkeeping.html#tunnel-state",
     "title": "Advanced Bookkeeping",
     "section": "Tunnel State",
-    "text": "Tunnel State\nWe’ll start with the original transition rate matrix:\n\n\n$natural_history\n         to\nfrom      Healthy   CVD Dead\n  Healthy   -0.16  0.15 0.01\n  CVD        0.00 -0.11 0.11\n  Dead       0.00  0.00 0.00\n\n\n\nR_ &lt;- params$mR[[\"natural_history\"]]\nR_\n\n         to\nfrom      Healthy   CVD Dead\n  Healthy   -0.16  0.15 0.01\n  CVD        0.00 -0.11 0.11\n  Dead       0.00  0.00 0.00"
+    "text": "Tunnel State\nWe’ll start with the original transition rate matrix:\n\nR_ &lt;- params$mR[[\"natural_history\"]]\nR_\n\n         to\nfrom      Healthy   CVD Dead\n  Healthy   -0.16  0.15 0.01\n  CVD        0.00 -0.11 0.11\n  Dead       0.00  0.00 0.00"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-1",
@@ -648,98 +858,63 @@
     "href": "slides/03_advanced-bookkeeping.html#tunnel-states-6",
     "title": "Advanced Bookkeeping",
     "section": "Tunnel States",
-    "text": "Tunnel States\n\n\nFor now, just include zeros.\n\n\n\n\nR &lt;- \n  cbind(R_,\"tunCVDy1\" = c(0,0,0), \"tunCVDy2\" = c(0,0,0),\"NULL\" = c(0,0,0)) %&gt;% \n  rbind(.,\"tunCVDy1\" = c(0,0,0,0,0,0), \"tunCVDy2\" = c(0,0,0,0,0,0), \"NULL\" = c(0,0,0,0,0,0))  \nR\n\n         Healthy   CVD Dead tunCVDy1 tunCVDy2 NULL\nHealthy    -0.16  0.15 0.01        0        0    0\nCVD         0.00 -0.11 0.11        0        0    0\nDead        0.00  0.00 0.00        0        0    0\ntunCVDy1    0.00  0.00 0.00        0        0    0\ntunCVDy2    0.00  0.00 0.00        0        0    0\nNULL        0.00  0.00 0.00        0        0    0"
+    "text": "Tunnel States\n\n\nFor now, just include zeros.\n\n\n\n\nR &lt;- \n    cbind(R_,\"tunCVDy1\" = c(0,0,0), \"tunCVDy2\" = c(0,0,0),\"NULL\" = c(0,0,0)) %&gt;% \n    rbind(.,\"tunCVDy1\" = c(0,0,0,0,0,0), \"tunCVDy2\" = c(0,0,0,0,0,0), \"NULL\" = c(0,0,0,0,0,0))  \nR\n\n         Healthy   CVD Dead tunCVDy1 tunCVDy2 NULL\nHealthy    -0.16  0.15 0.01        0        0    0\nCVD         0.00 -0.11 0.11        0        0    0\nDead        0.00  0.00 0.00        0        0    0\ntunCVDy1    0.00  0.00 0.00        0        0    0\ntunCVDy2    0.00  0.00 0.00        0        0    0\nNULL        0.00  0.00 0.00        0        0    0"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-2",
     "href": "slides/03_advanced-bookkeeping.html#tunnel-state-2",
     "title": "Advanced Bookkeeping",
     "section": "Tunnel State",
-    "text": "Tunnel State\n\n\nWe then fill in the appropriate transition rate for entry into the tunnel.\n\n\n\nR[\"Healthy\",\"tunCVDy1\"] = R[\"Healthy\",\"CVD\"]\nR\n\n         Healthy   CVD Dead tunCVDy1 tunCVDy2 NULL\nHealthy    -0.16  0.15 0.01     0.15        0    0\nCVD         0.00 -0.11 0.11     0.00        0    0\nDead        0.00  0.00 0.00     0.00        0    0\ntunCVDy1    0.00  0.00 0.00     0.00        0    0\ntunCVDy2    0.00  0.00 0.00     0.00        0    0\nNULL        0.00  0.00 0.00     0.00        0    0"
+    "text": "Tunnel State\n\n\nWe then fill in the appropriate transition rate for entry into the tunnel.\nWe zero out the transition from healthy to CVD since this can only occur after 2 years.\n\n\n\nR[\"Healthy\",\"tunCVDy1\"] = R[\"Healthy\",\"CVD\"]\nR[\"Healthy\",\"CVD\"] = 0\nR\n\n         Healthy   CVD Dead tunCVDy1 tunCVDy2 NULL\nHealthy    -0.16  0.00 0.01     0.15        0    0\nCVD         0.00 -0.11 0.11     0.00        0    0\nDead        0.00  0.00 0.00     0.00        0    0\ntunCVDy1    0.00  0.00 0.00     0.00        0    0\ntunCVDy2    0.00  0.00 0.00     0.00        0    0\nNULL        0.00  0.00 0.00     0.00        0    0"
   },
   {
     "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-3",
     "href": "slides/03_advanced-bookkeeping.html#tunnel-state-3",
     "title": "Advanced Bookkeeping",
     "section": "Tunnel State",
-    "text": "Tunnel State\n\n\nEmbed using matrix exponentiation to obtain the initial transition probability matrix.\nNote that we need to TK\n\n\n\nP_ = expm(R)  \nP_[\"tunCVDy1\",\"NULL\"] = P_[\"CVD\",\"Dead\"]\nP_[\"tunCVDy1\",\"tunCVDy1\"] = 0\nP_[\"tunCVDy1\",\"tunCVDy2\"] = 1 - P_[\"tunCVDy1\",\"NULL\"]\nP_[\"tunCVDy2\",\"tunCVDy2\"] = 0\nP_[\"tunCVDy2\",\"NULL\"] = 1\nP = P_[-which(rownames(P_)==\"NULL\"),-which(colnames(P_)==\"NULL\")]\nP\n\n         Healthy     CVD     Dead tunCVDy1 tunCVDy2\nHealthy  0.85214 0.13107 0.016785  0.13862  0.00000\nCVD      0.00000 0.89583 0.104166  0.00000  0.00000\nDead     0.00000 0.00000 1.000000  0.00000  0.00000\ntunCVDy1 0.00000 0.00000 0.000000  0.00000  0.89583\ntunCVDy2 0.00000 0.00000 0.000000  0.00000  0.00000"
+    "text": "Tunnel State\n\n\nWe now need to embed the transition probability matrix because tunnel states can only be defined on the probability scale.\nIntuition: if we defined the tunnel state in the rate matrix, when we embed we’d end up with compound transitions that the tunnel state rules out (i.e., Healthy to tunCVDy1)"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#transition-states-9",
-    "href": "slides/03_advanced-bookkeeping.html#transition-states-9",
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-4",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-state-4",
     "title": "Advanced Bookkeeping",
-    "section": "Transition States",
-    "text": "Transition States\n\n\n\n\n\n\nHealthy\nCVD\nDead\ntunCVDy1\ntunCVDy2\n\n\n\n\nHealthy\n0.852\n0.131\n0.017\n0.139\n0.000\n\n\nCVD\n0.000\n0.896\n0.104\n0.000\n0.000\n\n\nDead\n0.000\n0.000\n1.000\n0.000\n0.000\n\n\ntunCVDy1\n0.000\n0.000\n0.000\n0.000\n0.896\n\n\ntunCVDy2\n0.000\n0.000\n0.000\n0.000\n0.000\n\n\n\n\n\n\n\n\nNote that the Markovian submatrix still has rows that sum to one."
+    "section": "Tunnel State",
+    "text": "Tunnel State\n\nWe embed and rearrange the initial matrix to reflect the time sequencing through the tunnel state.\n\n\nP_ = expm(R)  \nP = P_[c(\"Healthy\",\"tunCVDy1\",\"tunCVDy2\",\"CVD\",\"Dead\"),c(\"Healthy\",\"tunCVDy1\",\"tunCVDy2\",\"CVD\",\"Dead\")]\n\n\n\n\n\n\n\nHealthy\ntunCVDy1\ntunCVDy2\nCVD\nDead\n\n\n\n\nHealthy\n0.852\n0.139\n0\n0\n0.009\n\n\ntunCVDy1\n0\n1\n0\n0\n0\n\n\ntunCVDy2\n0\n0\n1\n0\n0\n\n\nCVD\n0\n0\n0\n0.896\n0.104\n\n\nDead\n0\n0\n0\n0\n1"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#hiv-model",
-    "href": "slides/03_advanced-bookkeeping.html#hiv-model",
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-5",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-state-5",
     "title": "Advanced Bookkeeping",
-    "section": "HIV Model",
-    "text": "HIV Model\n\n\n      A     B     C     D\nA 0.721 0.202 0.067 0.010\nB 0.000 0.581 0.407 0.012\nC 0.000 0.000 0.750 0.250\nD 0.000 0.000 0.000 1.000\n\n\n\n\nOriginal paper specified probabilities observed.\nA (Healthly) -&gt; B (cd4 &lt; 200) -&gt; C (AIDS) -&gt; D (Death)\nNote there are “jumpover” transitions.\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
+    "section": "Tunnel State",
+    "text": "Tunnel State\n\n\nUnlike a transition state or accumulator, we need to allow for exit from the tunnel to death in the cycle.\n\n\n\n# It is possible to exit the tunnel state to death. \nP[\"tunCVDy1\",\"Dead\"] = P[\"CVD\",\"Dead\"]"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#eigenvalue-method",
-    "href": "slides/03_advanced-bookkeeping.html#eigenvalue-method",
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-6",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-state-6",
     "title": "Advanced Bookkeeping",
-    "section": "Eigenvalue Method",
-    "text": "Eigenvalue Method\n\nV  &lt;- eigen(m_P)$vectors\niV &lt;- solve(V)\nAp &lt;- iV %*% m_P %*% V\nlAp &lt;- diag(log(diag(Ap)), nrow(Ap), ncol(Ap))\nR  &lt;- V %*% lAp %*% iV\nR[abs(R) &lt; 1e-6 ] &lt;- 0\nrownames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\ncolnames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\nround(R,3)\n\n       A      B      C      D\nA -0.327  0.311  0.002  0.013\nB  0.000 -0.543  0.615 -0.072\nC  0.000  0.000 -0.288  0.288\nD  0.000  0.000  0.000  0.000\n\n\n\nNote there is a negative rate from B -&gt; D.\nThis is a transition from D -&gt; B and should be moved to the other side of the matrix."
+    "section": "Tunnel State",
+    "text": "Tunnel State\n\n\nUnlike a transition state or accumulator, we need to allow for exit from the tunnel to death in the cycle.\n\n\n\n# It is possible to exit the tunnel state to death. \nP[\"tunCVDy1\",\"Dead\"] = P[\"CVD\",\"Dead\"]\n\n\n\n\n\n\n\nHealthy\ntunCVDy1\ntunCVDy2\nCVD\nDead\n\n\n\n\nHealthy\n0.852\n0.139\n0\n0\n0.009\n\n\ntunCVDy1\n0\n1\n0\n0\n0.104\n\n\ntunCVDy2\n0\n0\n1\n0\n0\n\n\nCVD\n0\n0\n0\n0.896\n0.104\n\n\nDead\n0\n0\n0\n0\n1"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#eigenvalue-method-cont.",
-    "href": "slides/03_advanced-bookkeeping.html#eigenvalue-method-cont.",
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-7",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-state-7",
     "title": "Advanced Bookkeeping",
-    "section": "Eigenvalue Method (cont.)",
-    "text": "Eigenvalue Method (cont.)\n\n\n       A      B      C      D\nA -0.327  0.311  0.002  0.013\nB  0.000 -0.543  0.615 -0.072\nC  0.000  0.000 -0.288  0.288\nD  0.000  0.000  0.000  0.000\n\n\n\nThe negative rate implies an identifiable issue.\nNote rates from A-&gt;C, A-&gt;D are relatively small, implying these are from statistical noise in observation.\nexpm::logm Higham method returns same as Eigenvalue method.\nTweaking rates to get a proper model is ad-hoc and difficult."
+    "section": "Tunnel State",
+    "text": "Tunnel State\n\n\nWe also must force exit into the next tunnel state.\n\n\n\nP[\"tunCVDy1\",\"tunCVDy1\"] = 0\nP[\"tunCVDy1\",\"tunCVDy2\"] = 1 - P[\"CVD\",\"Dead\"]\n\n\n\n\n\n\n\nHealthy\ntunCVDy1\ntunCVDy2\nCVD\nDead\n\n\n\n\nHealthy\n0.852\n0.139\n0\n0\n0.009\n\n\ntunCVDy1\n0\n0\n0.896\n0\n0.104\n\n\ntunCVDy2\n0\n0\n1\n0\n0\n\n\nCVD\n0\n0\n0\n0.896\n0.104\n\n\nDead\n0\n0\n0\n0\n1"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates",
+    "objectID": "slides/03_advanced-bookkeeping.html#tunnel-state-8",
+    "href": "slides/03_advanced-bookkeeping.html#tunnel-state-8",
     "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates",
-    "text": "Reestimating Rates\n\nImposition of structural assumptions and fitting to raw data would likely result in better rate estimates.\nWe could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. A-&gt;B-&gt;C-&gt;D constrains model.\nWe use the reported data from the paper at year 1\nMSM Method: https://chjackson.github.io/msm/msmcourse/"
+    "section": "Tunnel State",
+    "text": "Tunnel State\n\n\nWe repeat a similar exercise for the 2nd year in the tunnel.\n\nAllow for exit to death.\nForce entry into the CVD state after the cycle.\n\n\n\n\nP[\"tunCVDy2\",\"Dead\"] = P[\"CVD\",\"Dead\"]\nP[\"tunCVDy2\",\"tunCVDy2\"] = 0\nP[\"tunCVDy2\",\"CVD\"] = 1 - P[\"CVD\",\"Dead\"]\n\n\n\n\n\n\n\nHealthy\ntunCVDy1\ntunCVDy2\nCVD\nDead\n\n\n\n\nHealthy\n0.852\n0.139\n0\n0\n0.009\n\n\ntunCVDy1\n0\n0\n0.896\n0\n0.104\n\n\ntunCVDy2\n0\n0\n0\n0.896\n0.104\n\n\nCVD\n0\n0\n0\n0.896\n0.104\n\n\nDead\n0\n0\n0\n0\n1"
   },
   {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-msm-method",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-msm-method",
+    "objectID": "slides/03_advanced-bookkeeping.html#progressive-disease-model",
+    "href": "slides/03_advanced-bookkeeping.html#progressive-disease-model",
     "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates (MSM Method)",
-    "text": "Reestimating Rates (MSM Method)\n\nlibrary(msm)\nx &lt;- rbind(\n  # Start in state 1 at time 0.\n  data.frame(\n    ptnum=1:1000, years=rep(0, 1000), state=rep(1, 1000)\n  ),\n  # Observed at year 1 new state.\n  data.frame(\n    ptnum=1:1000, years=rep(1, 1000),\n    state=c(rep(1, 721), rep(2, 202),\n            rep(3, 67),  rep(4, 10))\n  )\n)\nx &lt;- x[order(x$ptnum, x$years),]"
-  },
-  {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-structural-assumption",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-structural-assumption",
-    "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates (Structural Assumption)",
-    "text": "Reestimating Rates (Structural Assumption)\n\nstatetable.msm(state, ptnum, data=x)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0,   0),    # A -&gt; B only\n                      c(0, 0,   0.6, 0),    # B -&gt; C only\n                      c(0, 0,   0,   0.3),  # C -&gt; D only\n                      c(0, 0,   0,   0)))\n\n\n\nQ represents structural assumptions and estimate\nEstimates were taken from Eigenvalue method\nRelaxing structural assumptions does not converge"
-  },
-  {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-likelihood-fit",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-likelihood-fit",
-    "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates (Likelihood Fit)",
-    "text": "Reestimating Rates (Likelihood Fit)\n\nhiv.msm &lt;- msm(state ~ years, subject = ptnum, data = x, qmatrix = Q.init)\nhiv.msm\n\n\nCall:\nmsm(formula = state ~ years, subject = ptnum, data = x, qmatrix = Q.init)\n\nMaximum likelihood estimates\n\nTransition intensities\n                  Baseline                 \nState 1 - State 1 -0.3271 (-0.3680,-0.2907)\nState 1 - State 2  0.3271 ( 0.2907, 0.3680)\nState 2 - State 2 -0.6454 (-0.8181,-0.5092)\nState 2 - State 3  0.6454 ( 0.5092, 0.8181)\nState 3 - State 3 -0.3982 (-0.7562,-0.2097)\nState 3 - State 4  0.3982 ( 0.2097, 0.7562)\n\n-2 * log-likelihood:  1572.2 \n\n\n\n\nAll positive.\nProvides 95% confidence intervals for a PSA."
-  },
-  {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities",
-    "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates (Transition Probabilities)",
-    "text": "Reestimating Rates (Transition Probabilities)\n\nm_P\n\n      A     B     C     D\nA 0.721 0.202 0.067 0.010\nB 0.000 0.581 0.407 0.012\nC 0.000 0.000 0.750 0.250\nD 0.000 0.000 0.000 1.000\n\nround(pmatrix.msm(hiv.msm, t=1), 3)\n\n        State 1 State 2 State 3 State 4\nState 1   0.721   0.202   0.067   0.010\nState 2   0.000   0.524   0.384   0.092\nState 3   0.000   0.000   0.672   0.328\nState 4   0.000   0.000   0.000   1.000\n\n\n\n\nQuite close.\nProblematic transition from B -&gt; D probability is higher."
-  },
-  {
-    "objectID": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities-1",
-    "href": "slides/03_advanced-bookkeeping.html#reestimating-rates-transition-probabilities-1",
-    "title": "Advanced Bookkeeping",
-    "section": "Reestimating Rates (Transition Probabilities)",
-    "text": "Reestimating Rates (Transition Probabilities)\n\nc(1000, 0, 0, 0) %*% m_P\n\n       A   B  C  D\n[1,] 721 202 67 10\n\nc(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)\n\n     State 1 State 2 State 3 State 4\n[1,]     721     202      67      10\n\n\n\n\nResulting expectation after 1 cycle is nearly identical.\nThe msm method has bits down at 4th decimal. Round off made them identical.\nOnly a tiny bit of error (721 vs. 721.0002) makes log numerically unstable converting from probability to rate."
-  },
-  {
-    "objectID": "slides/03_advanced-bookkeeping.html#conclusions",
-    "href": "slides/03_advanced-bookkeeping.html#conclusions",
-    "title": "Advanced Bookkeeping",
-    "section": "Conclusions",
-    "text": "Conclusions\n\nIdentifying rate matrix from transition probability matrix in presence of error/jump over is in general not possible.\nThe matrix log methods (eigen/Higham) usually results in impossible models.\nUsing observed data one can fit rate data using likelihood, e.g. msm.\nStructural assumptions can be imposed and may be necessary.\n95% confidence intervals result.\n\n\n\nBack to Website"
+    "section": "Progressive Disease Model",
+    "text": "Progressive Disease Model\n\n\n\n\n\n\n\nG\n\n  \n\nAsymptomatic\n\n Asymptomatic   \n\nAsymptomatic-&gt;Asymptomatic\n\n    \n\nProgressive\n\n Progressive Disease   \n\nAsymptomatic-&gt;Progressive\n\n  tpProg * (1-effect)   \n\nDead\n\n Dead   \n\nAsymptomatic-&gt;Dead\n\n  tpDn   \n\nProgressive-&gt;Progressive\n\n    \n\nProgressive-&gt;Dead\n\n     tpDcm+tpDn   \n\nDead-&gt;Dead\n\n   \n\n\n\n\n\nSource: Green et al. (2023)\n\n\nBack to Website\n\n\n\nGreen, Nathan, Felicity Lamrock, Nichola Naylor, Jack Williams, and Andrew Briggs. 2023. “Health Economic Evaluation Using Markov Models in r for Microsoft Excel Users: A Tutorial.” PharmacoEconomics 41 (1): 5–19."
   },
   {
     "objectID": "slides/01_mortality.html#learning-objectives",
