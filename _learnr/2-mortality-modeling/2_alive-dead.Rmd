@@ -1,5 +1,6 @@
 ---
 title: "2. Constructing an Alive-Dead Model"
+editor: source
 output:
   learnr::tutorial:
     progressive: true
