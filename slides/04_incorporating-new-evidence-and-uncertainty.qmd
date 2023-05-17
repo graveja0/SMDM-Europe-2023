@@ -98,7 +98,7 @@ abline(v=1.69, col='red')
 -  https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R 
 :::
  
-$$\min_{\vec{\theta} \in \mathcal{R}}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
+$$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
 
 ## Normal via Optim
 
@@ -149,7 +149,7 @@ curve(pnorm(x), from=-10, to=10, lwd=3, col='red')
 - Example of theory versus practice.
 :::
 
-$$\min_{\vec{\theta} \in \mathcal{R}} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\theta}))-\text{logit} (p_i))^2$$
+$$\min_{\vec{\theta} \in R} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\theta}))-\text{logit} (p_i))^2$$
 
 ## Transfinite Example
 
