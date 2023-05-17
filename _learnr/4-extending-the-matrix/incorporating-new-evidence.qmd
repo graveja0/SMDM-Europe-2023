@@ -208,6 +208,8 @@ rProgDrug = with(params,-log(1 - (tpProg_ * (1 - effect))))
 rDcm = with(params,-log(1 - tpDcm))
 ```
 
+These are the formulas we recommended against using in general, but this is from a published reference model that didn't start from rates and there is no literature to refer back too with rates. We use these for didactic purposes here.
+
 We can now collect all of these rates within rate matrices---one matrix for each strategy.[Note that to fill in a matrix you must go column by column. Therefore, the code here specifies each column in each row.]{.aside}
 
 ```{r}
@@ -596,7 +598,7 @@ paramsB$mR[[1]]
 
 ## B3. Transition Probability Matrix
 
-We can similarly use the same function as defined in @sec-b3 to embed the transition probability matrix. 
+We can similarly use the same function as defined in @sec-a3 to embed the transition probability matrix. 
 
 ```{r}
 paramsB$mP = 
