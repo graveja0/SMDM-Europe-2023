@@ -23,16 +23,14 @@ source("./manifest.r")
 
 - Taking 95% CI and turning them into distribution parameters for PSA draws is a common task.
 - Analytic formulas: https://www.johndcook.com/quantiles_parameters.pdf
-- ParameterSolver implements in Windows, http://biostatistics.mdanderson.org/SoftwareDownload/
+- ParameterSolver implemented in Windows, [Link](https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6)
 
 ## Scenario
 
 - Your model has a rate `rH_CVD` and you want to define a probabilistic sensitivity analysis (PSA) distribution around it.
 
 
-## ParameterSolver
 
-- [Link](https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6)
 
 ## Common PSA Distributions
 
