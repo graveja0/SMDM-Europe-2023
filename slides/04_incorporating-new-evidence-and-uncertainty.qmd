@@ -53,7 +53,7 @@ source("./manifest.r")
 
 ## A Word of Warning
 
-- "Identifiability" may be an issue. 
+- As you'll see, it's not always going to work perfectly. 
 - If a transition probability matrix is defined incorrectly (e.g., no jumpover probabilities), the generator matrix may not exist.
 - Identifiability is a more general issue, however. 
 
@@ -76,19 +76,22 @@ mP
 -   From '*Decision Modelling for Health Economic Evaluation*' by Briggs, Claxton, Sculpher.
 :::
 
-## Two Methods to Solve for the Generator
+## Three Methods to Solve for the Generator
 
 ::: nobullet
 - A. Compute the matrix logarithm of the transition probability matrix $P$.
 
 - B. Maximum likelihood-based approach.
+
+- C. Convert the supplied transition probabilities to rates one-by-one.
+
+- (You should probably try all three.)
 :::
 
 ## A. Matrix Logarithm of P
 
 - In mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix. 
 - A matrix has a logarithm *if and only if* if it is invertible.
-
 
 ## A. Matrix Logarithm of P
 
@@ -138,8 +141,6 @@ R[abs(R) < 1e-6 ] <- 0
 dimnames(R) = dimnames(mP)
 round(R,3)
 ```
-
-
 
 ## A. Matrix Logarithm of P
 
@@ -287,8 +288,8 @@ library(msm)
 statetable.msm(state, ptnum, data=tr)
 
 # Initial rate guesses based on the eigenvalue method
-Q.init <- rbind(rbind(c(0, 0.3, 0,   0),    
-                      c(0, 0,   0.6, 0),    
+Q.init <- rbind(rbind(c(0, 0.3, 0,   .0001),    
+                      c(0, 0,   0.6, 0.01),    
                       c(0, 0,   0,   0.3),  
                       c(0, 0,   0,   0)))
 dimnames(Q.init) = dimnames(mP)
@@ -312,6 +313,7 @@ hiv.msm
 #| echo: true
 #| eval: true
 Rmsm <- msm::qmatrix.msm(hiv.msm, ci = "none")
+round(Rmsm,3)
 ```
 
 ## 5. Embed the Transition Probability Matrix
@@ -360,7 +362,7 @@ c(1000, 0, 0, 0) %*% pmatrix.msm(hiv.msm, t=1)
 ## Key Takeaways
 
 - By imposing some constraints on the underlying transitions, we were able to yield a generator matrix that makes sense!
-- Our multistate model-based generator matrix closely approximates the original transition probability matrix, but does not imply negative rates that bring people back from death. 
+- Critically, our multistate model-based generator matrix closely approximates the original transition probability matrix, but does not imply negative rates that bring people back from death. 
 
 ## Key Takeaways
 
@@ -388,6 +390,17 @@ round(Rmsm,3)
 :::
 
 :::
+
+## Key Takeaways
+
+- With a reasonable generator matrix defined, we can now augment the model as we see fit:
+
+  - Add additional health states.
+  - Add new strategies with evidence on efficiacy drawn from the literature (e.g., hazard rates).
+  - Add accumulators and transition states.
+  - Change the cycle length. 
+
+- Once  done with the above, just embed the new matrix. 
 
 
 # 2. Solving for PSA Distributions
