@@ -154,8 +154,8 @@ round(R,3)
 round(R, 3)
 ```
 
-- Note there is a negative rate from LowCD4 -\> Death!
-- This is a transition from Death -\> LowCD4 and should be moved to the other side of the matrix.
+- Note there is a negative rate from LowCD4 {{< fa arrow-right >}} Death!
+- This is a transition from Death {{< fa arrow-right >}} LowCD4 and should be moved to the other side of the matrix.
 
 ## A. Matrix Logarithm of P
 
@@ -163,8 +163,8 @@ round(R, 3)
 round(R, 3)
 ```
 
--   The negative rate implies an identifiable issue.
--   Note rates from Healthy-\>AIDS, Healthy-\>Death are relatively small, implying these are from statistical noise in observation.
+-   The negative rate implies an identifiability issue.
+-   Note rates from Healthy{{< fa arrow-right >}}AIDS, Healthy{{< fa arrow-right >}}Death are relatively small, implying these are from statistical noise in observation.
 
 ## A. Matrix Logarithm of P
 
@@ -174,7 +174,8 @@ round(R, 3)
 
 ## A. Matrix Logarithm of P
 ::: nonincremental
--   `expm::logm` @highamFunctionsMatricesTheory2008 method returns same as eigenvalue method.
+-    @highamFunctionsMatricesTheory2008 method returns same as eigenvalue method.
+    - `expm::logm()`
 -   Tweaking rates to get a proper model is ad-hoc and difficult.
 :::
 
@@ -195,10 +196,9 @@ round(R,3)
 
 ## B. Multi-State Model Based Approach
 
--   Imposition of structural assumptions and fitting to raw data can result in better rate estimates.
--   We could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. Healthy-\>LowCD4-\>AIDS-\>Death constrains model.
--   We use the reported data from the original model at year 1
--   MSM Method: https://chjackson.github.io/msm/msmcourse/
+-   Imposition of structural assumptions and fitting to pseudo-data derived from original Markov model can result in reasonable rate estimates.
+-   We could assume that a patient with HIV at this point in time only gets sicker and external causes of death are negligible. Healthy {{< fa arrow-right >}} LowCD4 {{< fa arrow-right >}} AIDS {{< fa arrow-right >}} Death constrains model.
+-   We use the reported data from the original model at year 1.
 
 ## B. Multi-State Model Based Approach
 
@@ -206,7 +206,7 @@ Steps:
 
 1. Run the original model for 1+ cycles to obtain the Markov trace. 
 2. Construct psuedo-data from the resulting trace based on a cohort with reasonable size (e.g., 1,000 patients)
-3. Estimate transition hazards in the pseudo-data based on a multistate model.
+3. Estimate transition hazards in the pseudo-data based on a multistate model.^[https://chjackson.github.io/msm/msmcourse/]
 4. Use the estimated transition hazards to construct the rate matrix.
 
 ## 1. Run the original model  
@@ -215,12 +215,12 @@ Steps:
 #| echo: true
 #| eval: true
 
-tr0 <- 
+tr0 <- # Initial state occupancy.
   c("Healthy" = 1000,"LowCD4" = 0, "AIDS" = 0, "Death" = 0)
-tr1 <- 
+tr1 <- # State occupancy after one cycle.
   tr0 %*% mP 
 
-tr <- 
+tr <- # Bind together into a data frame. 
     rbind.data.frame(tr0, tr1) %>%
     mutate(cycle = c(0, 1)) %>% 
     select(cycle,everything())
@@ -373,7 +373,7 @@ round(mP,3)
 
 :::
 
-## Comparison
+## Markov Trace Comparison
 
 ```{r}
 #| echo: true
@@ -441,7 +441,9 @@ round(Rmsm,3)
 
 - Model draws on literature-based parameters that are reported as means, standard deviations, interquartile ranges, 95% confidence intervals, etc.
 
-- Straightforward to obtain point estimate to use in primary model.
+## A Common Issue
+
+- Straightforward to obtain base case values from literature.
 
 - But how can we define PSA distributions based on limited information?
 
@@ -460,134 +462,301 @@ round(Rmsm,3)
 ## Example
 
 - Cost parameter reported in literature has interquartile range of \$300-\$750.
-- What are the parameters of a gamma distribution such that the 25th percentile is \$300 and the 75th percentile is \750?
+- What are the parameters of a PSA distribution such that the 25th percentile is \$300 and the 75th percentile is \$750?
 
 
-## Objectives
+## Some Options
 
+- Analytic formulas for some distributions (normal, gamma, beta).
+- Formulas take as their inputs the two values ($x_1$, $x_2$) and their associated quantiles ($p_1$,$p_2$).
+- Formulas return the PSA distribution parameters that match up to these values.
 
-
-
-# Some PSA Notes
-
-- Taking 95% CI and turning them into distribution parameters for PSA draws is a common task.
-- Analytic formulas: https://www.johndcook.com/quantiles_parameters.pdf
+## Some Options
 - ParameterSolver implemented in Windows, [Link](https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware/Index/6)
 
-## Scenario
+- See @cookDeterminingDistributionParameters2010 and [Vasco Grilo's blog post](https://forum.effectivealtruism.org/posts/tvTqRtMLnJiiuAep5/how-to-determine-distribution-parameters-from-quantiles) for more. 
 
-- Your model has a rate `rH_CVD` and you want to define a probabilistic sensitivity analysis (PSA) distribution around it.
+- The next few slides provide you with nearly all the tools you'll need, however. 
+
+## Example: Cost PSA Distribution
+
+- Suppose the interquartile range for a key cost variable is [300,750]
+- We may have obtained this from the literature, from tabulating cost data, or from expert opinions.
 
 
-
-
-
-
-## Normal Distribution Analytic
-
-Let $x_1$ and $x_2$ represent desired end points at some confidence interval $p_1$ and $p_2$. For 95% CI, $p_1=0.025$ and $p_2=0.975$
-
-$$ \sigma = \frac{x_2 - x_1}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}$$
-
-$$\mu = \frac{x_1\Phi^{-1}(p_2)-x_2\Phi^{-1}(p_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}$$
-
-## Normal Distribution Example
-
-```{r}
-#| echo: true
-param_normal <- function(x1,x2,p1,p2) {
-  sigma <- (x2 - x1) / (qnorm(p2)-qnorm(p1))
-  mu <- (x1*qnorm(p2)-x2*qnorm(p1))/(qnorm(p2)-qnorm(p1));
-  c("mu" = mu, "sigma" = sigma)
-}
-param_normal(x1 = 0.91, p1 = 0.025, x2 = 1.69, p = 0.975)
-```
-
-```{r}
-curve(dnorm(x, 1.3, 0.199), from=0.8, to=1.8, ylab="")
-abline(v=0.91, col='red')
-abline(v=1.69, col='red')
-```
-
-## Gamma Example
-
-```{r}
-#| echo: true
-gamma_fn <- function(x1, p1, x2, p2, alpha)
-  x1*qgamma(p2,shape = alpha) - x2*qgamma(p1, shape = alpha)
-
-param_gamma <- function(x1,x2,p1,p2,range) {
-    alpha <- uniroot(function(a) gamma_fn(x1,p1,x2,p2,a),range)$root
-    beta  <- x1 / qgamma(p1,alpha)
-    c("alpha" = alpha, "beta" = beta)
-}
-
-param_gamma(x1=0.91, p1=0.025, x2=1.69, p2=0.975, range = c(1,100))
-```
-
-```{r}
-curve(dgamma(x, shape=40.59, scale=0.0313), from = 0.5, to=2)
-abline(v=0.91, col='red')
-abline(v=1.69, col='red')
-```
-
-## General Optimization Technique
+## Example: Cost PSA Distribution
 
 ::: nonincremental
--  General solution, requires cumulative distribution function (CDF), $F$.
--  https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf for optimization tutorial in R 
+- Suppose the interquartile range for a key cost variable is [300,750]
+- We may have obtained this from the literature, from tabulating cost data, or from collating expert opinion.
+:::
+
+```{r}
+#| echo: true
+x1 = 300
+p1 = 0.25
+
+x2 = 750
+p2 = 0.75
+```
+
+## Analytic Solution: Uniform PSA 
+
+For a uniform distribution with minimum $a$ and maximum  $b$
+
+$$
+a = \frac{p_2x_1 - p_1x_2}{p_2-p_1}
+$$
+$$
+b = \frac{(1-p_1)x_2-(1-p_2)x_1}{p_2-p_1}
+$$
+
+## Analytic Solution: Uniform PSA 
+
+```{r}
+#| echo: true
+a = ((p2*x1) - (p1 * x2)) / (p2 - p1)
+a
+b = ((1 - p1)*x2 - (1 - p2)*x1) / (p2 - p1)
+b
+```
+
+## Analytic Solution: Uniform PSA 
+
+```{r}
+#| echo: true
+qunif(0.25, min = a, max = b)
+qunif(0.75, min = a, max = b)
+```
+
+```{r}
+#| fig-align: center
+plot(density(runif(n = 1e5, min = a, max = b)),main = "")
+```
+
+## Analytic Solution: Normal PSA
+
+$$
+\sigma = \frac{x_2 - x_1}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$ 
+
+$$
+\mu = \frac{x_1\Phi^{-1}(p_2)-x_2\Phi^{-1}(p_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$
+
+## Analytic Solution: Normal PSA
+
+```{r}
+#| echo: true
+mu = (qnorm(p2)*x1 - qnorm(p1)*x2) / (qnorm(p2)-qnorm(p1))
+mu
+sigma = (x2 - x1) / (qnorm(p2) - qnorm(p1))
+sigma
+```
+
+## Analytic Solution: Normal PSA
+
+```{r}
+#| echo: true
+qnorm(0.25, mean = mu, sd = sigma)
+qnorm(0.75, mean = mu, sd = sigma)
+```
+
+```{r}
+#| fig-align: center
+plot(density(rnorm(n = 1e5,  mean = mu, sd = sigma)),main = "")
+```
+
+
+## Analytic Solution: Lognormal PSA
+
+- Just take log of $x_1$ and $x_2$
+
+$$
+\sigma = \frac{\ln(x_2) - \ln(x_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$ 
+
+$$
+\mu = \frac{\ln(x_1)\Phi^{-1}(p_2)-\ln(x_2)\Phi^{-1}(p_1)}{\Phi^{-1}(p_2)-\Phi^{-1}(p_1)}
+$$
+
+## Analytic Solution: Lognormal PSA
+
+```{r}
+#| echo: true
+mu = (qnorm(p2)*log(x1) - qnorm(p1)*log(x2)) / (qnorm(p2)-qnorm(p1))
+mu
+sigma = (log(x2) - log(x1)) / (qnorm(p2) - qnorm(p1))
+sigma
+```
+
+## Analytic Solution: Lognormal PSA
+
+```{r}
+#| echo: true
+qlnorm(0.25, mean = mu, sd = sigma)
+qlnorm(0.75, mean = mu, sd = sigma)
+```
+
+```{r}
+#| fig-align: center
+plot(density(rlnorm(n = 1e5,  mean = mu, sd = sigma)),main = "")
+```
+
+## Analytic Solution: Gamma PSA
+
+- A bit more involved as it involves finding the root of a function. 
+
+## Analytic Solution: Gamma PSA
+::: nonincremental
+- A bit more involved as it involves finding the root of a function. 
+:::
+
+```{r}
+#| echo: true
+#| fig-align: center
+gamma_fn <- function(alpha) {
+    x1*qgamma(p2,shape = alpha, scale =1) - x2 * qgamma(p1, shape = alpha, scale = 1)
+}
+curve(gamma_fn, xlim = c(1,10), col = "blue", lwd = 1.5, lty=2)
+abline(a=0,b=0)
+```
+
+## Analytic Solution: Gamma PSA
+
+::: nonincremental
+- Root (i.e., point where the function crosses the zero line) seems to be between 2 and 4.
+:::
+
+```{r}
+#| echo: true
+#| fig-align: center
+gamma_fn <- function(alpha) {
+    x1*qgamma(p2,shape = alpha, scale =1) - x2 * qgamma(p1, shape = alpha, scale = 1)
+}
+curve(gamma_fn, xlim = c(1,10), col = "blue", lwd = 1.5, lty=2)
+abline(a=0,b=0)
+```
+
+
+## Analytic Solution: Gamma PSA
+
+::: nonincremental
+- We'll search in this range for our $\alpha$ value. 
+:::
+
+```{r}
+#| echo: true
+#| fig-align: center
+gamma_fn <- function(alpha) {
+    x1*qgamma(p2,shape = alpha, scale =1) - x2 * qgamma(p1, shape = alpha, scale = 1)
+}
+curve(gamma_fn, xlim = c(1,10), col = "blue", lwd = 1.5, lty=2)
+abline(a=0,b=0)
+```
+
+
+## Analytic Solution: Gamma PSA
+
+```{r}
+#| echo: true
+alpha_ <- uniroot(gamma_fn,c(2,4))$root
+alpha_
+
+calc_beta <- function(x1,p1,alpha) {
+    x1 / qgamma(p1,alpha,1)
+}
+
+beta_ <- calc_beta(x1 = x1,  p1 = p1, alpha = alpha_)
+beta_
+```
+
+## Analytic Solution: Gamma PSA
+
+```{r}
+#| echo: true
+qgamma(0.25,shape = alpha_, scale = beta_)
+qgamma(0.75,shape = alpha_, scale = beta_)
+```
+
+```{r}
+#| fig-align: center
+plot(density(rgamma(n = 1e4, shape = alpha_, scale = beta_)),main = "")
+```
+
+
+## Alternative: Optimization
+
+::: nonincremental
+-  General solution that can be used to solve for parameters of many common PSA distributions (e.g., beta, gamma, etc.).
 :::
  
 $$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
 
-## Normal via Optim
-
--  Expected 1.30000 0.19898
--  **Not the right answer!**
-
-```{r}
-#| echo: true
-library(pracma)
-norm <- function(x1, p1, x2, p2, mu, sigma)
- (pnorm(x1, mu, sigma)-p1)^2 +
- (pnorm(x2, mu, sigma)-p2)^2
-
-fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
-
-optim(c(0.5, 0.1),
-      fn,
-      gr = function(x) pracma::grad(fn, x),
-      lower=c(-Inf, 1e-4),
-      method = "L-BFGS-B",
-      control=list(factr=1e-10, maxit=100))$par
-
-```
-
-
-
-## Normal via Optim
+## Alternative: Optimization
 
 ::: nonincremental
--  Note that the function is on the probability scale.
--  We have seen issues with probability before.
--  Note the gradient of the tails.  
-
+-  Requires cumulative distribution function (CDF), $F$.
+-  See Borchers' [great slides](https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf) for tips on optimization in R.
 :::
 
-```{r}
-curve(pnorm(x), from=-10, to=10, lwd=3, col='red')
-```
+## Some Advice
 
+- We have found that while analytically correct, this optimization formula is not numerically stable.
+- Transfinite scaling stabilizes optimization.
+
+$$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
+
+<!-- -  Expected 1.30000 0.19898 -->
+<!-- -  **Not the right answer!** -->
+
+<!-- ```{r} -->
+<!-- #| echo: true -->
+<!-- library(pracma) -->
+<!-- norm <- function(x1, p1, x2, p2, mu, sigma) -->
+<!--  (pnorm(x1, mu, sigma)-p1)^2 + -->
+<!--  (pnorm(x2, mu, sigma)-p2)^2 -->
+
+<!-- fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2]) -->
+
+<!-- optim(c(0.5, 0.1), -->
+<!--       fn, -->
+<!--       gr = function(x) pracma::grad(fn, x), -->
+<!--       lower=c(-Inf, 1e-4), -->
+<!--       method = "L-BFGS-B", -->
+<!--       control=list(factr=1e-10, maxit=100))$par -->
+
+<!-- ``` -->
+
+
+
+<!-- ## Normal via Optim -->
+
+<!-- ::: nonincremental -->
+<!-- -  Note that the function is on the probability scale. -->
+<!-- -  We have seen issues with probability before. -->
+<!-- -  Note the gradient of the tails.   -->
+
+<!-- ::: -->
+
+<!-- ```{r} -->
+<!-- curve(pnorm(x), from=-10, to=10, lwd=3, col='red') -->
+<!-- ``` -->
+
+## Stable Optimization
+
+- For probabilities, this is the $\text{logit}(p)=\log \frac{p}{1-p}=\log p - \log (1-p)$.
+- Tweaking parameters to converge can still happen.
+- Example of theory versus practice.
 
 ## Stable Optimization
 
 ::: nonincremental
-- Analytically correct formula is not numerically stable.
-- Transfinite scaling stabilizes optimization.
 - For probabilities, this is the $\text{logit}(p)=\log \frac{p}{1-p}=\log p - \log (1-p)$.
 - Tweaking parameters to converge can still happen.
 - Example of theory versus practice.
 :::
+
 
 $$\min_{\vec{\theta} \in R} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\theta}))-\text{logit} (p_i))^2$$
 
@@ -595,22 +764,67 @@ $$\min_{\vec{\theta} \in R} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\thet
 
 ```{r}
 #| echo: true
-Tf <- function(x, mu, sigma) # Stable Logit for *any* distribution
-    pnorm(x, mu, sigma, log=TRUE) -
-    pnorm(x, mu, sigma, log=TRUE, lower.tail=FALSE)
+Tf <- function(x, shape, rate)
+    pgamma(x,shape,rate,log=TRUE) - 
+    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)
 
-norm <- function(x1, p1, x2, p2, mu, sigma)
- (Tf(x1, mu, sigma)-(log(p1)-log(1-p1)) )^2 +
- (Tf(x2, mu, sigma)-(log(p2)-log(1-p2)) )^2
+norm <- function(x1, p1, x2, p2, shape,rate)
+    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +
+    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2
 
-fn <- function(x) norm(0.91, 0.025, 1.69, 0.975, x[1], x[2])
+fn <- function(x) norm(x1, p1, x2, p2, x[1], x[2])
 
-optim(c(0.5, 0.1),
-      fn,
-      gr = function(x) pracma::grad(fn, x),
-      lower=c(-Inf, 1e-5),
-      method = "L-BFGS-B",
-      control=list(factr=1e-10, maxit=100))$par
+gamma_optim <- 
+  optim(c(0.5, 0.1), # initial parameter guesses
+    fn,
+    gr = function(x) pracma::grad(fn, x),
+    lower=c(-Inf, 1e-5),
+    method = "L-BFGS-B",
+    control=list(factr=1e-10, maxit=100))$par
+```
+
+## Transfinite Example
+
+::: nonincremental
+- Optimization returns $\alpha$ and $1/\beta$ for the gamma distribution example.
+:::
+
+```{r}
+#| echo: true
+
+# Analytic formula
+alpha_
+
+# Optimization
+gamma_optim[[1]]
+```
+
+```{r}
+#| echo: true
+
+# Analytic formula
+beta_
+
+# Optimization
+1/gamma_optim[[2]]
+
+```
+
+
+## Optimization for Other Distributions
+
+::: nonincremental
+- Just swap in the distribution function for the distribution you want to match to (e.g., `pbeta` rather than `pgamma`).
+:::
+- Also make sure the supplied parameter names match the distribution you're aiming for. 
+
+```{r}
+#| eval: false
+#| echo: true
+
+Tf <- function(x, shape, rate)
+    pgamma(x,shape,rate,log=TRUE) - 
+    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)
 
 ```
 
@@ -622,9 +836,7 @@ optim(c(0.5, 0.1),
 - Plot results for visual check.
 
 
-
-
-# Copulas
+# Copula PSA Sampling
 
 ## What is a Copula?
 
