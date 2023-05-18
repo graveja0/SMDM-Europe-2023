@@ -10,7 +10,7 @@
 <atom:link href="https://graveja0.github.io/SMDM-Europe-2023/blog/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.3.340</generator>
-<lastBuildDate>Wed, 17 May 2023 23:28:02 GMT</lastBuildDate>
+<lastBuildDate>Thu, 18 May 2023 18:55:37 GMT</lastBuildDate>
 <item>
   <title>Basic Markov Modeling in R</title>
   <link>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/green-et-al-replication/green-et-al-replication.html</link>
@@ -891,19 +891,19 @@ font-style: inherit;">sim_cohort</span>(params)</span><div class="code-annotatio
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-3" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-annotation="1" data-code-lines="3" data-code-cell="annotated-cell-3">Calculate the transition probability matrices.</span>
+<span data-code-cell="annotated-cell-3" data-code-annotation="1" data-code-lines="3">Calculate the transition probability matrices.</span>
 </dd>
 <dt data-target-cell="annotated-cell-3" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-annotation="2" data-code-lines="5" data-code-cell="annotated-cell-3">Construct the Markov trace</span>
+<span data-code-cell="annotated-cell-3" data-code-annotation="2" data-code-lines="5">Construct the Markov trace</span>
 </dd>
 <dt data-target-cell="annotated-cell-3" data-target-annotation="3">3</dt>
 <dd>
-<span data-code-annotation="3" data-code-lines="19" data-code-cell="annotated-cell-3">Construct a multidimensional transition array (see <span class="citation" data-cites="krijkamp2020multidimensional">Krijkamp et al. (2020)</span> for more). The transition array result isn’t used in this particular example, but can provide useful information on transition dynamics for each cycle.</span>
+<span data-code-cell="annotated-cell-3" data-code-annotation="3" data-code-lines="19">Construct a multidimensional transition array (see <span class="citation" data-cites="krijkamp2020multidimensional">Krijkamp et al. (2020)</span> for more). The transition array result isn’t used in this particular example, but can provide useful information on transition dynamics for each cycle.</span>
 </dd>
 <dt data-target-cell="annotated-cell-3" data-target-annotation="4">4</dt>
 <dd>
-<span data-code-annotation="4" data-code-lines="46" data-code-cell="annotated-cell-3">Execute the function to simulate the cohort for the given parameters.</span>
+<span data-code-cell="annotated-cell-3" data-code-annotation="4" data-code-lines="46">Execute the function to simulate the cohort for the given parameters.</span>
 </dd>
 </dl>
 </div>
@@ -1761,7 +1761,7 @@ font-style: inherit;">-1</span>)</span><div class="code-annotation-gutter-bg"></
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-11" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-annotation="1" data-code-lines="1" data-code-cell="annotated-cell-11">Alternative Simpson’s method coefficients</span>
+<span data-code-cell="annotated-cell-11" data-code-annotation="1" data-code-lines="1">Alternative Simpson’s method coefficients</span>
 </dd>
 </dl>
 </div>
@@ -1977,7 +1977,7 @@ Krijkamp, Eline M, Fernando Alarid-Escudero, Eva A Enns, Petros Pechlivanoglou, 
 </div>
 </div></section></div> ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/green-et-al-replication/green-et-al-replication.html</guid>
-  <pubDate>Wed, 17 May 2023 23:28:02 GMT</pubDate>
+  <pubDate>Thu, 18 May 2023 18:55:37 GMT</pubDate>
 </item>
 <item>
   <title>Backwards Conversion</title>
@@ -2630,7 +2630,7 @@ font-style: inherit;">=</span> mR_)</span></code></pre></div>
 
  ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/backwards-conversion/backwards-conversion.html</guid>
-  <pubDate>Wed, 17 May 2023 23:28:02 GMT</pubDate>
+  <pubDate>Thu, 18 May 2023 18:55:37 GMT</pubDate>
 </item>
 <item>
   <title>Extending the Transition Matrix</title>
@@ -4648,7 +4648,7 @@ font-style: inherit;">kable_styling</span>()</span></code></pre></div>
 
  ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/extending-the-matrix/extending-the-transition-matrix.html</guid>
-  <pubDate>Wed, 17 May 2023 23:28:02 GMT</pubDate>
+  <pubDate>Thu, 18 May 2023 18:55:37 GMT</pubDate>
 </item>
 <item>
   <title>Embedding A Transition Probability Matrix for a Discrete Time Markov Model</title>
@@ -12919,7 +12919,7 @@ accHS
 
  ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/embedding/embedding-a-transition-probability-matrix.html</guid>
-  <pubDate>Wed, 17 May 2023 23:28:02 GMT</pubDate>
+  <pubDate>Thu, 18 May 2023 18:55:37 GMT</pubDate>
 </item>
 <item>
   <title>Signs of Trouble</title>
@@ -13178,11 +13178,11 @@ font-style: inherit;">365</span>))</span><div class="code-annotation-gutter-bg">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-1" data-target-annotation="1">1</dt>
 <dd>
-<span data-code-annotation="1" data-code-cell="annotated-cell-1" data-code-lines="7">Accumulators</span>
+<span data-code-cell="annotated-cell-1" data-code-annotation="1" data-code-lines="7">Accumulators</span>
 </dd>
 <dt data-target-cell="annotated-cell-1" data-target-annotation="2">2</dt>
 <dd>
-<span data-code-annotation="2" data-code-cell="annotated-cell-1" data-code-lines="8">Transition tracker</span>
+<span data-code-cell="annotated-cell-1" data-code-annotation="2" data-code-lines="8">Transition tracker</span>
 </dd>
 </dl>
 </div>
@@ -15529,7 +15529,7 @@ font-style: inherit;">label =</span> state))</span></code></pre></div>
 
  ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/signs-of-trouble/signs-of-trouble.html</guid>
-  <pubDate>Wed, 17 May 2023 23:28:02 GMT</pubDate>
+  <pubDate>Thu, 18 May 2023 18:55:37 GMT</pubDate>
 </item>
 </channel>
 </rss>
