@@ -20,15 +20,6 @@ bibliography: references.bib
 source("./manifest.r")
 ```
 
-```{=html}
-<style>
-.nobullet li {
-  list-style-type: none;
-}
-</style>
-```
-
-
 ## Learning Objectives
 
 1. Back-convert an existing transition probability matrix to incorporate new health states, strategies, and evidence.
@@ -54,7 +45,7 @@ source("./manifest.r")
 ## A Word of Warning
 
 - As you'll see, it's not always going to work perfectly. 
-- If a transition probability matrix is defined incorrectly (e.g., no jumpover probabilities), the generator matrix may not exist.
+- If the original transition probability matrix was defined incorrectly (e.g., no jumpover probabilities), the generator matrix may not exist.
 - Identifiability is a more general issue, however. 
 
 ## Working Example: HIV Model
@@ -85,7 +76,7 @@ mP
 
 - C. Convert the supplied transition probabilities to rates one-by-one.
 
-- (You should probably try all three.)
+- (You can always try 2+ of these methods to see how they compare.)
 :::
 
 ## A. Matrix Logarithm of P
@@ -213,12 +204,12 @@ round(R,3)
 
 Steps:
 
-1. Run the original model for a single cycle. 
+1. Run the original model for 1+ cycles to obtain the Markov trace. 
 2. Construct psuedo-data from the resulting trace based on a cohort with reasonable size (e.g., 1,000 patients)
 3. Estimate transition hazards in the pseudo-data based on a multistate model.
 4. Use the estimated transition hazards to construct the rate matrix.
 
-## 1. Run the original model for a single cycle. 
+## 1. Run the original model  
 
 ```{r}
 #| echo: true
@@ -236,6 +227,13 @@ tr <-
 tr
 
 ```
+
+## 2. Construct psuedo-data
+
+- Idea: create data for 1,000 simulated "patients" followed for two cycles.
+- Counts in the Markov trace govern state occupancy in each cycle.
+  - In first cycle, all 1,000 are in `Healthy` state.
+  - In second cycle, 721 remain in `Healthy` while 202 are in `LowCD4`, etc.
 
 ## 2. Construct psuedo-data
 
@@ -279,22 +277,54 @@ tr
 
 ## 3. Fit Multistate Model
 
+- Next, fit a multistate model to the pseudo-data.
+- The multistate model will use likelihood-based methods to estimate transition intensities among health states in the data.
+- These transition intensities are the rates that you can use in the rate matrix!
+
+## 3. Fit Multistate Model
+
+::: nonincremental
+1. Define the state table for the multistate model
+:::
+
 ```{r}
 #| echo: true
 #| eval: true
 library(msm)
-
-# Define the state table for the multistate model
 statetable.msm(state, ptnum, data=tr)
+```
 
-# Initial rate guesses based on the eigenvalue method
+::: nonincremental
+2. Check that cell transition counts match the trace. 
+:::
+```{r}
+#| echo: true
+# Markov trace
+rbind.data.frame(tr0, tr1) %>%
+    mutate(cycle = c(0, 1)) %>% 
+    select(cycle,everything())
+```
+
+## 3. Fit Multistate Model
+
+::: nonincremental
+- Initial rate guesses are based on the eigenvalue method, i.e., result of `expm(mP)`.
+:::
+```{r}
+#| echo: true
 Q.init <- rbind(rbind(c(0, 0.3, 0,   .0001),    
                       c(0, 0,   0.6, 0.01),    
                       c(0, 0,   0,   0.3),  
                       c(0, 0,   0,   0)))
 dimnames(Q.init) = dimnames(mP)
+```
 
-# Fit the model
+::: nonincremental
+- Fit the model
+:::
+
+```{r}
+#| echo: true
 hiv.msm <- 
   msm(state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)
 ```
@@ -405,6 +435,39 @@ round(Rmsm,3)
 
 # 2. Solving for PSA Distributions
 
+## A Common Issue
+
+- We have defined our underlying model (either from bottom up or through backwards conversion) but need to define PSA distributions for model parameters. 
+
+- Model draws on literature-based parameters that are reported as means, standard deviations, interquartile ranges, 95% confidence intervals, etc.
+
+- Straightforward to obtain point estimate to use in primary model.
+
+- But how can we define PSA distributions based on limited information?
+
+## PSA Distributions
+
+| Parameter Type                  | Distribution     |
+|---------------------------------|------------------|
+| Probability                     | beta             |
+| Rate                            | gamma            |
+| Utility weight                  | beta             |
+| Right skew (e.g., cost)         | gamma, lognormal |
+| Relative risks or hazard ratios | lognormal        |
+| Odds Ratio                      | logistic         |
+
+
+## Example
+
+- Cost parameter reported in literature has interquartile range of \$300-\$750.
+- What are the parameters of a gamma distribution such that the 25th percentile is \$300 and the 75th percentile is \750?
+
+
+## Objectives
+
+
+
+
 # Some PSA Notes
 
 - Taking 95% CI and turning them into distribution parameters for PSA draws is a common task.
@@ -418,16 +481,7 @@ round(Rmsm,3)
 
 
 
-## Common PSA Distributions
 
-| Parameter Type                  | Distribution     |
-|---------------------------------|------------------|
-| Probability                     | beta             |
-| Rate                            | gamma            |
-| Utility weight                  | beta             |
-| Right skew (e.g., cost)         | gamma, lognormal |
-| Relative risks or hazard ratios | lognormal        |
-| Odds Ratio                      | logistic         |
 
 ## Normal Distribution Analytic
 
@@ -598,3 +652,15 @@ $$
 ## Copulas and PSA Sampling {auto-animate="true"}
 
 -   Copula: a multivariate cumulative distribution function with uniform marginals.
+
+
+
+
+```{=html}
+<style>
+.nobullet li {
+  list-style-type: none;
+}
+</style>
+```
+

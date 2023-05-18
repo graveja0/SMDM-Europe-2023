@@ -874,7 +874,9 @@ Recall that in this model, CVD has a very high death rate---meaning that many pe
 With this knowledge in mind, can you spot something wrong with the above (annual) transition matrix?
 :::
 
-## Spot the Problem (10yr Cycle)
+## What if we change to a **10-year** cycle? 
+
+- See the problem now? 
 
 ```{r}
 params_mort_10y = 
@@ -1019,18 +1021,17 @@ digraph G {
   
 ```
 
-## Why Don't the Conversion Formulas Work?
+## Why Don't the Formulas Work?
 
 -   When we use the standard rate-to-probability conversion formula (i.e., $p_{H,CVD}= 1 - \exp(-r_{H,CVD} t)$ ) we obtain the *marginal* transition probability.
 -   This marginal probability reflects the union of *all possible transitions* that start Healthy and then transition to and from the CVD state in the cycle.
 
-## Why Don't the Conversion Formulas Work?
+## Why Don't the  Formulas Work?
 
 That is, $p_{H,CVD}= 1 - \exp(-r_{H,CVD} t)$ captures the probability of following scenarios occurring in a cycle:
 
 1.  Individual transitions from healthy to CVD.
 2.  Individual transitions from healthy to CVD to CVD Death.
-3.  Individual dies from background causes before they would have developed CVD in the same cycle.
 
 ## 10 Year Cycle
 
@@ -1079,7 +1080,8 @@ Changing to shorter cycle **does not get us out of this problem.**
 :::
 
 ```{r, cache = TRUE}
-
+#| fig-align: center
+#| 
 truth <- Vectorize(function(r1, r2, t)
 {
   # Embed properly
@@ -1119,6 +1121,9 @@ contour(x,y,z, xlab="Rate 1 A -> B", ylab="Rate 2 A -> C",
 ## Quantified Relative Error
 
 ```{r}
+#| fig-align: center
+
+
 rel.error <- Vectorize(function(r1, r2, t=1)
 {
     x <- truth(r1, r2, t)
@@ -1144,20 +1149,20 @@ title(main="Misspecified Competing Rates")
 
 ## Comparisons Across Strategies Bail You Out
 
--   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$
+-   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$, $\frac{f(\theta_A)}{ f(\theta_{B})}$
     -   Net monetary benefit.
     -   Net health benefit.
     -   Incremental cost effectiveness ratio.
--   With error it becomes:
+-   With error it becomes (for NHB or NMB):
 
 ## Comparisons Across Strategies Bail You Out
 
 ::: nonincremental
--   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$
+-   Common CEA approaches compare strategies, i.e., $f(\theta_A) - f(\theta_{B})$, $\frac{f(\theta_A)}{ f(\theta_{B})}$
     -   Net monetary benefit.
     -   Net health benefit.
     -   Incremental cost effectiveness ratio.
--   With error it becomes:
+-   With error it becomes (for NHB or NMB):
 :::
 
 $$f(\theta_A) + \epsilon_A - (f(\theta_{B}) + \epsilon_{B})$$
@@ -1166,7 +1171,7 @@ $$f(\theta_A) + \epsilon_A - (f(\theta_{B}) + \epsilon_{B})$$
 
 If $\epsilon_A - \epsilon_{B} \sim 0$ the impact to the decision threshold is minimal.
 
--   These decision thresholds are semi-*robust* against this misspecification.
+-   CEA outcomes are thus semi-*robust* against this misspecification.
 -   Restated: Single model runs are biased under misspecification, but comparison across strategies helps cancel this out.
 
 ## Rate Misspecification Conclusions
@@ -1183,9 +1188,14 @@ In the presence of competing events (mortality), using standard conversion formu
 
 ## Rate Misspecification Conclusions
 
--   Existing publications' decision thresholds are generally okay if they misspecified rates.
+-   Existing publications' CEAs are generally okay if they misspecified rates.
 -   Check the maximum rate of an event as a rough estimate of potential bias.
 -   Rule of thumb, on the error plot use the estimated rate for full time scale of simulation, i.e. one step is entire simulation.
+
+## When Might it Matter?
+
+-   Strategy compares strategies with very different rates of acute events or complications of treatment immediately after diagnosis (i.e., lots of compound transitions in a cycle!)
+-  Particularly impactful in populations with high underlying death rates. 
 
 ## Rate Misspecification Error Decision Threshold
 
@@ -1251,14 +1261,14 @@ lines(c(x[63], x[63]), c(y[37], y[9]), lty=2, lwd=2)
 
 -   Rather than use the conversion formulas, we need to properly "embed" the transition probability matrix.
 
--   The correct transition probability matrix includes a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
+-   The correct transition probability matrix should include a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
 
 ## 
 
 ::: nonincremental
 -   Rather than use the conversion formulas, we need to properly "embed" the transition probability matrix.
 
--   The correct transition probability matrix includes a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
+-   The correct transition probability matrix should include a seemingly impossible transition: Healthy {{< fa arrow-right >}} CVDDeath
 :::
 
 ```{r}
@@ -1588,9 +1598,9 @@ round(apply(params_mort2$mP,3,function(x) x, simplify = FALSE)[[1]],3)
 round(expm(params_mort_embedded$mR[["natural_history"]]),3)
 ```
 
-# Now it's your turn!
+# Your Turn!
 
-## Case Study
+## Case Study Overview
 
 ![](images/digraph-healthy-sick-dead-cause-deleted.png){fig-align="center" height="300px"}
 

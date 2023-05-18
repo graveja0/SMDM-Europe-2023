@@ -1,5 +1,5 @@
 ---
-title: "1. Coping with Mortality"
+title: "1. Dealing with Mortality"
 editor: source
 format:
   revealjs:
@@ -241,6 +241,21 @@ lt %>%
     column_spec(4, background = "#c6e6f5")
 ```
 
+## US Life Table (2019)
+
+Highlighted column: Remaining life expectancy at exact age x.
+
+```{r}
+lt %>% 
+    select(age, lx, dx, ex, qx, mx) %>% 
+    head(n=4) %>% 
+    kable() %>% 
+    kable_styling() %>% 
+    column_spec(4, background = "#c6e6f5")
+```
+
+(We'll try to replicate these numbers with a discrete time Markov model in a bit.)
+
 # Alive-Dead Model
 
 ## Alive-Dead Model
@@ -390,12 +405,63 @@ fn_mPt <- function(t, params)
 
 ```
 
+
 ## Age-Dependent Transition Matrix
 
 ```{r}
 params$mP <- 
   fn_mPt(1:params$n_cycles, params)
 ```
+
+::: columns
+::: column
+Life Table:
+
+```{r}
+#| echo: true
+lt[1,c("age","qx")]
+
+```
+:::
+
+::: column
+Transition Matrix:
+
+```{r}
+#| echo: true
+
+
+```
+:::
+:::
+
+## Age-Dependent Transition Matrix
+
+::: columns
+::: column
+Life Table:
+
+```{r}
+#| echo: true
+lt[1,c("age","qx")]
+
+```
+:::
+
+::: column
+Transition Matrix:
+
+```{r}
+#| echo: true
+params$mP[[1]][,,"lifetable"]
+
+```
+:::
+:::
+
+
+## Age-Dependent Transition Matrix
+
 
 ::: columns
 ::: column
@@ -464,13 +530,28 @@ trace[["lifetable"]][1:10,]
 
 -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
 -   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
--   Let's verify we can replicate this with our Markov model.
 
 ## Life Expectancy
 
 ::: nonincremental
 -   We have a model with `r params$n_cycles` annual cycles for a cohort of `r formatC(params$n_cohort,format="d", big.mark=',')` `r params$initial_age` year olds.
 -   According to the underlying life table data, life expectancy at birth is `r lt[1,] %>% pull(ex)` years.
+:::
+
+```{r}
+
+lt %>% 
+    ungroup() %>% 
+    select(age,qx,ex) %>% 
+    head(n=1) %>% 
+    kable() %>% 
+    kable_styling() %>% 
+    column_spec(3, background = "#c6e6f5")
+```
+
+## Life Expectancy
+
+::: nonincremental
 -   Let's verify we can replicate this with our Markov model.
 :::
 
@@ -484,6 +565,7 @@ lt %>%
     kable_styling() %>% 
     column_spec(3, background = "#c6e6f5")
 ```
+
 
 ## Life Expectancy
 
@@ -515,7 +597,7 @@ total_life_exp = cycle_adj(life_exp_cycle) # <3>
 2.  Calculate life years in each cycle.[^1]
 :::
 
-[^1]: Note that we divide by `r params$n_cohort` to normalize the results to a single individual for life expectancy calculations.
+[^1]: Note that we divide by the initial cohort size (`r params$n_cohort`) to normalize the results to a single individual for life expectancy calculations.
 
 ```{r}
 #| echo: true
@@ -638,7 +720,7 @@ le_res %>%
 
 ## Mortality Modeling
 
--   Depending on context and modeling environment, you may need to model mortality.
+-   Depending on context and modeling environment, you may need to model mortality parametrically.
 -   The `MortalityLaws` package has a *number* of mortality models we can draw from:
 
 ## Mortality Modeling {.smaller}
@@ -741,22 +823,46 @@ laws4 %>%
     cat
 ```
 
+
+## Mortality Modeling
+
+Key takaways:
+
+- `MortalityLaws` has a number of mortality models it can fit to life table data, depending on the context and population you are modeling.
+
+- You can easily experiment around with different models to see how well they fit your mortality data. 
+
 ## Mortality Modeling
 
 -   Another nice feature of the package is that each mortality model type has its own defined function to calculate the mortality rate (or probability) given an age and model coefficients.
+
+- So rather than assume a constant mortality rate within age bins, you can model the mortality rate directly for a 40.3 year old, or a 90.0001 year old. 
 
 ## Mortality Modeling
 
 Generally speaking, we need three inputs:
 
--   `age`: Ages for lifetable
+-   `age`: Ages for lifetable (e.g., 0, 1, 5, ..., 100; or 0,1,2,3,...,100).
 -   `dx`: The number of deaths between exact ages x and x+1.
 -   `lx`: Number of survivors to exact age x.
 
 ## Gompertz Model
 
 -   Because we want to stay general (i.e., model all over the age spectrum), our first attempt will be a Gompertz model.
--   Gompertz reduces mortality to two parameters.
+-   Gompertz reduces mortality to two parameters: A and B.
+- Mortalitiy rate at age $x$: 
+
+## Gompertz Model
+
+::: nonincremental
+-   Because we want to stay general (i.e., model all over the age spectrum), our first attempt will be a Gompertz model.
+-   Gompertz reduces mortality to two parameters: A and B.
+- Mortalitiy rate at age $x$: 
+:::
+
+$$
+mx = A \exp(Bx)
+$$
 
 ## Gompertz Model
 
@@ -851,7 +957,6 @@ lt[41,c("age","qx")]
 
 -   Gompertz doesn't fit all age ranges well---particularly young ages.
 -   (This is a well-known fact in demography.)
--   If we were to focus only on adults, however, this would be a nice way to go.
 
 ## Gompertz Model
 
@@ -953,12 +1058,13 @@ HP(x = 40, par = hp_fit$coefficients)$hx
 
 # Alive-Dead (Modeled Mortality)
 
-## We'll Approach This From Two Angles
+## Objectives
 
-1.  Discrete Event Simulation: Sample a background mortality time.
-2.  Discrete Time Markov: Use parameterized mortality in Alive-Dead model.
+- Fit a parameteric mortality model to life table data.
+- Use the estimated parameters to sample death times (useful for DES modeling)
+- Use the estimated parameters as background mortality rates in discrete time Markov.
 
-## 1. Sampling Death Dates (DES)
+## 1. Sampling Death Dates for DES
 
 -   Difficult to sample death times from life tables due to coarseness of data (e.g., five-year age bins).
 -   Solution:
@@ -966,12 +1072,11 @@ HP(x = 40, par = hp_fit$coefficients)$hx
     2.  Construct a survival function from modeled hazards.
     3.  Sample a death time from the survival function.
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 -   Intuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)
 
-## 1. Sampling Death Rates (DES)
-
+## 1. Sampling Death Dates for DES
 ::: nonincremental
 -   Intuition is easier if we start with a defined quantile (e.g., 25th percentile of survival)
 :::
@@ -981,7 +1086,7 @@ HP(x = 40, par = hp_fit$coefficients)$hx
 u = 0.25
 ```
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 ::: nonincremental
 -   We can feed the quantile (0.25) and coefficients into an inverse quantile function.
@@ -994,7 +1099,7 @@ u = 0.25
 qgompertz(p = u, shape = gom_fit$coefficients["B"], rate = gom_fit$coefficients["A"])
 ```
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 ::: nonincremental
 -   Let's verify this gets us close to what we see in the life table data.
@@ -1015,11 +1120,11 @@ lt %>% mutate(Sx = exp(-cumsum(mx))) %>%
   column_spec(3, background = "#c6e6f5")
 ```
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 -   There is no inverse quantile function for Heligman-Pollard, but we can create one!
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 ::: nonincremental
 -   There is no inverse quantile function for Heligman-Pollard, but we can create one!
@@ -1033,7 +1138,7 @@ qHP <-
             x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))
 ```
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 -   For `approxfun()`:
     -   `x` is quantile in CDF for survival, i.e., 1 - Survival[^3]
@@ -1042,7 +1147,7 @@ qHP <-
 
 [^3]: Recall that survival is $\exp(-H)$, where $H$ is the cumulative hazard
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 ```{r}
 #| echo: true
@@ -1064,12 +1169,12 @@ lt %>% mutate(Sx = exp(-cumsum(mx))) %>%
   column_spec(3, background = "#c6e6f5")
 ```
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 -   We now have the tools we need to sample death times that closely match underlying mortality data!
 -   For a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.
 
-## 1. Sampling Death Rates (DES)
+## 1. Sampling Death Dates for DES
 
 ::: nonincremental
 -   We now have the tools we need to sample death times that closely match underlying mortality data!
@@ -1609,3 +1714,13 @@ trace[["natural_history"]] %>%
 ```
 
 # Your Turn
+
+## Case Study Overview
+
+TK 
+
+## Learning Objectives
+
+TK 
+
+

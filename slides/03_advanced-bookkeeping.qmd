@@ -842,11 +842,12 @@ Pexp %>%
 
 ## Tunnel State
 
-::: nonincremental
 - We repeat a similar exercise for the 2nd year in the tunnel. 
   - Allow for exit to death.
   - Force entry into the CVD state after the cycle. 
-:::
+
+
+## Tunnel State
 
 ```{r, echo = TRUE, eval = TRUE}
 P["tunCVDy2","Dead"] = P["CVD","Dead"]
@@ -875,7 +876,8 @@ Pexp %>%
 # Your Turn!
 
 
-## Progressive Disease Model
+## Case Study Overview 
+
 
 ```{dot}
 #| fg-align: center
@@ -895,3 +897,8 @@ digraph G {
 ```
 
 Source: @green2023health
+
+## Learning Objectives
+
+TK
+
