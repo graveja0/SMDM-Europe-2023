@@ -1,5 +1,6 @@
 ---
 title: "5. Structuring the Markov Model"
+editor: source
 format: 
   revealjs:
       theme: slides.scss
@@ -274,7 +275,7 @@ m_P %>% data.frame() %>%
 
 ::: {style="font-size: 0.6em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|-------------|---------------------------------|-------------|-------------|
+|---------------|-----------------------------|---------------|---------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |
 :::
@@ -882,7 +883,7 @@ Not all literature-based parameters operate on the rate scale. Some operate on t
 
 ::: {style="font-size: 0.5em"}
 | Statistic        | Evaluates                                                                                               | Range         | Applicable Domain  |
-|-------------|---------------------------------|-------------|-------------|
+|---------------|-----------------------------|---------------|---------------|
 | Rate             | $\frac{\# \text{events in time period}}{\text{Total time period experienced by all subjects followed}}$ | 0 to $\infty$ | Rate matrix        |
 | Hazard Ratio     | $\frac{\text{Hazard rate of outcome in exposed}}{\text{Hazard rate of outcome in unexposed}}$           | 0 to $\infty$ | Rate matrix        |
 | Probability/risk | $\frac{\# \text{events in time period}}{\# \text{people followed for time period}}$                     | 0-1           | Probability matrix |

@@ -29,6 +29,26 @@ source("./manifest.r")
 ## 1. Backwards Conversion {background-image="images/paste-7BE7C6AF.png" data-background-size="contain" background-opacity="0.2"}
 
 - Lectures 2 and 3 emphasized the importance of the transition rate matrix as the central "hub" of a Markov model.
+
+
+## Goal
+
+![](images/paste-DE23E852.png)
+
+
+## What *Rarely* Happens
+
+![](images/paste-35C55E40.png)
+
+## Adapting a Model Requires a Transition Rate Matrix
+
+![](images/paste-500FB9B7.png)
+
+
+## 1. Backwards Conversion {background-image="images/backwards-conversion.png" data-background-size="contain" background-opacity="1.0"}
+
+## 1. Backwards Conversion {background-image="images/backwards-conversion.png" data-background-size="contain" background-opacity="0.13"}
+
 - If starting a model from scratch, can simply define or estimate rates, and use them to construct the rate matrix.
 
 ## 1. Backwards Conversion
@@ -96,13 +116,13 @@ $$ R = \log P $$
 ## A. Matrix Logarithm of P
 
 - The $\log$ can be found using spectral or eigenvalue decomposition. 
-- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+- If $V$ is a matrix where each column is an eigenvector of $P$, then
 
 ## A. Matrix Logarithm of P
 
 ::: nonincremental
 - The $\log$ can be found using spectral or eigenvalue decomposition. 
-- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+- If $V$ is a matrix where each column is an eigenvector of $P$, then
 :::
 
 $$A' = V^{-1} A V$$ 
@@ -111,7 +131,7 @@ $$A' = V^{-1} A V$$
 
 ::: nonincremental
 - The $\log$ can be found using spectral or eigenvalue decomposition. 
-- If $V$ is a matrix where equal column is an eigenvector of $T_{prob}$, then
+- If $V$ is a matrix where each column is an eigenvector of $P$, then
 :::
 
 $$A' = V^{-1} A V$$ 
@@ -151,7 +171,20 @@ round(R,3)
 ## A. Matrix Logarithm of P
 
 ```{r}
-round(R, 3)
+Rexp <-
+  R %>%
+  round(., 3) %>%
+  data.frame() %>% 
+  rownames_to_column() %>% 
+  mutate_all(as.character) %>% 
+  mutate(Death = cell_spec(Death,"html",color = ifelse(rowname=="LowCD4","red","black"))) 
+
+Rexp %>% 
+  kable(col.names = c("","Healthy","LowCD4","AIDS","Death"),escape = FALSE) %>% 
+  kable_styling("hover", "striped", full_width = F)  %>% 
+  kable_paper()
+
+
 ```
 
 - Note there is a negative rate from LowCD4 {{< fa arrow-right >}} Death!
@@ -160,7 +193,10 @@ round(R, 3)
 ## A. Matrix Logarithm of P
 
 ```{r}
-round(R, 3)
+Rexp %>% 
+  kable(col.names = c("","Healthy","LowCD4","AIDS","Death"),escape = FALSE) %>% 
+  kable_styling("hover", "striped", full_width = F)  %>% 
+  kable_paper()
 ```
 
 -   The negative rate implies an identifiability issue.
@@ -488,7 +524,7 @@ round(Rmsm,3)
 
 ::: nonincremental
 - Suppose the interquartile range for a key cost variable is [300,750]
-- We may have obtained this from the literature, from tabulating cost data, or from collating expert opinion.
+- We may have obtained this from the literature, from tabulating cost data, or from expert opinions.
 :::
 
 ```{r}
@@ -525,8 +561,8 @@ b
 
 ```{r}
 #| echo: true
-qunif(0.25, min = a, max = b)
-qunif(0.75, min = a, max = b)
+qunif(0.25, min = 75, max = 975)
+qunif(0.75, min = 75, max = 975)
 ```
 
 ```{r}
@@ -558,8 +594,8 @@ sigma
 
 ```{r}
 #| echo: true
-qnorm(0.25, mean = mu, sd = sigma)
-qnorm(0.75, mean = mu, sd = sigma)
+qnorm(0.25, mean = 525, sd = 333.59)
+qnorm(0.75, mean = 525, sd = 333.59)
 ```
 
 ```{r}
@@ -594,8 +630,8 @@ sigma
 
 ```{r}
 #| echo: true
-qlnorm(0.25, mean = mu, sd = sigma)
-qlnorm(0.75, mean = mu, sd = sigma)
+qlnorm(0.25, mean = 6.1619, sd = 0.67925)
+qlnorm(0.75, mean = 6.1619, sd = 0.67925)
 ```
 
 ```{r}
@@ -675,8 +711,8 @@ beta_
 
 ```{r}
 #| echo: true
-qgamma(0.25,shape = alpha_, scale = beta_)
-qgamma(0.75,shape = alpha_, scale = beta_)
+qgamma(0.25,shape = 2.4558, scale = 230.16)
+qgamma(0.75,shape = 2.4558, scale = 230.16)
 ```
 
 ```{r}
@@ -838,35 +874,123 @@ Tf <- function(x, shape, rate)
 
 # Copula PSA Sampling
 
-## What is a Copula?
+## Sensitivity Analysis for Decision Models
 
--   The binding "glue" between correlated variables.
--   
+- It is standard in CEA analyses to explore sensitivity of model outputs and outcomes to variation in model inputs.
+- Many decision problems are complicated by dependencies between model inputs (e.g., costs, utilities, etc.). 
+- These correlations may have meaningful impacts on model results and sensitivity. 
 
-## Copulas and PSA Sampling {auto-animate="true"}
+## HIV Model
 
-We typically draw PSA samples from the *marginal* distribution of each variable:
+In the HIV model discussed earlier, patients accrue two types of costs:
 
-$$
-F_1(x_1),  ..., F_d(x_d)
-$$
+1. Direct medical costs associated with each health state (`Healthy`, `LowCD4`, `AIDS`)
+2. Community medical costs associated with each health state. 
 
-## Copulas and PSA Sampling {auto-animate="true"}
+## HIV Model
 
-Copulas allow us to sample from the *joint* distribution:
+- These costs are likely correlated with each other in meaningful ways.
+- Similarly, other model parameters (e.g., state utility payoffs, hazard rates for treatment strategies, etc.) may also be correlated.
+
+## HIV Model
+
+- How can we reflect this correlation in *n-way* sensitivity analyses, such as PSAs?
+
+## What You Were Taught
+
+- Nearly all PSA exercises draw from independent distributions.
+- To fully explore the space of correlated parametersl, you need a *lot* of PSA draws.
+
+## What You Were Taught
+
+- PSA draws of two model parameters
+  - $c_{direct} \sim \text{gamma}(2.5, 1/230)$
+  - $c_{community} \sim \text{gamma}(1.5, 1/150)$
+
+```{r}
+#| fig-align: center
+x1 <- rgamma(n = 1e3, shape = 2.5, rate  = 1/230.16)
+x2 <- rgamma(n = 1e3, shape = 1.5, rate = 1/150)
+
+tibble(x1 = x1, x2 = x2) %>% 
+  ggplot(aes(x = x2, y = x1)) +
+  geom_point(colour = "red") + 
+  hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+  labs(x = "Direct Medical Costs", y = "Community Costs")
+```
+
+## What We'll Teach You
+
+- $\text{cor}(c_{direct},c_{community}) = 0.8$
+  
+```{r}
+# 1. Define the correlation matrix
+  rho <- 0.8
+  sigma <- matrix(c(1,rho,rho,1),nrow = 2, byrow=TRUE)
+
+# 2. Perform a cholesky decomposition
+  A = chol(sigma)
+
+# 3. Generate iid standard normal pseudo random variables
+  tildeY0 <- rnorm(n = 1e3, mean = 0, sd = 1)
+  tildeY1 <- rnorm(n = 1e3, mean = 0, sd = 1)
+  tildeY <- cbind(tildeY0,tildeY1)
+
+  # Collect them 
+  tildeY <- tildeY %*% A
+
+# Use the standard normal disribution function to return the quantiles
+  U <- pnorm(tildeY)
+
+# Use the inverse distribution function to return the values
+  Y <- U 
+  cx1 <- qgamma(U[,1],shape = 2.5, rate  = 1/230.16)
+  cx2 <- qgamma(U[,2],shape = 1.5, rate = 1/150)
+
+tibble(x1 = cx1, x2 = cx2) %>% 
+  ggplot(aes(x = x2, y = x1)) +
+  geom_point() + 
+  hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+  labs(x = "Direct Medical Costs", y = "Community Costs")
+```
+
+## What We'll Teach You
+
+```{r}
+
+tibble(x1 = x1, x2 = x2) %>% 
+  ggplot(aes(x = x2, y = x1)) +
+  geom_point(alpha = 0.5, colour = "red") + 
+  geom_point(data = tibble(x1 = cx1, x2 = cx2) , aes(x = cx2, y = cx1),alpha = 0.25) +
+  hrbrthemes::theme_ipsum_pub(base_family = "Arial") + 
+  labs(x = "Direct Medical Costs", y = "Community Costs")  + 
+  stat_ellipse(
+    data = MASS::mvrnorm(n=1e3, mu = c(1500,750),Sigma = matrix(c(40000,0,0,20000),byrow=TRUE,nrow=2)) %>% 
+      data.frame() %>% 
+      set_names(c("x1","x2")) , 
+    lty = 3, colour = "black"
+  ) + 
+  annotate("text", x = 750, y = 1500, label = "Traditional PSA draws (red points)\n very sparse in this region.",fontface =2, color = "red")
+```
+
+
+## Copula-Based PSA Sampling
+
+- We can easily draw correlated PSA samples via copulas. 
+
+- Copulas allow us to sample from the *joint* distribution of correlated parameters
 
 $$
 F(x_1,...,x_d) = C \big ( F_1(x_1), ..., F_d(x_d) \big )
 $$
 
-(This is a result of Sklar \[1959\].)
-
-## Copulas and PSA Sampling {auto-animate="true"}
+## Copulas {auto-animate="true"}
 
 -   Copula: a multivariate cumulative distribution function with uniform marginals.
+-   Intuition: the binding "glue" between random variables.
 
 
-
+## References 
 
 ```{=html}
 <style>

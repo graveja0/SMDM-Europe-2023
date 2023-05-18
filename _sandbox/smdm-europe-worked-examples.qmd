@@ -1,5 +1,6 @@
 ---
 title: "SMDM Europe Worked Examples"
+editor: source
 editor_options: 
   chunk_output_type: console
 execute:
