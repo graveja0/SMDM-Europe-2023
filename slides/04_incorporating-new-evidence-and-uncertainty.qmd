@@ -344,7 +344,7 @@ rbind.data.frame(tr0, tr1) %>%
 ## 3. Fit Multistate Model
 
 ::: nonincremental
-- Initial rate guesses are based on the eigenvalue method, i.e., result of `expm(mP)`.
+- Initial rate guesses are based on the eigenvalue method, i.e., result of `logm(mP)`.
 :::
 ```{r}
 #| echo: true
@@ -731,17 +731,24 @@ $$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})
 
 ## Alternative: Optimization
 
-::: nonincremental
 -  Requires cumulative distribution function (CDF), $F$.
--  See Borchers' [great slides](https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf) for tips on optimization in R.
-:::
+-  See Hans W Borchers' [great slides](https://hwborchers.lima-city.de/Presents/ROptimSlides4.pdf) for tips on optimization in R.
 
 ## Some Advice
 
 - We have found that while analytically correct, this optimization formula is not numerically stable.
-- Transfinite scaling stabilizes optimization.
+- Transfinite scaling of the probabilities from CDFs $F(.)$ stabilizes optimization.
 
-$$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})-p_2)^2$$
+## Some Advice
+
+::: nonincremental
+- We have found that while analytically correct, this optimization formula is not numerically stable.
+- Transfinite scaling of the probabilities from CDFs $F(.)$ stabilizes optimization.
+- $g(F(.))$ vs. $F(.)$
+:::
+
+
+$$\min_{\vec{\theta} \in R}\,\, (g(F(x_1|\vec{\theta}))-p_1)^2+(g(F(x_2|\vec{\theta}))-p_2)^2$$
 
 <!-- -  Expected 1.30000 0.19898 -->
 <!-- -  **Not the right answer!** -->
@@ -796,20 +803,32 @@ $$\min_{\vec{\theta} \in R}\,\, (F(x_1|\vec{\theta})-p_1)^2+(F(x_2|\vec{\theta})
 
 $$\min_{\vec{\theta} \in R} \sum_{i \in 1,2}\,\, (\text{logit} (F(x_i|\vec{\theta}))-\text{logit} (p_i))^2$$
 
-## Transfinite Example
+## Transfinite Example, Part 1
 
 ```{r}
 #| echo: true
+
+# Transfinite scaling
 Tf <- function(x, shape, rate)
     pgamma(x,shape,rate,log=TRUE) - 
     pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)
 
+# Function to minimize
 norm <- function(x1, p1, x2, p2, shape,rate)
     (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +
     (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2
 
+# Bundle it all together into a single function.
 fn <- function(x) norm(x1, p1, x2, p2, x[1], x[2])
+```
 
+
+## Transfinite Example, Part 2
+
+```{r}
+#| echo: true
+
+# Run general-purpose optimization on the function.
 gamma_optim <- 
   optim(c(0.5, 0.1), # initial parameter guesses
     fn,
@@ -817,6 +836,9 @@ gamma_optim <-
     lower=c(-Inf, 1e-5),
     method = "L-BFGS-B",
     control=list(factr=1e-10, maxit=100))$par
+
+# Note: gamma_optim$par[2] is 1/beta
+gamma_optim
 ```
 
 ## Transfinite Example
@@ -849,10 +871,33 @@ beta_
 
 ## Optimization for Other Distributions
 
+- Just swap in the distribution function for the distribution you want to match to (e.g., `pbeta` rather than `pgamma`).
+- Also make sure the supplied parameter names match the distribution you're aiming for. 
+
+
+## Optimization for Other Distributions
+
 ::: nonincremental
 - Just swap in the distribution function for the distribution you want to match to (e.g., `pbeta` rather than `pgamma`).
-:::
 - Also make sure the supplied parameter names match the distribution you're aiming for. 
+:::
+
+```{r}
+#| eval: false
+#| echo: true
+
+Tf <- function(x, shape, rate)
+    pgamma(x,shape,rate,log=TRUE) - 
+    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)
+
+```
+
+## Optimization for Other Distributions
+
+::: nonincremental
+- Just swap in the distribution function for the distribution you want to match to (e.g., `pbeta` rather than `pgamma`).
+- Also make sure the supplied parameter names match the distribution you're aiming for. 
+:::
 
 ```{r}
 #| eval: false
@@ -899,11 +944,11 @@ In the HIV model discussed earlier, patients accrue two types of costs:
 ## What You Were Taught
 
 - Nearly all PSA exercises draw from independent distributions.
-- To fully explore the space of correlated parametersl, you need a *lot* of PSA draws.
+- To fully explore the space of correlated parameters, you need a *lot* of PSA draws!
 
 ## What You Were Taught
 
-- PSA draws of two model parameters
+- Independent PSA draws of two model parameters
   - $c_{direct} \sim \text{gamma}(2.5, 1/230)$
   - $c_{community} \sim \text{gamma}(1.5, 1/150)$
 
@@ -956,7 +1001,11 @@ tibble(x1 = cx1, x2 = cx2) %>%
 
 ## What We'll Teach You
 
+- Red points: independent PSA draws
+- Black points: correlated PSA draws
+
 ```{r}
+#| fig-align: center
 
 tibble(x1 = x1, x2 = x2) %>% 
   ggplot(aes(x = x2, y = x1)) +
@@ -978,16 +1027,400 @@ tibble(x1 = x1, x2 = x2) %>%
 
 - We can easily draw correlated PSA samples via copulas. 
 
-- Copulas allow us to sample from the *joint* distribution of correlated parameters
+- Copulas allow us to sample from the *joint* distribution of correlated parameters.
+
+## Copulas {auto-animate="true"}
+
+-   Copula: a multivariate cumulative distribution function with uniform marginals.
+
+-   Intuition: the binding "glue" between random variables.
+
+## Sklar (1959)
+
+- Sklar (1959) demonstrates that the joint distribution of two random variables can be represented as
+
+
+## Sklar (1959)
+
+::: nonincremental
+- Sklar (1959) demonstrates that the joint distribution of two random variables can be represented as
+:::
+
+$$
+\mathrm{F}_{X_{1}, X_{0}}\left(x_1, x_0\right)=C_{X_{1}, X_{0}}\left(\mathrm{~F}_{X_{1} }\left(x_1\right), \mathrm{F}_{X_{0} }\left(x_0\right)\right)
+$$
+
+## Copula-Based PSA Draws
+
+- We'll draw on copulas so we can sample our PSA as the *joint* distribution of uncertain parameters. 
+
+- You can always just set the correlations to zero if you want independent draws!
 
 $$
 F(x_1,...,x_d) = C \big ( F_1(x_1), ..., F_d(x_d) \big )
 $$
 
-## Copulas {auto-animate="true"}
+## How Do We Sample?
 
--   Copula: a multivariate cumulative distribution function with uniform marginals.
--   Intuition: the binding "glue" between random variables.
+- Recall that the copula specifies multivariate CDF with **uniform** marginals.
+- What if our PSA distributions are not uniform (e.g., costs $\sim$ gamma, lognormal, etc.)?
+- Easy! Use the inverse transform method. 
+- Idea: randomly sample from quantiles in the PSA distribution.
+
+## How Do We Draw PSA Values
+
+::: incremental
+-   Requires drawing a random number between 0 and 1 (the quantile)
+-   Requires an *inverse cumulative distribution function* $F^{-1}(.)$
+-   You can do this easily in R or Excel!
+:::
+
+
+## Normal Distribution: PDF to CDF
+
+![](images/pdf-to-cdf-norm.gif){fig-align="center" layout-valign="center" height="500px"}
+
+
+```{r animpdf, eval=FALSE}
+
+library(tidyverse)
+library(data.table)
+library(gganimate)
+set.seed(12)
+df_norm <- tibble(x=rnorm(10000,mean = 10, sd=3))
+df_lnorm <- tibble(x = rlnorm(10000,mean=log(3),sd=0.01)); plot(density(df_lnorm$x))
+df_gamma <- tibble(x = rgamma(10000,shape = 44.4, scale=22.5)); plot(density(df_gamma$x))
+df_unif <- tibble(x = runif(1e6,min = 0.3,max=0.4)); plot(density(df_unif$x))
+
+animate_pdf_to_cdf <- function(df, scene_to_show = NULL, q_ = c(0.01,  0.25, 0.5, 0.75,  0.99), breaks_to_show = NULL ) {
+  pdf <-
+    {df %>% ggplot(aes(x = x)) + geom_density()} %>%
+    ggplot_build() %>% pluck("data") %>% pluck(1) %>%
+    as_tibble() %>%
+    select(x,y) %>%
+    data.table(key = "x")
+  cdf <-
+    {df %>% ggplot(aes(x = x)) + stat_ecdf()} %>%
+    ggplot_build() %>% pluck("data") %>% pluck(1) %>%
+    as_tibble() %>%
+    select(x,y) %>%
+    data.table(key = "y")
+
+  
+  q <- q_ %>%
+    map_dbl(~{
+      quantile(df$x,.x)
+    }) %>%
+    set_names(q_) %>%
+    data.frame() %>%
+    set_names("x_") %>%
+    rownames_to_column(var = "quantile") %>%
+    as.data.table(key = "x_")
+
+  scene2 <-
+    pdf[q,roll="nearest"] %>%
+    as_tibble() %>%
+    select(y,quantile) %>%
+    right_join(pdf,c("y")) %>%
+    arrange(x,y) %>%
+    mutate(scene = 2) %>%
+    mutate(quantile = glue::glue("{as.numeric(quantile)}"))
+
+  q2 <-
+    q %>%
+    as_tibble() %>%
+    mutate(quantile = as.numeric(quantile)) %>%
+    data.table(key="quantile")
+
+  scene3 <-
+    cdf[q2,roll="nearest"] %>%
+    as_tibble() %>%
+    set_names(c("x","quantile","x_")) %>%
+    select(-x_) %>%
+    right_join(cdf,"x") %>%
+    arrange(x,y)  %>%
+    mutate(scene = 3) %>%
+    mutate(quantile = glue::glue("{as.numeric(quantile)}")) %>%
+    ungroup() %>%
+    filter(!is.na(as.numeric(quantile)) | row_number() %in% sample(1:nrow(.),1000)); dim(scene2)
+
+  p_df <-
+    scene2 %>%
+    mutate(scene = 1) %>%
+    bind_rows(scene2) %>%
+    bind_rows(scene3) %>%
+    bind_rows(scene3 %>% mutate(scene=4)) %>%
+    #bind_rows(scene3 %>% mutate(scene=5)) %>%
+    #bind_rows(scene3 %>% mutate(scene=6)) %>%
+    mutate(quantile = ifelse(quantile=="NA",NA, quantile))
+
+  p_df_label =
+    p_df %>% filter(!is.na(quantile)) %>%
+    mutate(y = ifelse(scene==1,0,y)) %>%
+    mutate(x = ifelse(scene==4,min(scene3$x),x)) %>%
+    mutate(y = ifelse(scene==6,0,y)) %>%
+    mutate(quantile = glue::glue(" q{quantile}"))
+
+  if (!is.null(scene_to_show)) {
+    p_df <- 
+      p_df %>% filter(scene==scene_to_show)
+    p_df_label <- 
+      p_df_label %>% filter(scene==scene_to_show)
+    p <-
+      p_df %>% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile),size=3)+
+      scale_y_continuous(breaks = breaks_to_show) +
+      scale_x_continuous(breaks = q$x_, labels = round(q$x_,2),guide = guide_axis(n.dodge=3)) +
+      ggthemes::theme_clean(base_size=15) +
+      labs(x = "Parameter Value", y = "") 
+  } else {
+      p <-
+        p_df %>% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile))+
+        scale_y_continuous(breaks = seq(0,1,0.1)) +
+        scale_x_continuous(breaks = q$x_, labels = round(q$x_,2)) +
+        ggthemes::theme_clean() +
+        labs(x = "Parameter Value", y = "") + #facet_wrap(~scene, scales="free"); p
+        gganimate::transition_states(scene) + gganimate::view_follow()
+  }
+
+  return(p)
+
+}
+
+df_norm %>% animate_pdf_to_cdf(scene = 2)
+ggsave(here::here("slides/images/pdf-to-cdf-norm.png"),height=4, width=5)
+df_norm %>% animate_pdf_to_cdf(scene = 3,seq(0,1,0.1)) 
+ggsave(here::here("slides/images/pdf-to-cdf-norm4.png"),height=4, width=5)
+set.seed(23)
+df_norm %>% animate_pdf_to_cdf(scene = 3, q = round(runif(5, min = 0, max = 1),3))
+ggsave(here::here("slides/images/pdf-to-cdf-norm_random1.png"),height=4, width=5)
+anim_norm <- df_norm %>% animate_pdf_to_cdf(breaks_to_show = seq(0,1,0.1))
+anim_save(here::here("slides/images/pdf-to-cdf-norm.gif"), anim_norm)
+
+anim_gamma1 <- df_gamma %>% animate_pdf_to_cdf(scene = 2)
+ggsave(here::here("slides/images/pdf-to-cdf-gamma.png"),height=5, width=5)
+anim_gamma3 <- df_gamma %>% animate_pdf_to_cdf(scene = 4)
+ggsave(here::here("slides/images/pdf-to-cdf-gamma4.png"),height=5, width=5)
+anim_gamma <- df_gamma %>% animate_pdf_to_cdf()
+anim_save(here::here("slides/images/pdf-to-cdf-gamma.gif"), anim_gamma)
+
+anim_lnorm1 <- df_lnorm %>% animate_pdf_to_cdf(scene = 2)
+ggsave(here::here("slides/images/pdf-to-cdf-lnorm.png"),height=5, width=5)
+anim_lnorm3 <- df_lnorm %>% animate_pdf_to_cdf(scene = 4)
+ggsave(here::here("slides/images/pdf-to-cdf-lnorm4.png"),height=5, width=5)
+anim_lnorm <- df_lnorm %>% animate_pdf_to_cdf()
+anim_save(here::here("slides/images/pdf-to-cdf-lnorm.gif"), anim_lnorm)
+
+set.seed(123)
+r_HS = 	tibble(x = rgamma(1e4,shape = 30,rate = 200),param="r_HS")
+r_HD	= tibble(x = rgamma(1e4,shape = 60, rate = 10000),param = "r_HD")
+hr_S = 	tibble(x = rlnorm(1e4,log(3), sdlog = 0.01),param = "hr_S")
+hr_HS_trtB	= tibble(x=rlnorm(1e4,log(0.96), sdlog = 0.02),param = "hr_HS_trtB")
+hr_HS_trtC	= tibble(x=rlnorm(1e4,log(0.9), sdlog = 0.02),param = "hr_HS_trtC")
+hr_HS_trtD = 	tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02),param = "hr_HS_trtD")
+hr_HS_trtE = 	tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02), param = "hr_HS_trtE")
+u_H	= tibble(x=rbeta(1e4,shape1 = 200, shape2 = 3), param = "u_H")
+u_S	= tibble(x=rbeta(1e4,shape1 = 130, shape2 = 45), param = "u_S")
+c_S	 = tibble(x=rgamma(1e4,shape = 44.4, scale = 22.5), param = "c_S")
+c_trtA	=tibble(x= rgamma(1e4,shape = 12.5, scale = 2), param = "c_trtA")
+c_trtB	=tibble(x= rgamma(1e4,shape = 12, scale = 83.3), param = "c_trtB")
+c_trtC	=tibble(x= rgamma(1e4,shape = 36.144, scale = 83), param = "c_trtC")
+c_trtD	=tibble(x= rgamma(1e4,shape = 14.458, scale = 83), param = "c_trtD")
+c_trtE	=tibble(x= rgamma(1e4,shape = 60.24, scale = 83), param = "c_trtE")
+
+
+params_lut <- c("r_HS = gamma(shape = 30,rate = 200)", "r_HD = gamma(shape = 60, rate = 10000)", "hr_S = lognormal(meanlog = log(3), sdlog = 0.01)", "hr_HS_trtB = lognormal(meanlog = log(0.96), sdlog = 0.02)", "hr_HS_trtC = lognormal(meanlog = log(0.88), sdlog = 0.02)", "hr_HS_trtD = lognormal(meanlog = log(0.92), sdlog = 0.02)", "hr_HS_trtE = lognormal(meanlog = log(0.92), sdlog = 0.02)",
+               "u_H = beta(shape1 = 200, shape2 = 3)","u_S = beta(shape1 = 130, shape2 = 45)","c_S = gamma(shape = 44.4, scale = 22.5)", "c_trtA = gamma(shape = 12.5, scale = 2)","c_trtB = gamma(shape = 12, scale = 83.3)","c_trtC = gamma(shape = 36.144, scale = 83)","c_trtD = gamma(shape = 18.67, scale = 83)","c_trtE = gamma(shape = 60.24, scale = 83)")
+
+
+params <- list(r_HS, r_HD, hr_S, hr_HS_trtB, hr_HS_trtC, hr_HS_trtD, hr_HS_trtE,
+               u_H,u_S,c_S, c_trtA,c_trtB,c_trtC,c_trtD,c_trtE)
+
+pdf_params <- 
+  params %>% 
+  map2(.,params_lut,~({
+    .x %>% animate_pdf_to_cdf(scene = 1) + ggtitle(.y)
+    ggsave(here::here(glue::glue("slides/images/{.x$param[1]}.png")),height=4, width=5)
+  })) %>% 
+  set_names(c("r_HS:gamma(shape = 30,rate = 200)", "r_HD=gamma(shape = 60, rate = 10000)", "hr_S=lognormal(meanlog = log(3), sdlog = 0.01)", "hr_HS_trtB=lognormal(meanlog = log(0.96), sdlog = 0.02)", "hr_HS_trtC=lognormal(meanlog = log(0.88), sdlog = 0.02)", "hr_HS_trtD=lognormal(meanlog = log(0.92), sdlog = 0.02)", "hr_HS_trtE=lognormal(meanlog = log(0.92), sdlog = 0.02)",
+               "u_H=beta(shape1 = 200, shape2 = 3)","u_S=beta(shape1 = 130, shape2 = 45)","c_S=gamma(shape = 44.4, scale = 22.5)", "c_trtA=gamma(shape = 12.5, scale = 2)","c_trtB=gamma(shape = 12, scale = 83.3)","c_trtC=gamma(shape = 36.144, scale = 83)","c_trtD=gamma(shape = 18.67, scale = 83)","c_trtE=gamma(shape = 60.24, scale = 83)"))
+
+cdf_params <- 
+  params %>% 
+  map2(.,params_lut,~({
+    set.seed(23)
+    .x %>% animate_pdf_to_cdf(scene = 3,q_ = round(runif(5, min = 0, max = 1),3),breaks_to_show = seq(0,1,0.1)) + ggtitle(.y)
+    ggsave(here::here(glue::glue("slides/images/cdf{.x$param[1]}.png")),height=4, width=5)
+  })) %>% 
+  set_names(c("r_HS", "r_HD", "hr_S", "hr_HS_trtB", "hr_HS_trtC", "hr_HS_trtD", "hr_HS_trtE",
+               "u_H","u_S","c_S", "c_trtA","c_trtB","c_trtC","c_trtD","c_trtE"))
+
+
+```
+
+```{r}
+#| eval: false
+anim_norm
+```
+
+## Normal Distribution: CDF
+
+![](images/pdf-to-cdf-norm4.png){fig-align="center" layout-valign="center" height="500px"}
+
+## Drawing from an Arbitrary PSA Distribution
+
+1. Define PSA distribution parameters (e.g., $\mu,\sigma$ if normal, etc.)
+2.  Draw a uniform random number between 0 and 1. 
+3.  Feed this number through the quantile function for the specified distribution (e.g., `qnorm()`, `qgamma()`, etc.). This returns the value that maps to the randomly drawn quantile. 
+4. Do this for as many PSA samples as you need!
+
+## Copula-Based Sampling
+
+- Sampling from a copula  adds one more step to this process.
+- We must also define a correlation matrix `Sigma` ($\Sigma$).
+- We then draw uniform random numbers from a multivariate uniform distribution.
+- Once drawn, we can feed each PSA variable back through its repective inverse CDF to obtain the final PSA sample.
+
+## Copula-Based Sampling
+
+
+1.  Define PSA distributions for each of $n$ uncertain parameters. 
+2.  Define an $n \times n$ correlation matrix $\Sigma$ for the joint distribution of the PSA parameters.
+3.  Draw an $n$-column multivariate uniform sample. 
+4.  Apply the inverse transform method (as necessary) to each column.
+5.  Do this for as many PSA samples as you need!
+
+
+## Putting it All Together
+
+- IQR Community Care Costs: 750 to 1250
+  - `cost_cc` $\sim$ lognormal(`mu_cc`, `sigma_cc`).
+- IQR Direct Medical Care Costs: 1,000 - 3,000
+  - `cost_dc` $\sim$ gamma(`shape_dc`, `rate_dc`)
+- COV(Community cost, Direct cost) = 0.8
+
+## 1.  Define PSA distributions 
+
+::: nonincremental
+- IQR Community Care Costs: 750 to 1250
+  - `cost_cc` $\sim$ lognormal(`mu_cc`, `sigma_cc`).
+:::
+```{r}
+#| echo: true
+mu_cc = (qnorm(0.75)*log(750) - qnorm(0.25)*log(1250)) / (qnorm(0.75)-qnorm(.25)); mu_cc
+sigma_cc = (log(1250) - log(750)) / (qnorm(.75) - qnorm(.25)); sigma_cc
+```
+
+## 1.  Define PSA distributions 
+
+::: nonincremental
+- IQR Direct Medical Care Costs: 1,000 - 3,000
+  - `cost_dc` $\sim$ gamma(`shape_dc`, `rate_dc`)
+:::
+
+```{r}
+x1 = 1000
+x2 = 3000
+p1 = 0.25
+p2 = 0.75
+
+# Transfinite scaling
+Tf <- function(x, shape, rate)
+    pgamma(x,shape,rate,log=TRUE) - 
+    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)
+
+# Function to minimize
+norm <- function(x1, p1, x2, p2, shape,rate)
+    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +
+    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2
+
+# Bundle it all together into a single function.
+fn <- function(x) norm(x1, p1, x2, p2, x[1], x[2])
+```
+
+
+```{r}
+#| echo = TRUE
+# Run general-purpose optimization on the function.
+gamma_optim <- 
+  optim(c(0.5, 0.1), # initial parameter guesses
+    fn,
+    gr = function(x) pracma::grad(fn, x),
+    lower=c(-Inf, 1e-5),
+    method = "L-BFGS-B",
+    control=list(factr=1e-10, maxit=100))$par
+
+shape_dc = gamma_optim[[1]]; shape_dc
+rate_dc = gamma_optim[[2]]; rate_dc
+
+```
+
+## 2.  Define correlation matrix $\Sigma$
+
+```{r}
+#| echo: true
+rho_cc_dc = 0.8
+sigma <- matrix(c(1,rho_cc_dc,rho_cc_dc,1),nrow = 2, byrow=TRUE,
+                dimnames=list(c("cost_cc","cost_dc"),c("cost_cc","cost_dc")))
+sigma
+```
+
+## 3.  Draw multivariate uniform sample. 
+
+- To get multivariate uniform, first draw from multivariate normal (`MASS::mvrnorm()`). 
+- Then, apply the values to the normal CDF (`pnorm()`) to get the quantiles. 
+
+
+## 3.  Draw multivariate uniform sample. 
+
+::: nonincremental
+- To get multivariate uniform, first draw from multivariate normal (`MASS::mvrnorm()`). 
+- Then, apply the values to the normal CDF (`pnorm()`) to get the quantiles. 
+:::
+
+
+```{r}
+#| echo: true
+# Define PSA Sample Size
+PSA_sample_size = 1e6
+U <- pnorm(MASS::mvrnorm(n = PSA_sample_size, Sigma = sigma, mu = c(0,0)))
+```
+
+```{r, eval = FALSE }
+# Alternative Version: Cholesky decomposition
+
+#  Perform a cholesky decomposition
+  A = chol(sigma)
+
+#  Generate iid standard normal pseudo random variables
+  tildeY0 <- rnorm(n = PSA_sample_size, mean = 0, sd = 1)
+  tildeY1 <- rnorm(n = PSA_sample_size, mean = 0, sd = 1)
+  tildeY <- cbind(tildeY0,tildeY1)
+
+  # Collect them 
+  tildeY <- tildeY %*% A
+
+# Use the standard normal disribution function to return the quantiles
+  U <- pnorm(tildeY)
+```
+
+# 4.  Inverse Transform
+
+```{r}
+#| echo: true
+
+# Inverse transform using parameters solved for earlier
+cost_cc <- qlnorm(U[,1], mu_cc, sigma_cc)
+cost_dc <- qgamma(U[,2], shape_dc, rate_dc)
+
+# Make sure the marginal distributions check out
+quantile(cost_cc,c(0.25,0.75))
+quantile(cost_dc,c(0.25,0.75))
+
+# Check that correlation is there
+cor(cost_cc,cost_dc)
+```
+
+# Your Turn!
 
 
 ## References 
