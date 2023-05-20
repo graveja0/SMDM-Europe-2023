@@ -745,8 +745,8 @@ laws <-
     #filter(CODE=="HP2") %>% 
     #mutate(MODEL = gsub("\\^","||",MODEL))
     mutate(MODEL = paste0("$",MODEL,"$")) %>% 
-    mutate(MODEL = ifelse(CODE == "weibull","$\\mu[x] = 1/\\sigma * (x/M)^{(M/\\sigma - 1)}$",MODEL)) %>% 
-    mutate(MODEL = ifelse(CODE == "invweibull","$\\mu[x] = 1/\\sigma * (x/M)^{[-M/\\sigma - 1]} / [\\exp((x/M)^{(-M/\\sigma)}) - 1]$",MODEL)) %>% 
+    mutate(MODEL = ifelse(CODE == "weibull","$\\mu[x] = 1/\\sigma (x/M)^{(M/\\sigma - 1)}$",MODEL)) %>% 
+    mutate(MODEL = ifelse(CODE == "invweibull","$\\mu[x] = 1/\\sigma (x/M)^{[-M/\\sigma - 1]} / [e^{(x/M)^{(-M/\\sigma)}} - 1]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "perks","$\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "wittstein","$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "HP","$q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x$",MODEL)) %>% 
@@ -755,20 +755,20 @@ laws <-
     mutate(MODEL = ifelse(CODE == "HP3","$q[x] = A^{[(x + B)^C]} + D \\exp[-E \\log(x/F)^2] + GH^x / [1 + KGH^x]$",MODEL)) %>% 
     mutate(MODEL = ifelse(CODE == "kostaki","$q[x]/p[x] = A^{[(x+B)^C]} + D \\exp[-(E_i \\log(x/F_))^2] + G H^x$",MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "opperman","$\\mu[x] = A/\\sqrt{x} - B + C\\sqrt{x}$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "invgompertz","$\\mu[x] = [1-\\exp((M-x)/\\sigma)]/[\\exp((M-x)/\\sigma)-1]$",MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "gompertz", "$\\mu[x] = A \\exp[Bx]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "gompertz0", "$\\mu[x] = 1/\\sigma \\exp[(x-M)/\\sigma]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "makeham", "$\\mu[x] = A \\exp[Bx] + C$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "makeham0", "$\\mu[x] = 1/\\sigma \\exp[(x-M)/\\sigma)] + C$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "strehler_mildvan", "$\\mu[x] = K \\exp[-V_0 (1-Bx)/D]$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "invgompertz","$\\mu[x] = [1-e^{(M-x)/\\sigma}]/[e^{(M-x)/\\sigma}-1]$",MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "gompertz", "$\\mu[x] = A e^{Bx}$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "gompertz0", "$\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma}$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "makeham", "$\\mu[x] = A e^{Bx} + C$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "makeham0", "$\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma} + C$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "strehler_mildvan", "$\\mu[x] = K e^{-V_0 (1-Bx)/D}$", MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "vandermaen", "$\\mu[x] = A+Bx+Cx^2 + I/[N-x]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "beard", "$\\mu[x] = \\exp(Bx)/[1+KA \\exp(Bx)]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "beard_makeham", "$\\mu[x] = A \\exp(Bx)/[1 + KA \\exp(Bx)]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "ggompertz", "$\\mu[x] = A \\exp(Bx)/(1+AG/B[\\exp(Bx)-1])$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "beard", "$\\mu[x] = e^{Bx}/[1+KA e^{Bx}]$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "beard_makeham", "$\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "ggompertz", "$\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])$", MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "vandermaen2", "$\\mu[x] = A + Bx + I/[N-x]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "quadratic", "$\\mu[x] = A + Bx + Cx^2%", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "kannisto", "$\\mu[x] = A \\exp(Bx)/[1+A\\exp(Bx)]$", MODEL)) %>%
-    mutate(MODEL = ifelse(CODE == "kannisto_makeham", "$\\mu[x] = A \\exp(Bx)/[1+A\\exp(Bx)]+C$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "quadratic", "$\\mu[x] = A + Bx + Cx^2$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "kannisto", "$\\mu[x] = A e^{Bx}/[1+A e^{Bx}]$", MODEL)) %>%
+    mutate(MODEL = ifelse(CODE == "kannisto_makeham", "$\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C$", MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "thiele", "$\\mu[a] = A e^{-Bx} + C e^{-\\frac{1}{2} D(x-E)^2}+F e^{Gx}$", MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "martinelle", "$\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}$", MODEL)) %>%
     mutate(MODEL = ifelse(CODE == "rogersplanck", "$q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}$", MODEL))
