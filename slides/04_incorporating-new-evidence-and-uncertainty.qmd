@@ -87,7 +87,7 @@ mP
 -   From '*Decision Modelling for Health Economic Evaluation*' by Briggs, Claxton, Sculpher.
 :::
 
-## Three Methods to Solve for the Generator
+## Three Methods to Solve for the "Q" Generator
 
 ::: nobullet
 - A. Compute the matrix logarithm of the transition probability matrix $P$.
