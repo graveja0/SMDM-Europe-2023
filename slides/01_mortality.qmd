@@ -583,7 +583,7 @@ payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
 # Calculate alive years in each cycle
 life_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp  # <2>
 
-# Function for cycle correction (alternative Simpson's method)
+# Integration via alternative Simpson's method (cycle correction)
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8),
                                49, 43, 59, 17) / 48
 cycle_adj     <- function(x) sum(alt_simp_coef(length(x)) * x)
@@ -609,7 +609,7 @@ payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
 # Calculate alive years in each cycle
 life_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp  # <2>
 
-# Function for cycle correction (alternative Simpson's method)
+# Integration via alternative Simpson's method (cycle correction)
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8),
                                49, 43, 59, 17) / 48
 cycle_adj     <- function(x) sum(alt_simp_coef(length(x)) * x)
@@ -635,7 +635,7 @@ payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
 # Calculate alive years in each cycle
 life_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp  # <2>
 
-# Function for cycle correction (alternative Simpson's method)
+# Integration via alternative Simpson's method (cycle correction)
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8),
                                49, 43, 59, 17) / 48
 cycle_adj     <- function(x) sum(alt_simp_coef(length(x)) * x)
@@ -659,7 +659,7 @@ payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
 # Calculate alive years in each cycle
 life_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp  # <2>
 
-# Function for cycle correction (alternative Simpson's method)
+# Integration via alternative Simpson's method (cycle correction)
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8),
                                49, 43, 59, 17) / 48
 cycle_adj     <- function(x) sum(alt_simp_coef(length(x)) * x)
@@ -1134,8 +1134,10 @@ lt %>% mutate(Sx = exp(-cumsum(mx))) %>%
 ```{r}
 #| echo: true
 qHP <- 
-  approxfun(y = 0:115,
-            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))
+  approxfun(
+    y = 0:115,
+    x = 1 - exp(-cumsum(HP(x = 0:115,
+                           par = hp_fit$coefficients)$hx)))
 ```
 
 ## 1. Sampling Death Dates for DES
@@ -1301,9 +1303,10 @@ trace[["heligman-pollard"]][1:10,]
 payoff_life_exp = c("Alive" = 1, "Dead" = 0) # <1>
 
 # Calculate alive years in each cycle
-life_exp_cycle = lapply(trace, function(tr) (tr * (1 / params$n_cohort)) %*% payoff_life_exp)  # <2>
+life_exp_cycle = lapply(trace, function(tr) (tr*(1 / params$n_cohort)) %*%
+                 payoff_life_exp)  # <2>
 
-# Function for cycle correction (alternative Simpson's method)
+# Integration via alternative Simpson's method (cycle correction)
 alt_simp_coef <- function(i) c(17, 59, 43, 49, rep(48, i-8),
                                49, 43, 59, 17) / 48
 cycle_adj     <- function(x) sum(alt_simp_coef(length(x)) * x)
