@@ -1,14 +1,14 @@
 ---
-title: "3. Cardiovascular Disease Model"
+title: "Cardiovascular Disease Model"
+editor: source
 output:
   learnr::tutorial:
     progressive: true
-    theme: united
+    theme: cerulean
     allow_skip: true
 runtime: shiny_prerendered
-description: >
-  This tutorial will cover background mortality modeling".
 ---
+
 
 ```{r setup, include=FALSE}
 # ("rstudio", default", "cerulean", "journal", "flatly", "readable",
@@ -452,7 +452,7 @@ Constructing the cause-deleted life table will provide two necessary inputs:
 1.  CVD-Deleted mortality rates (by age)
 2.  CVD-specific mortality rates (by age)
 
-Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. The screenshot below shows where we extracted this information from. 
+Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. The screenshot below shows where we extracted this information from.
 
 ![Screenshot of Global Burden of Disease Data](images/gbd-cvd-deaths.png){height="500px"}
 
@@ -612,7 +612,7 @@ params
 
 #### Using Embedding from a Transition Rate Matrix
 
-We will next use the modeled cause-deleted background mortality rate, as well as the cause-specific (CVD) mortality rates, to embed an age-specific transition probability matrix for a discrete-time Markov model. 
+We will next use the modeled cause-deleted background mortality rate, as well as the cause-specific (CVD) mortality rates, to embed an age-specific transition probability matrix for a discrete-time Markov model.
 
 Let's show how it is done first for a specific age (95):
 
@@ -683,7 +683,7 @@ params$m_P[[71]]
 
 We now have the components we need to fully model a natural history CVD scenario and compare our results to the underlying life table data.
 
-Let's define the transition probabilities and then construct a Markov trace for the natural history model. 
+Let's define the transition probabilities and then construct a Markov trace for the natural history model.
 
 ```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 25

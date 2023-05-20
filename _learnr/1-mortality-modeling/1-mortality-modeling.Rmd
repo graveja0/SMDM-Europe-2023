@@ -186,7 +186,7 @@ laws %>%
 
 ### Fitting a Parametric Mortality Model
 
-Our objective in this section is to take the raw life table data and fit a parametric model to it. This is a useful exercice in case you need to reduce mortality to just a few parameters, or if you need to sample a death time for use in a discrete event simulation (DES) model. 
+Our objective in this section is to take the raw life table data and fit a parametric model to it. This is a useful exercise in case you need to reduce mortality to just a few parameters, or if you need to sample a death time for use in a discrete event simulation (DES) model. 
 
 
 ```{r loadlt}

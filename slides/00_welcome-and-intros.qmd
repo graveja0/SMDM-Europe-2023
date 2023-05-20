@@ -1,5 +1,6 @@
 ---
-title: "Welcome and Introductions"
+title: "What They Didn't Teach You About Decision Modeling"
+subtitle: "SMDM 2023 - 18th Biennial European Conference"
 editor: source
 format:
   revealjs:
@@ -16,41 +17,53 @@ bibliography: references.bib
 
 ## Welcome to Berlin!
 
-## Learning Objectives
+- Introductions
+- Workshop Learning Objectives
+- Conceptual Framework 
+
+## Workshop Overview
+
+- "Bag of tricks" to fill the gaps in CEA modeling. 
+- Primary focus is discrete time Markov, but much of the material is also useful for discrete event simulation and microsimulation modeling. 
+
+## Workshop Overview 
+
+- Our primary aim is to provide you with intuition for why to use these methods.
+- We also aim to provide you with code.
+- We'll move fast; don't worry if everything doesn't immediately resonate!
+
+## Learning Objectives (Morning)
 
 1. Fit a parametric mortality model to life table data to:
-
+    - Net out cause-specific death from overall mortality (i.e., *truly* model background mortality).
     -  Accurately simulate death times in a discrete event model.
     - Summarize background mortality for a discrete time Markov model in a few parameters. 
     
-2. Construct a cause-deleted life table to parse out and model cause-specific death factors from background mortality.
+## Learning Objectives (Morning)
 
-## Learning Objectives
+2. Accurately construct a transition probability matrix.
+  - The rate-to-probability (and probability-to-rate) conversion formulas you probably learned are technically correct, but only in a very narrow case with **no** competing risks like death.
 
-3. Accurately embed a transition probability matrix so that it accounts for “compound” (i.e., >1) transitions in a cycle.
+## Learning Objectives (Afternoon)
 
-## Learning Objectives
+3. Include non-markovian matrix elements to capture:
 
-4. Include non-markovian elements to capture:
-
-    -  Total counts of events (all cycles) or transitions (single cycle) to/from certain states. 
+    -  Counts of total events or counts of event transitions (single cycle) to/from certain states (e.g., how to deal with one-time costs).
     -  Tunnel states to capture transitory health and/or cost dynamics.
     
-## Learning Objectives
+## Learning Objectives (Afternoon)
 
-5. Backwards-convert an existing Markov model defined on the probability scale to accommodate new evidence, strategies, additional health states, different cycle lengths, etc.
+4. Backwards-convert an existing Markov model 
+  - Facilitates adapation of existing models to accommodate new evidence, strategies, additional health states, different cycle lengths, etc.
 
-## Learning Objectives
+## Learning Objectives (Afternoon)
 
-6. Solve for PSA distribution parameters given sparse information from the literature (e.g., IQR of costs of $300-$750).
+5. Solve for PSA distribution parameters given sparse information from the literature (e.g., IQR of costs of $300-$750).
 
-7. Improve the efficiency of PSA analyses by sampling correlated PSA distributions using copulas.
+6. Improve the efficiency of PSA analyses by sampling correlated PSA distributions using copulas.
 
-## This Workshop is *Packed* 
 
-- Our primary aim is to provide you with intuition for why we use these methods.
-- We also aim to provide you with code.
-- We'll move fast; don't worry if everything doesn't immediately resonate!
+# Conceptual Framework 
 
 ## What They Taught You is (Technically) Wrong
 
@@ -58,7 +71,8 @@ bibliography: references.bib
 
 - This doesn't mean everything published is totally wrong, however.
 
-- Because we often make comparisons across strategies, a lot of errors will (approximately) cancel out. 
+- Because we often make comparisons across strategies, errors may (approximately) cancel out. 
+  - There is no guarantee of this, however. 
 
 ## The Big Picture
 

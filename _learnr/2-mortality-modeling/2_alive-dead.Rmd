@@ -4,11 +4,9 @@ editor: source
 output:
   learnr::tutorial:
     progressive: true
-    theme: united
+    theme: cerulean
     allow_skip: true
 runtime: shiny_prerendered
-description: >
-  This tutorial will cover background mortality modeling".
 ---
 
 ```{r setup, include=FALSE}

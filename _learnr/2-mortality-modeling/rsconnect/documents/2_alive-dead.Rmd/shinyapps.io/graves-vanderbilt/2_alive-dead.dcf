@@ -5,9 +5,9 @@ account: graves-vanderbilt
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9012969
-bundleId: 7165731
+bundleId: 7242552
 url: https://graves-vanderbilt.shinyapps.io/2_alive-dead/
-when: 1683061481.36445
-lastSyncTime: 1683061481.36446
+when: 1684611775.52726
+lastSyncTime: 1684611775.52726
 asMultiple: FALSE
 asStatic: FALSE
