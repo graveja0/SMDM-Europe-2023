@@ -235,7 +235,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#working-example-hiv-model",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Working Example: HIV Model",
-    "text": "Working Example: HIV Model\nTransition probability matrix:\n\nmP = matrix(c(0.721, 0.202, 0.067, 0.010,\n                0.000, 0.581, 0.407, 0.012,\n                0.000, 0.000, 0.750, 0.250,\n                0.000, 0.000, 0.000, 1.000), \n              nrow=4, byrow=TRUE,\n              dimnames=list(c(\"Healthy\", \"LowCD4\", \"AIDS\", \"Death\"),\n                            c(\"Healthy\", \"LowCD4\", \"AIDS\", \"Death\")))\nmP  \n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000\n\n\n\n\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
+    "text": "Working Example: HIV Model\nTransition probability matrix:\n\n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000\n\n\n\n\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#three-methods-to-solve-for-the-generator",
@@ -298,14 +298,14 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-7",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\nRexp &lt;-\n  R %&gt;%\n  round(., 3) %&gt;%\n  data.frame() %&gt;% \n  rownames_to_column() %&gt;% \n  mutate_all(as.character) %&gt;% \n  mutate(Death = cell_spec(Death,\"html\",color = ifelse(rowname==\"LowCD4\",\"red\",\"black\"))) \n\nRexp %&gt;% \n  kable(col.names = c(\"\",\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"),escape = FALSE) %&gt;% \n  kable_styling(\"hover\", \"striped\", full_width = F)  %&gt;% \n  kable_paper()\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nNote there is a negative rate from LowCD4  Death!\nThis is a transition from Death  LowCD4 and should be moved to the other side of the matrix."
+    "text": "A. Matrix Logarithm of P\n\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nNote there is a negative rate from LowCD4  Death!\nThis is a transition from Death  LowCD4 and should be moved to the other side of the matrix."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\nRexp %&gt;% \n  kable(col.names = c(\"\",\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"),escape = FALSE) %&gt;% \n  kable_styling(\"hover\", \"striped\", full_width = F)  %&gt;% \n  kable_paper()\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nThe negative rate implies an identifiability issue.\nNote rates from HealthyAIDS, HealthyDeath are relatively small, implying these are from statistical noise in observation."
+    "text": "A. Matrix Logarithm of P\n\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nThe negative rate implies an identifiability issue.\nNote rates from HealthyAIDS, HealthyDeath are relatively small, implying these are from statistical noise in observation."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-9",
@@ -319,7 +319,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-10",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\n\nHigham (2008) method returns same as eigenvalue method. - expm::logm()\nTweaking rates to get a proper model is ad-hoc and difficult.\n\n\n\nR = expm::logm(mP)\n\n\nR &lt;- logm(mP)\ndimnames(R) = dimnames(mP)\nround(R,3)\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
+    "text": "A. Matrix Logarithm of P\n\n\nHigham (2008) method returns same as eigenvalue method. - expm::logm()\nTweaking rates to get a proper model is ad-hoc and difficult.\n\n\n\nR = expm::logm(mP)\n\n\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach",
@@ -354,7 +354,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-psuedo-data-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "2. Construct psuedo-data",
-    "text": "2. Construct psuedo-data\n\n\n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    gather(state,count,-cycle) %&gt;% \n    mutate(count = round(count,0)) %&gt;% \n    arrange(cycle) %&gt;% \n    lapply(.,rep,.$count) %&gt;% \n    cbind.data.frame() %&gt;% \n    as_tibble() %&gt;% \n    mutate(state = factor(state,\n      levels = c(\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"))) %&gt;% \n    arrange(cycle,state) %&gt;% \n    mutate(ptnum = rep(1:1000,2)) %&gt;% \n    select(-count) %&gt;% \n    arrange(ptnum,cycle) %&gt;% \n    mutate(state = as.numeric(state)) %&gt;% \n    select(ptnum,cycle,state)\n\n\n\ntr \n\n# A tibble: 2,000 × 3\n   ptnum cycle state\n   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1     1     0     1\n 2     1     1     1\n 3     2     0     1\n 4     2     1     1\n 5     3     0     1\n 6     3     1     1\n 7     4     0     1\n 8     4     1     1\n 9     5     0     1\n10     5     1     1\n# ℹ 1,990 more rows"
+    "text": "2. Construct psuedo-data\n\n\n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    gather(state,count,-cycle) %&gt;% \n    mutate(count = round(count,0)) %&gt;% \n    arrange(cycle) %&gt;% \n    lapply(.,rep,.$count) %&gt;% \n    cbind.data.frame() %&gt;% \n    as_tibble() %&gt;% \n    mutate(state = factor(state,\n      levels = c(\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"))) %&gt;% \n    arrange(cycle,state) %&gt;% \n    mutate(ptnum = rep(1:1000,2)) %&gt;% \n    select(-count) %&gt;% \n    arrange(ptnum,cycle) %&gt;% \n    mutate(state = as.numeric(state)) %&gt;% \n    select(ptnum,cycle,state)\n\n\n\n\n# A tibble: 2,000 × 3\n   ptnum cycle state\n   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1     1     0     1\n 2     1     1     1\n 3     2     0     1\n 4     2     1     1\n 5     3     0     1\n 6     3     1     1\n 7     4     0     1\n 8     4     1     1\n 9     5     0     1\n10     5     1     1\n# ℹ 1,990 more rows"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model",
@@ -368,7 +368,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "3. Fit Multistate Model",
-    "text": "3. Fit Multistate Model\n\n\nDefine the state table for the multistate model\n\n\n\nlibrary(msm)\n\n\nAttaching package: 'msm'\n\n\nThe following object is masked from 'package:flexsurv':\n\n    qgeneric\n\nstatetable.msm(state, ptnum, data=tr)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\n\n\n\nCheck that cell transition counts match the trace.\n\n\n\n# Markov trace\nrbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    select(cycle,everything())\n\n  cycle Healthy LowCD4 AIDS Death\n1     0    1000      0    0     0\n2     1     721    202   67    10"
+    "text": "3. Fit Multistate Model\n\n\nDefine the state table for the multistate model\n\n\n\nlibrary(msm)\nstatetable.msm(state, ptnum, data=tr)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\n\n\n\nCheck that cell transition counts match the trace.\n\n\n\n# Markov trace\nrbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    select(cycle,everything())\n\n  cycle Healthy LowCD4 AIDS Death\n1     0    1000      0    0     0\n2     1     721    202   67    10"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-2",
@@ -501,7 +501,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-uniform-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Uniform PSA",
-    "text": "Analytic Solution: Uniform PSA\n\nqunif(0.25, min = 75, max = 975)\n\n[1] 300\n\nqunif(0.75, min = 75, max = 975)\n\n[1] 750\n\n\n\nplot(density(runif(n = 1e5, min = a, max = b)),main = \"\")"
+    "text": "Analytic Solution: Uniform PSA\n\nqunif(0.25, min = 75, max = 975)\n\n[1] 300\n\nqunif(0.75, min = 75, max = 975)\n\n[1] 750"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-normal-psa",
@@ -522,7 +522,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-normal-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Normal PSA",
-    "text": "Analytic Solution: Normal PSA\n\nqnorm(0.25, mean = 525, sd = 333.59)\n\n[1] 300\n\nqnorm(0.75, mean = 525, sd = 333.59)\n\n[1] 750\n\n\n\nplot(density(rnorm(n = 1e5,  mean = mu, sd = sigma)),main = \"\")"
+    "text": "Analytic Solution: Normal PSA\n\nqnorm(0.25, mean = 525, sd = 333.59)\n\n[1] 300\n\nqnorm(0.75, mean = 525, sd = 333.59)\n\n[1] 750"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-lognormal-psa",
@@ -543,7 +543,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-lognormal-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Lognormal PSA",
-    "text": "Analytic Solution: Lognormal PSA\n\nqlnorm(0.25, mean = 6.1619, sd = 0.67925)\n\n[1] 299.99\n\nqlnorm(0.75, mean = 6.1619, sd = 0.67925)\n\n[1] 749.98\n\n\n\nplot(density(rlnorm(n = 1e5,  mean = mu, sd = sigma)),main = \"\")"
+    "text": "Analytic Solution: Lognormal PSA\n\nqlnorm(0.25, mean = 6.1619, sd = 0.67925)\n\n[1] 299.99\n\nqlnorm(0.75, mean = 6.1619, sd = 0.67925)\n\n[1] 749.98"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-gamma-psa",
@@ -585,7 +585,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-gamma-psa-5",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Gamma PSA",
-    "text": "Analytic Solution: Gamma PSA\n\nqgamma(0.25,shape = 2.4558, scale = 230.16)\n\n[1] 300\n\nqgamma(0.75,shape = 2.4558, scale = 230.16)\n\n[1] 750\n\n\n\nplot(density(rgamma(n = 1e4, shape = alpha_, scale = beta_)),main = \"\")"
+    "text": "Analytic Solution: Gamma PSA\n\nqgamma(0.25,shape = 2.4558, scale = 230.16)\n\n[1] 300\n\nqgamma(0.75,shape = 2.4558, scale = 230.16)\n\n[1] 750"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#alternative-optimization",
@@ -718,21 +718,21 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-you-were-taught-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What You Were Taught",
-    "text": "What You Were Taught\n\nIndependent PSA draws of two model parameters\n\n\\(c_{direct} \\sim \\text{gamma}(2.5, 1/230)\\)\n\\(c_{community} \\sim \\text{gamma}(1.5, 1/150)\\)\n\n\n\nx1 &lt;- rgamma(n = 1e3, shape = 2.5, rate  = 1/230.16)\nx2 &lt;- rgamma(n = 1e3, shape = 1.5, rate = 1/150)\n\ntibble(x1 = x1, x2 = x2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point(colour = \"red\") + \n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")"
+    "text": "What You Were Taught\n\nIndependent PSA draws of two model parameters\n\n\\(c_{direct} \\sim \\text{gamma}(2.5, 1/230)\\)\n\\(c_{community} \\sim \\text{gamma}(1.5, 1/150)\\)"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What We’ll Teach You",
-    "text": "What We’ll Teach You\n\n\\(\\text{cor}(c_{direct},c_{community}) = 0.8\\)\n\n\n# 1. Define the correlation matrix\n  rho &lt;- 0.8\n  sigma &lt;- matrix(c(1,rho,rho,1),nrow = 2, byrow=TRUE)\n\n# 2. Perform a cholesky decomposition\n  A = chol(sigma)\n\n# 3. Generate iid standard normal pseudo random variables\n  tildeY0 &lt;- rnorm(n = 1e3, mean = 0, sd = 1)\n  tildeY1 &lt;- rnorm(n = 1e3, mean = 0, sd = 1)\n  tildeY &lt;- cbind(tildeY0,tildeY1)\n\n  # Collect them \n  tildeY &lt;- tildeY %*% A\n\n# Use the standard normal disribution function to return the quantiles\n  U &lt;- pnorm(tildeY)\n\n# Use the inverse distribution function to return the values\n  Y &lt;- U \n  cx1 &lt;- qgamma(U[,1],shape = 2.5, rate  = 1/230.16)\n  cx2 &lt;- qgamma(U[,2],shape = 1.5, rate = 1/150)\n\ntibble(x1 = cx1, x2 = cx2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point() + \n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")"
+    "text": "What We’ll Teach You\n\n\\(\\text{cor}(c_{direct},c_{community}) = 0.8\\)"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you-1",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What We’ll Teach You",
-    "text": "What We’ll Teach You\n\nRed points: independent PSA draws\nBlack points: correlated PSA draws\n\n\ntibble(x1 = x1, x2 = x2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point(alpha = 0.5, colour = \"red\") + \n  geom_point(data = tibble(x1 = cx1, x2 = cx2) , aes(x = cx2, y = cx1),alpha = 0.25) +\n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")  + \n  stat_ellipse(\n    data = MASS::mvrnorm(n=1e3, mu = c(1500,750),Sigma = matrix(c(40000,0,0,20000),byrow=TRUE,nrow=2)) %&gt;% \n      data.frame() %&gt;% \n      set_names(c(\"x1\",\"x2\")) , \n    lty = 3, colour = \"black\"\n  ) + \n  annotate(\"text\", x = 750, y = 1500, label = \"Traditional PSA draws (red points)\\n very sparse in this region.\",fontface =2, color = \"red\")"
+    "text": "What We’ll Teach You\n\nRed points: independent PSA draws\nBlack points: correlated PSA draws"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-psa-sampling",
@@ -788,7 +788,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-pdf-to-cdf",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Normal Distribution: PDF to CDF",
-    "text": "Normal Distribution: PDF to CDF\n\n\n\n\n\n\nlibrary(tidyverse)\nlibrary(data.table)\nlibrary(gganimate)\nset.seed(12)\ndf_norm &lt;- tibble(x=rnorm(10000,mean = 10, sd=3))\ndf_lnorm &lt;- tibble(x = rlnorm(10000,mean=log(3),sd=0.01)); plot(density(df_lnorm$x))\ndf_gamma &lt;- tibble(x = rgamma(10000,shape = 44.4, scale=22.5)); plot(density(df_gamma$x))\ndf_unif &lt;- tibble(x = runif(1e6,min = 0.3,max=0.4)); plot(density(df_unif$x))\n\nanimate_pdf_to_cdf &lt;- function(df, scene_to_show = NULL, q_ = c(0.01,  0.25, 0.5, 0.75,  0.99), breaks_to_show = NULL ) {\n  pdf &lt;-\n    {df %&gt;% ggplot(aes(x = x)) + geom_density()} %&gt;%\n    ggplot_build() %&gt;% pluck(\"data\") %&gt;% pluck(1) %&gt;%\n    as_tibble() %&gt;%\n    select(x,y) %&gt;%\n    data.table(key = \"x\")\n  cdf &lt;-\n    {df %&gt;% ggplot(aes(x = x)) + stat_ecdf()} %&gt;%\n    ggplot_build() %&gt;% pluck(\"data\") %&gt;% pluck(1) %&gt;%\n    as_tibble() %&gt;%\n    select(x,y) %&gt;%\n    data.table(key = \"y\")\n\n  \n  q &lt;- q_ %&gt;%\n    map_dbl(~{\n      quantile(df$x,.x)\n    }) %&gt;%\n    set_names(q_) %&gt;%\n    data.frame() %&gt;%\n    set_names(\"x_\") %&gt;%\n    rownames_to_column(var = \"quantile\") %&gt;%\n    as.data.table(key = \"x_\")\n\n  scene2 &lt;-\n    pdf[q,roll=\"nearest\"] %&gt;%\n    as_tibble() %&gt;%\n    select(y,quantile) %&gt;%\n    right_join(pdf,c(\"y\")) %&gt;%\n    arrange(x,y) %&gt;%\n    mutate(scene = 2) %&gt;%\n    mutate(quantile = glue::glue(\"{as.numeric(quantile)}\"))\n\n  q2 &lt;-\n    q %&gt;%\n    as_tibble() %&gt;%\n    mutate(quantile = as.numeric(quantile)) %&gt;%\n    data.table(key=\"quantile\")\n\n  scene3 &lt;-\n    cdf[q2,roll=\"nearest\"] %&gt;%\n    as_tibble() %&gt;%\n    set_names(c(\"x\",\"quantile\",\"x_\")) %&gt;%\n    select(-x_) %&gt;%\n    right_join(cdf,\"x\") %&gt;%\n    arrange(x,y)  %&gt;%\n    mutate(scene = 3) %&gt;%\n    mutate(quantile = glue::glue(\"{as.numeric(quantile)}\")) %&gt;%\n    ungroup() %&gt;%\n    filter(!is.na(as.numeric(quantile)) | row_number() %in% sample(1:nrow(.),1000)); dim(scene2)\n\n  p_df &lt;-\n    scene2 %&gt;%\n    mutate(scene = 1) %&gt;%\n    bind_rows(scene2) %&gt;%\n    bind_rows(scene3) %&gt;%\n    bind_rows(scene3 %&gt;% mutate(scene=4)) %&gt;%\n    #bind_rows(scene3 %&gt;% mutate(scene=5)) %&gt;%\n    #bind_rows(scene3 %&gt;% mutate(scene=6)) %&gt;%\n    mutate(quantile = ifelse(quantile==\"NA\",NA, quantile))\n\n  p_df_label =\n    p_df %&gt;% filter(!is.na(quantile)) %&gt;%\n    mutate(y = ifelse(scene==1,0,y)) %&gt;%\n    mutate(x = ifelse(scene==4,min(scene3$x),x)) %&gt;%\n    mutate(y = ifelse(scene==6,0,y)) %&gt;%\n    mutate(quantile = glue::glue(\" q{quantile}\"))\n\n  if (!is.null(scene_to_show)) {\n    p_df &lt;- \n      p_df %&gt;% filter(scene==scene_to_show)\n    p_df_label &lt;- \n      p_df_label %&gt;% filter(scene==scene_to_show)\n    p &lt;-\n      p_df %&gt;% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile),size=3)+\n      scale_y_continuous(breaks = breaks_to_show) +\n      scale_x_continuous(breaks = q$x_, labels = round(q$x_,2),guide = guide_axis(n.dodge=3)) +\n      ggthemes::theme_clean(base_size=15) +\n      labs(x = \"Parameter Value\", y = \"\") \n  } else {\n      p &lt;-\n        p_df %&gt;% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile))+\n        scale_y_continuous(breaks = seq(0,1,0.1)) +\n        scale_x_continuous(breaks = q$x_, labels = round(q$x_,2)) +\n        ggthemes::theme_clean() +\n        labs(x = \"Parameter Value\", y = \"\") + #facet_wrap(~scene, scales=\"free\"); p\n        gganimate::transition_states(scene) + gganimate::view_follow()\n  }\n\n  return(p)\n\n}\n\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-norm.png\"),height=4, width=5)\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 3,seq(0,1,0.1)) \nggsave(here::here(\"slides/images/pdf-to-cdf-norm4.png\"),height=4, width=5)\nset.seed(23)\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 3, q = round(runif(5, min = 0, max = 1),3))\nggsave(here::here(\"slides/images/pdf-to-cdf-norm_random1.png\"),height=4, width=5)\nanim_norm &lt;- df_norm %&gt;% animate_pdf_to_cdf(breaks_to_show = seq(0,1,0.1))\nanim_save(here::here(\"slides/images/pdf-to-cdf-norm.gif\"), anim_norm)\n\nanim_gamma1 &lt;- df_gamma %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-gamma.png\"),height=5, width=5)\nanim_gamma3 &lt;- df_gamma %&gt;% animate_pdf_to_cdf(scene = 4)\nggsave(here::here(\"slides/images/pdf-to-cdf-gamma4.png\"),height=5, width=5)\nanim_gamma &lt;- df_gamma %&gt;% animate_pdf_to_cdf()\nanim_save(here::here(\"slides/images/pdf-to-cdf-gamma.gif\"), anim_gamma)\n\nanim_lnorm1 &lt;- df_lnorm %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-lnorm.png\"),height=5, width=5)\nanim_lnorm3 &lt;- df_lnorm %&gt;% animate_pdf_to_cdf(scene = 4)\nggsave(here::here(\"slides/images/pdf-to-cdf-lnorm4.png\"),height=5, width=5)\nanim_lnorm &lt;- df_lnorm %&gt;% animate_pdf_to_cdf()\nanim_save(here::here(\"slides/images/pdf-to-cdf-lnorm.gif\"), anim_lnorm)\n\nset.seed(123)\nr_HS =  tibble(x = rgamma(1e4,shape = 30,rate = 200),param=\"r_HS\")\nr_HD    = tibble(x = rgamma(1e4,shape = 60, rate = 10000),param = \"r_HD\")\nhr_S =  tibble(x = rlnorm(1e4,log(3), sdlog = 0.01),param = \"hr_S\")\nhr_HS_trtB  = tibble(x=rlnorm(1e4,log(0.96), sdlog = 0.02),param = \"hr_HS_trtB\")\nhr_HS_trtC  = tibble(x=rlnorm(1e4,log(0.9), sdlog = 0.02),param = \"hr_HS_trtC\")\nhr_HS_trtD =    tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02),param = \"hr_HS_trtD\")\nhr_HS_trtE =    tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02), param = \"hr_HS_trtE\")\nu_H = tibble(x=rbeta(1e4,shape1 = 200, shape2 = 3), param = \"u_H\")\nu_S = tibble(x=rbeta(1e4,shape1 = 130, shape2 = 45), param = \"u_S\")\nc_S  = tibble(x=rgamma(1e4,shape = 44.4, scale = 22.5), param = \"c_S\")\nc_trtA  =tibble(x= rgamma(1e4,shape = 12.5, scale = 2), param = \"c_trtA\")\nc_trtB  =tibble(x= rgamma(1e4,shape = 12, scale = 83.3), param = \"c_trtB\")\nc_trtC  =tibble(x= rgamma(1e4,shape = 36.144, scale = 83), param = \"c_trtC\")\nc_trtD  =tibble(x= rgamma(1e4,shape = 14.458, scale = 83), param = \"c_trtD\")\nc_trtE  =tibble(x= rgamma(1e4,shape = 60.24, scale = 83), param = \"c_trtE\")\n\n\nparams_lut &lt;- c(\"r_HS = gamma(shape = 30,rate = 200)\", \"r_HD = gamma(shape = 60, rate = 10000)\", \"hr_S = lognormal(meanlog = log(3), sdlog = 0.01)\", \"hr_HS_trtB = lognormal(meanlog = log(0.96), sdlog = 0.02)\", \"hr_HS_trtC = lognormal(meanlog = log(0.88), sdlog = 0.02)\", \"hr_HS_trtD = lognormal(meanlog = log(0.92), sdlog = 0.02)\", \"hr_HS_trtE = lognormal(meanlog = log(0.92), sdlog = 0.02)\",\n               \"u_H = beta(shape1 = 200, shape2 = 3)\",\"u_S = beta(shape1 = 130, shape2 = 45)\",\"c_S = gamma(shape = 44.4, scale = 22.5)\", \"c_trtA = gamma(shape = 12.5, scale = 2)\",\"c_trtB = gamma(shape = 12, scale = 83.3)\",\"c_trtC = gamma(shape = 36.144, scale = 83)\",\"c_trtD = gamma(shape = 18.67, scale = 83)\",\"c_trtE = gamma(shape = 60.24, scale = 83)\")\n\n\nparams &lt;- list(r_HS, r_HD, hr_S, hr_HS_trtB, hr_HS_trtC, hr_HS_trtD, hr_HS_trtE,\n               u_H,u_S,c_S, c_trtA,c_trtB,c_trtC,c_trtD,c_trtE)\n\npdf_params &lt;- \n  params %&gt;% \n  map2(.,params_lut,~({\n    .x %&gt;% animate_pdf_to_cdf(scene = 1) + ggtitle(.y)\n    ggsave(here::here(glue::glue(\"slides/images/{.x$param[1]}.png\")),height=4, width=5)\n  })) %&gt;% \n  set_names(c(\"r_HS:gamma(shape = 30,rate = 200)\", \"r_HD=gamma(shape = 60, rate = 10000)\", \"hr_S=lognormal(meanlog = log(3), sdlog = 0.01)\", \"hr_HS_trtB=lognormal(meanlog = log(0.96), sdlog = 0.02)\", \"hr_HS_trtC=lognormal(meanlog = log(0.88), sdlog = 0.02)\", \"hr_HS_trtD=lognormal(meanlog = log(0.92), sdlog = 0.02)\", \"hr_HS_trtE=lognormal(meanlog = log(0.92), sdlog = 0.02)\",\n               \"u_H=beta(shape1 = 200, shape2 = 3)\",\"u_S=beta(shape1 = 130, shape2 = 45)\",\"c_S=gamma(shape = 44.4, scale = 22.5)\", \"c_trtA=gamma(shape = 12.5, scale = 2)\",\"c_trtB=gamma(shape = 12, scale = 83.3)\",\"c_trtC=gamma(shape = 36.144, scale = 83)\",\"c_trtD=gamma(shape = 18.67, scale = 83)\",\"c_trtE=gamma(shape = 60.24, scale = 83)\"))\n\ncdf_params &lt;- \n  params %&gt;% \n  map2(.,params_lut,~({\n    set.seed(23)\n    .x %&gt;% animate_pdf_to_cdf(scene = 3,q_ = round(runif(5, min = 0, max = 1),3),breaks_to_show = seq(0,1,0.1)) + ggtitle(.y)\n    ggsave(here::here(glue::glue(\"slides/images/cdf{.x$param[1]}.png\")),height=4, width=5)\n  })) %&gt;% \n  set_names(c(\"r_HS\", \"r_HD\", \"hr_S\", \"hr_HS_trtB\", \"hr_HS_trtC\", \"hr_HS_trtD\", \"hr_HS_trtE\",\n               \"u_H\",\"u_S\",\"c_S\", \"c_trtA\",\"c_trtB\",\"c_trtC\",\"c_trtD\",\"c_trtE\"))\n\n\nanim_norm"
+    "text": "Normal Distribution: PDF to CDF"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-cdf",
@@ -837,7 +837,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-psa-distributions-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "1. Define PSA distributions",
-    "text": "1. Define PSA distributions\n\n\nIQR Direct Medical Care Costs: 1,000 - 3,000\n\ncost_dc \\(\\sim\\) gamma(shape_dc, rate_dc)\n\n\n\n\nx1 = 1000\nx2 = 3000\np1 = 0.25\np2 = 0.75\n\n# Transfinite scaling\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)\n\n# Function to minimize\nnorm &lt;- function(x1, p1, x2, p2, shape,rate)\n    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +\n    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2\n\n# Bundle it all together into a single function.\nfn &lt;- function(x) norm(x1, p1, x2, p2, x[1], x[2])\n\n\n# Run general-purpose optimization on the function.\ngamma_optim &lt;- \n  optim(c(0.5, 0.1), # initial parameter guesses\n    fn,\n    gr = function(x) pracma::grad(fn, x),\n    lower=c(-Inf, 1e-5),\n    method = \"L-BFGS-B\",\n    control=list(factr=1e-10, maxit=100))$par\n\nshape_dc = gamma_optim[[1]]; shape_dc\n\n[1] 1.7904\n\nrate_dc = gamma_optim[[2]]; rate_dc\n\n[1] 0.00080927"
+    "text": "1. Define PSA distributions\n\n\nIQR Direct Medical Care Costs: 1,000 - 3,000\n\ncost_dc \\(\\sim\\) gamma(shape_dc, rate_dc)\n\n\n\n\n# Run general-purpose optimization on the function.\ngamma_optim &lt;- \n  optim(c(0.5, 0.1), # initial parameter guesses\n    fn,\n    gr = function(x) pracma::grad(fn, x),\n    lower=c(-Inf, 1e-5),\n    method = \"L-BFGS-B\",\n    control=list(factr=1e-10, maxit=100))$par\n\nshape_dc = gamma_optim[[1]]; shape_dc\n\n[1] 1.7904\n\nrate_dc = gamma_optim[[2]]; rate_dc\n\n[1] 0.00080927"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-correlation-matrix-sigma",
@@ -858,7 +858,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#draw-multivariate-uniform-sample.-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "3. Draw multivariate uniform sample.",
-    "text": "3. Draw multivariate uniform sample.\n\n\nTo get multivariate uniform, first draw from multivariate normal (MASS::mvrnorm()).\nThen, apply the values to the normal CDF (pnorm()) to get the quantiles.\n\n\n\n# Define PSA Sample Size\nPSA_sample_size = 1e6\nU &lt;- pnorm(MASS::mvrnorm(n = PSA_sample_size, Sigma = sigma, mu = c(0,0)))\n\n\n# Alternative Version: Cholesky decomposition\n\n#  Perform a cholesky decomposition\n  A = chol(sigma)\n\n#  Generate iid standard normal pseudo random variables\n  tildeY0 &lt;- rnorm(n = PSA_sample_size, mean = 0, sd = 1)\n  tildeY1 &lt;- rnorm(n = PSA_sample_size, mean = 0, sd = 1)\n  tildeY &lt;- cbind(tildeY0,tildeY1)\n\n  # Collect them \n  tildeY &lt;- tildeY %*% A\n\n# Use the standard normal disribution function to return the quantiles\n  U &lt;- pnorm(tildeY)"
+    "text": "3. Draw multivariate uniform sample.\n\n\nTo get multivariate uniform, first draw from multivariate normal (MASS::mvrnorm()).\nThen, apply the values to the normal CDF (pnorm()) to get the quantiles.\n\n\n\n# Define PSA Sample Size\nPSA_sample_size = 1e6\nU &lt;- pnorm(MASS::mvrnorm(n = PSA_sample_size, Sigma = sigma, mu = c(0,0)))"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#references",
@@ -1299,28 +1299,28 @@
     "href": "slides/01_mortality.html#approaches-to-modeling-mortality",
     "title": "1. Dealing with Mortality",
     "section": "Approaches to Modeling Mortality",
-    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling()\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nlx is the total number living in a hypothetical cohort (of 100,000).\ndx is the number of deaths in the age interval."
+    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nlx is the total number living in a hypothetical cohort (of 100,000).\ndx is the number of deaths in the age interval."
   },
   {
     "objectID": "slides/01_mortality.html#approaches-to-modeling-mortality-1",
     "href": "slides/01_mortality.html#approaches-to-modeling-mortality-1",
     "title": "1. Dealing with Mortality",
     "section": "Approaches to Modeling Mortality",
-    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling()\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nmx is the death rate within the interval.\nqx is the probability of death within an interval."
+    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nmx is the death rate within the interval.\nqx is the probability of death within an interval."
   },
   {
     "objectID": "slides/01_mortality.html#life-table-data",
     "href": "slides/01_mortality.html#life-table-data",
     "title": "1. Dealing with Mortality",
     "section": "Life Table Data",
-    "text": "Life Table Data\n\n\nDeath probabilities are useful for discrete time Markov models.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(5, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
+    "text": "Life Table Data\n\n\nDeath probabilities are useful for discrete time Markov models.\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
   },
   {
     "objectID": "slides/01_mortality.html#life-table-data-1",
     "href": "slides/01_mortality.html#life-table-data-1",
     "title": "1. Dealing with Mortality",
     "section": "Life Table Data",
-    "text": "Life Table Data\n\n\nDeath rates are useful for discrete event simulation (DES) models.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#e8c6f5\")\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
+    "text": "Life Table Data\n\n\nDeath rates are useful for discrete event simulation (DES) models.\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
   },
   {
     "objectID": "slides/01_mortality.html#life-table-based-mortality",
@@ -1376,21 +1376,21 @@
     "href": "slides/01_mortality.html#processing-life-table-data-3",
     "title": "1. Dealing with Mortality",
     "section": "Processing Life Table Data",
-    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nhmd_usa &lt;- \n    readRDS(url(\"https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds\"))\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n    hmd_usa %&gt;% \n    demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n    as_tibble() %&gt;% \n    rename(age = x) %&gt;% \n    mutate_at(vars(lx,dx), function(x) x * radix)"
+    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n    hmd_usa %&gt;% \n    demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n    as_tibble() %&gt;% \n    rename(age = x) %&gt;% \n    mutate_at(vars(lx,dx), function(x) x * radix)"
   },
   {
     "objectID": "slides/01_mortality.html#us-life-table-2019",
     "href": "slides/01_mortality.html#us-life-table-2019",
     "title": "1. Dealing with Mortality",
     "section": "US Life Table (2019)",
-    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\nlt %&gt;% \n    select(age, lx, dx, ex, qx, mx) %&gt;% \n    head(n=4) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
+    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
   },
   {
     "objectID": "slides/01_mortality.html#us-life-table-2019-1",
     "href": "slides/01_mortality.html#us-life-table-2019-1",
     "title": "1. Dealing with Mortality",
     "section": "US Life Table (2019)",
-    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\nlt %&gt;% \n    select(age, lx, dx, ex, qx, mx) %&gt;% \n    head(n=4) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018\n\n\n\n\n\n\n\n(We’ll try to replicate these numbers with a discrete time Markov model in a bit.)"
+    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018\n\n\n\n\n\n\n\n(We’ll try to replicate these numbers with a discrete time Markov model in a bit.)"
   },
   {
     "objectID": "slides/01_mortality.html#alive-dead-model-1",
@@ -1439,7 +1439,7 @@
     "href": "slides/01_mortality.html#age-dependent-transition-matrix-1",
     "title": "1. Dealing with Mortality",
     "section": "Age-Dependent Transition Matrix",
-    "text": "Age-Dependent Transition Matrix\n\nparams$mP &lt;- \n  fn_mPt(1:params$n_cycles, params)\n\n\n\nLife Table:\n\nlt[1,c(\"age\",\"qx\")]\n\n# A tibble: 1 × 2\n    age      qx\n  &lt;dbl&gt;   &lt;dbl&gt;\n1     0 0.00553\n\n\n\nTransition Matrix:"
+    "text": "Age-Dependent Transition Matrix\n\n\nLife Table:\n\nlt[1,c(\"age\",\"qx\")]\n\n# A tibble: 1 × 2\n    age      qx\n  &lt;dbl&gt;   &lt;dbl&gt;\n1     0 0.00553\n\n\n\nTransition Matrix:"
   },
   {
     "objectID": "slides/01_mortality.html#age-dependent-transition-matrix-2",
@@ -1488,14 +1488,14 @@
     "href": "slides/01_mortality.html#life-expectancy-1",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,qx,ex) %&gt;% \n    head(n=1) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
+    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\n\n\n\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-2",
     "href": "slides/01_mortality.html#life-expectancy-2",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nLet’s verify we can replicate this with our Markov model.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,qx,ex) %&gt;% \n    head(n=1) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
+    "text": "Life Expectancy\n\n\nLet’s verify we can replicate this with our Markov model.\n\n\n\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-3",
@@ -1530,14 +1530,14 @@
     "href": "slides/01_mortality.html#life-expectancy-7",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,ex) %&gt;% \n    mutate(ex_markov = total_life_exp) %&gt;% \n    head(n=1) %&gt;% \n    kable(col.names = c(\"Age\",\"Life Expectancy (Life Table data)\",\n                        \"Life Expectancy (Markov-Life Table)\")) %&gt;% \n    kable_styling() \n\n\n\n\nAge\nLife Expectancy (Life Table data)\nLife Expectancy (Markov-Life Table)\n\n\n\n\n0\n78.963\n78.924\n\n\n\n\n\n\n\n\nWe can repeat this exercise for different cohort starting ages and verify things line up."
+    "text": "Life Expectancy\n\n\n\n\n\nAge\nLife Expectancy (Life Table data)\nLife Expectancy (Markov-Life Table)\n\n\n\n\n0\n78.963\n78.924\n\n\n\n\n\n\n\n\nWe can repeat this exercise for different cohort starting ages and verify things line up."
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-8",
     "href": "slides/01_mortality.html#life-expectancy-8",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\nle_res &lt;- lt %&gt;% select(age,ex)\n\nages &lt;- lt$age\n\nle_res$ex_lt_markov = \n    ages %&gt;% map_dbl(~({\n        paramsX &lt;- modifyList(params, list(initial_age=.x))\n        paramsX$mP &lt;- \n            fn_mPt(1:paramsX$n_cycles, paramsX)\n        traceX &lt;- \n            sim_cohort(paramsX)\n        life_expX_cycle = (traceX[[1]] * (1 / paramsX$n_cohort)) %*% payoff_life_exp\n        total_life_expX = cycle_adj(life_expX_cycle)\n        total_life_expX\n    }))\n\nle_res %&gt;% \n    gather(method,value,-age) %&gt;% \n    mutate(method = factor(method, labels = c(\"Life Table\",\"Markov (Life Table qx)\"))) %&gt;% \n    ggplot(aes(x = age, y = value, colour = method)) + \n    geom_point() + \n    hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n    scale_colour_aaas(name = \"\") + \n    theme(legend.position = \"top\")"
+    "text": "Life Expectancy"
   },
   {
     "objectID": "slides/01_mortality.html#mortality-modeling-1",
@@ -1551,28 +1551,28 @@
     "href": "slides/01_mortality.html#mortality-modeling-2",
     "title": "1. Dealing with Mortality",
     "section": "Mortality Modeling",
-    "text": "Mortality Modeling\n\ntype_lut &lt;- c(\n    \"1\"  =  \"Infant mortality\" ,             \n    \"2\"  =  \"Accident hump\"      ,           \n    \"3\"  =  \"Adult mortality\"   ,           \n    \"4\"  =  \"Adult and/or old-age mortality\",\n    \"5\"  =  \"Old-age mortality\"       ,      \n    \"6\"  =  \"Full age range\" \n)\n\nlaws &lt;- \n    availableLaws()$table %&gt;% \n    as_tibble() %&gt;% \n    arrange(TYPE) %&gt;% \n    mutate(TYPE = type_lut[paste0(TYPE)]) %&gt;% \n    #filter(CODE==\"HP2\") %&gt;% \n    #mutate(MODEL = gsub(\"\\\\^\",\"||\",MODEL))\n    mutate(MODEL = paste0(\"$\",MODEL,\"$\")) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"weibull\",\"$\\\\mu[x] = 1/\\\\sigma (x/M)^{(M/\\\\sigma - 1)}$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"invweibull\",\"$\\\\mu[x] = 1/\\\\sigma (x/M)^{[-M/\\\\sigma - 1]} / [e^{(x/M)^{(-M/\\\\sigma)}} - 1]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"perks\",\"$\\\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"wittstein\",\"$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP\",\"$q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\\\log(x/F)^2} + G H^x$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP2\",\"$q[x] = A^{[(x + B)^C]} + D e^{-E \\\\log(x/F)^2} + GH^x / [1 + GH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP3\",\"$q[x] = A^{[(x + B)^C]} + D \\\\exp[-E \\\\log(x/F)^2] + GH^x / [1 + KGH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP3\",\"$q[x] = A^{[(x + B)^C]} + D \\\\exp[-E \\\\log(x/F)^2] + GH^x / [1 + KGH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"kostaki\",\"$q[x]/p[x] = A^{[(x+B)^C]} + D \\\\exp[-(E_i \\\\log(x/F_))^2] + G H^x$\",MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"opperman\",\"$\\\\mu[x] = A/\\\\sqrt{x} - B + C\\\\sqrt{x}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"invgompertz\",\"$\\\\mu[x] = [1-e^{(M-x)/\\\\sigma}]/[e^{(M-x)/\\\\sigma}-1]$\",MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"gompertz\", \"$\\\\mu[x] = A e^{Bx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"gompertz0\", \"$\\\\mu[x] = 1/\\\\sigma e^{(x-M)/\\\\sigma}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"makeham\", \"$\\\\mu[x] = A e^{Bx} + C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"makeham0\", \"$\\\\mu[x] = 1/\\\\sigma e^{(x-M)/\\\\sigma} + C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"strehler_mildvan\", \"$\\\\mu[x] = K e^{-V_0 (1-Bx)/D}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"vandermaen\", \"$\\\\mu[x] = A+Bx+Cx^2 + I/[N-x]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"beard\", \"$\\\\mu[x] = e^{Bx}/[1+KA e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"beard_makeham\", \"$\\\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"ggompertz\", \"$\\\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"vandermaen2\", \"$\\\\mu[x] = A + Bx + I/[N-x]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"quadratic\", \"$\\\\mu[x] = A + Bx + Cx^2$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"kannisto\", \"$\\\\mu[x] = A e^{Bx}/[1+A e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"kannisto_makeham\", \"$\\\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"thiele\", \"$\\\\mu[a] = A e^{-Bx} + C e^{-\\\\frac{1}{2} D(x-E)^2}+F e^{Gx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"martinelle\", \"$\\\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"rogersplanck\", \"$q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}$\", MODEL))\n\nlaws1 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[1:2])\n\nlaws1 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws1$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nInfant mortality\n\n\n\n\nOpperman\n\n\n\\(\\mu[x] = A/\\sqrt{x} - B + C\\sqrt{x}\\)\n\n\nopperman\n\n\n\n\nWeibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{(M/\\sigma - 1)}\\)\n\n\nweibull\n\n\n\n\nAccident hump\n\n\n\n\nInverse-Gompertz\n\n\n\\(\\mu[x] = [1-e^{(M-x)/\\sigma}]/[e^{(M-x)/\\sigma}-1]\\)\n\n\ninvgompertz\n\n\n\n\nInverse-Weibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{[-M/\\sigma - 1]} / [e^{(x/M)^{(-M/\\sigma)}} - 1]\\)\n\n\ninvweibull"
+    "text": "Mortality Modeling\n\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nInfant mortality\n\n\n\n\nOpperman\n\n\n\\(\\mu[x] = A/\\sqrt{x} - B + C\\sqrt{x}\\)\n\n\nopperman\n\n\n\n\nWeibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{(M/\\sigma - 1)}\\)\n\n\nweibull\n\n\n\n\nAccident hump\n\n\n\n\nInverse-Gompertz\n\n\n\\(\\mu[x] = [1-e^{(M-x)/\\sigma}]/[e^{(M-x)/\\sigma}-1]\\)\n\n\ninvgompertz\n\n\n\n\nInverse-Weibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{[-M/\\sigma - 1]} / [e^{(x/M)^{(-M/\\sigma)}} - 1]\\)\n\n\ninvweibull"
   },
   {
     "objectID": "slides/01_mortality.html#section",
     "href": "slides/01_mortality.html#section",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "laws2 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[3:4])\n\nlaws2 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws2$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nAdult mortality\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = A e^{Bx}\\)\n\n\ngompertz\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma}\\)\n\n\ngompertz0\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = A e^{Bx} + C\\)\n\n\nmakeham\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma} + C\\)\n\n\nmakeham0\n\n\n\n\nPerks\n\n\n\\(\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]\\)\n\n\nperks\n\n\n\n\nStrehler-Mildvan\n\n\n\\(\\mu[x] = K e^{-V_0 (1-Bx)/D}\\)\n\n\nstrehler_mildvan\n\n\n\n\nAdult and/or old-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A+Bx+Cx^2 + I/[N-x]\\)\n\n\nvandermaen\n\n\n\n\nBeard\n\n\n\\(\\mu[x] = e^{Bx}/[1+KA e^{Bx}]\\)\n\n\nbeard\n\n\n\n\nBeard-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]\\)\n\n\nbeard_makeham\n\n\n\n\nGamma-Gompertz\n\n\n\\(\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])\\)\n\n\nggompertz"
+    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nAdult mortality\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = A e^{Bx}\\)\n\n\ngompertz\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma}\\)\n\n\ngompertz0\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = A e^{Bx} + C\\)\n\n\nmakeham\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma} + C\\)\n\n\nmakeham0\n\n\n\n\nPerks\n\n\n\\(\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]\\)\n\n\nperks\n\n\n\n\nStrehler-Mildvan\n\n\n\\(\\mu[x] = K e^{-V_0 (1-Bx)/D}\\)\n\n\nstrehler_mildvan\n\n\n\n\nAdult and/or old-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A+Bx+Cx^2 + I/[N-x]\\)\n\n\nvandermaen\n\n\n\n\nBeard\n\n\n\\(\\mu[x] = e^{Bx}/[1+KA e^{Bx}]\\)\n\n\nbeard\n\n\n\n\nBeard-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]\\)\n\n\nbeard_makeham\n\n\n\n\nGamma-Gompertz\n\n\n\\(\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])\\)\n\n\nggompertz"
   },
   {
     "objectID": "slides/01_mortality.html#section-1",
     "href": "slides/01_mortality.html#section-1",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "laws3 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[5])\n\nlaws3 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws3$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nOld-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A + Bx + I/[N-x]\\)\n\n\nvandermaen2\n\n\n\n\nQuadratic\n\n\n\\(\\mu[x] = A + Bx + Cx^2\\)\n\n\nquadratic\n\n\n\n\nKannisto\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]\\)\n\n\nkannisto\n\n\n\n\nKannisto-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C\\)\n\n\nkannisto_makeham"
+    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nOld-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A + Bx + I/[N-x]\\)\n\n\nvandermaen2\n\n\n\n\nQuadratic\n\n\n\\(\\mu[x] = A + Bx + Cx^2\\)\n\n\nquadratic\n\n\n\n\nKannisto\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]\\)\n\n\nkannisto\n\n\n\n\nKannisto-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C\\)\n\n\nkannisto_makeham"
   },
   {
     "objectID": "slides/01_mortality.html#section-2",
     "href": "slides/01_mortality.html#section-2",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "laws4 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[6]) %&gt;% \n    filter(!(CODE %in% c(\"HP3\",\"HP4\",\"carriere2\",\"siler\")))\n\nlaws4 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws4$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nFull age range\n\n\n\n\nThiele\n\n\n\\(\\mu[a] = A e^{-Bx} + C e^{-\\frac{1}{2} D(x-E)^2}+F e^{Gx}\\)\n\n\nthiele\n\n\n\n\nWittstein\n\n\n\\(q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}\\)\n\n\nwittstein\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x\\)\n\n\nHP\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + GH^x / [1 + GH^x]\\)\n\n\nHP2\n\n\n\n\nRogers-Planck\n\n\n\\(q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}\\)\n\n\nrogersplanck\n\n\n\n\nMartinelle\n\n\n\\(\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}\\)\n\n\nmartinelle\n\n\n\n\nCarriere\n\n\n\\(l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)\\)\n\n\ncarriere1\n\n\n\n\nKostaki\n\n\n\\(q[x]/p[x] = A^{[(x+B)^C]} + D \\exp[-(E_i \\log(x/F_))^2] + G H^x\\)\n\n\nkostaki"
+    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nFull age range\n\n\n\n\nThiele\n\n\n\\(\\mu[a] = A e^{-Bx} + C e^{-\\frac{1}{2} D(x-E)^2}+F e^{Gx}\\)\n\n\nthiele\n\n\n\n\nWittstein\n\n\n\\(q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}\\)\n\n\nwittstein\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x\\)\n\n\nHP\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + GH^x / [1 + GH^x]\\)\n\n\nHP2\n\n\n\n\nRogers-Planck\n\n\n\\(q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}\\)\n\n\nrogersplanck\n\n\n\n\nMartinelle\n\n\n\\(\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}\\)\n\n\nmartinelle\n\n\n\n\nCarriere\n\n\n\\(l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)\\)\n\n\ncarriere1\n\n\n\n\nKostaki\n\n\n\\(q[x]/p[x] = A^{[(x+B)^C]} + D \\exp[-(E_i \\log(x/F_))^2] + G H^x\\)\n\n\nkostaki"
   },
   {
     "objectID": "slides/01_mortality.html#mortality-modeling-3",
@@ -1768,7 +1768,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-4",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467\n\n\n\nlt %&gt;% mutate(Sx = exp(-cumsum(mx))) %&gt;% \n  filter(age&gt;=70 & age&lt;=72) %&gt;% \n  select(age,mx,Sx) %&gt;% \n  kable() %&gt;% \n  kable_styling() %&gt;% \n  column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
+    "text": "1. Sampling Death Dates for DES\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467\n\n\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-dates-for-des-5",
@@ -1796,7 +1796,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-8",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(0.25)\n\n[1] 71.069\n\n\nSurvival in life table:\n\nlt %&gt;% mutate(Sx = exp(-cumsum(mx))) %&gt;% \n  #filter(age&gt;=82 & age&lt;=83) %&gt;% \n  filter(age&gt;=70 & age&lt;=72) %&gt;% \n  select(age,mx,Sx) %&gt;% \n  kable() %&gt;% \n  kable_styling() %&gt;% \n  column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
+    "text": "1. Sampling Death Dates for DES\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(0.25)\n\n[1] 71.069\n\n\nSurvival in life table:\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-dates-for-des-9",
@@ -1810,7 +1810,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-10",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 85.358 81.844 65.418 83.869 83.884 95.825 99.221 81.527 81.715 41.024"
+    "text": "1. Sampling Death Dates for DES\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1]  66.198  79.646  65.858  67.793 103.925  55.783  88.120  56.246  21.449\n[10]  53.836"
   },
   {
     "objectID": "slides/01_mortality.html#modeled-mortality-markov",
@@ -1915,7 +1915,7 @@
     "href": "slides/01_mortality.html#section-4",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:\n\nlt_ &lt;-  # \n    lt %&gt;% \n    mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %&gt;% \n    left_join(ihme_cvd,\"age_ihme\") %&gt;%\n    mutate(dx_i = round(dx * pct_cvd)) %&gt;% \n    select(age,\n           age_ihme,\n           pct_cvd,\n           dx,  # Deaths\n           dx_i, # Cause-specific deaths\n           lx) %&gt;% # Living\n    mutate(a = ifelse(age==0, 0.152, 0.5)) %&gt;% # time lived by deaths in age group\n    mutate(age_interval = c(diff(age), NA)) %&gt;% \n    select(age,age_ihme,pct_cvd, lx,dx,dx_i,a,age_interval) %&gt;% \n    # Probability of death in interval =  deaths / total living at beginning of interval. \n    mutate(q = replace_na(1 - lead(lx) / lx, 1))  %&gt;% \n      # Convert probability to rate. Note that we could also use q/(age_interval - q * (age_interval - a))\n    mutate(m = -log(1-q)/age_interval) \n  \n\nlt_ %&gt;% \n  select(age,age_ihme,pct_cvd,dx,dx_i) %&gt;% \n  filter(age %in% c(0,10,25,50,75,98))  %&gt;% \n  kable() %&gt;% \n  kable_styling()\n\n\n\n\nage\nage_ihme\npct_cvd\ndx\ndx_i\n\n\n\n\n0\n[0,1)\n0.01675\n553.221\n9\n\n\n10\n[10,15)\n0.04440\n11.518\n1\n\n\n25\n[25,30)\n0.05308\n103.706\n6\n\n\n50\n[50,55)\n0.24371\n365.721\n89\n\n\n75\n[75,80)\n0.31064\n1997.766\n621\n\n\n98\n[95,105)\n0.49531\n1262.593\n625"
+    "text": "Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:\n\n\n\n\n\nage\nage_ihme\npct_cvd\ndx\ndx_i\n\n\n\n\n0\n[0,1)\n0.01675\n553.221\n9\n\n\n10\n[10,15)\n0.04440\n11.518\n1\n\n\n25\n[25,30)\n0.05308\n103.706\n6\n\n\n50\n[50,55)\n0.24371\n365.721\n89\n\n\n75\n[75,80)\n0.31064\n1997.766\n621\n\n\n98\n[95,105)\n0.49531\n1262.593\n625"
   },
   {
     "objectID": "slides/01_mortality.html#section-5",
@@ -1943,7 +1943,7 @@
     "href": "slides/01_mortality.html#section-6",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "lt_ %&gt;% \n  select(age, dx, dxd, dx_i, q, qi, md, mi) %&gt;% \n  head() %&gt;% \n  kable() %&gt;% \n  kable_styling()\n\n\n\n\nage\ndx\ndxd\ndx_i\nq\nqi\nmd\nmi\n\n\n\n\n0\n553.221\n544.221\n9\n0.00553\n0.00009\n0.00546\n0.00009\n\n\n1\n38.180\n37.180\n1\n0.00038\n0.00001\n0.00037\n0.00001\n\n\n2\n23.160\n22.160\n1\n0.00023\n0.00001\n0.00022\n0.00001\n\n\n3\n17.689\n16.689\n1\n0.00018\n0.00001\n0.00017\n0.00001\n\n\n4\n14.209\n13.209\n1\n0.00014\n0.00001\n0.00013\n0.00001\n\n\n5\n13.213\n12.213\n1\n0.00013\n0.00001\n0.00012\n0.00001"
+    "text": "age\ndx\ndxd\ndx_i\nq\nqi\nmd\nmi\n\n\n\n\n0\n553.221\n544.221\n9\n0.00553\n0.00009\n0.00546\n0.00009\n\n\n1\n38.180\n37.180\n1\n0.00038\n0.00001\n0.00037\n0.00001\n\n\n2\n23.160\n22.160\n1\n0.00023\n0.00001\n0.00022\n0.00001\n\n\n3\n17.689\n16.689\n1\n0.00018\n0.00001\n0.00017\n0.00001\n\n\n4\n14.209\n13.209\n1\n0.00014\n0.00001\n0.00013\n0.00001\n\n\n5\n13.213\n12.213\n1\n0.00013\n0.00001\n0.00012\n0.00001"
   },
   {
     "objectID": "slides/01_mortality.html#modeling-cvd-deleted-mortality",
@@ -1951,13 +1951,6 @@
     "title": "1. Dealing with Mortality",
     "section": "Modeling CVD-Deleted Mortality",
     "text": "Modeling CVD-Deleted Mortality\n\nWe can also apply the methods covered earlier to the cause-deleted life table data!\n\n\nages_     &lt;- lt_$age[lt_$age&lt;100 & lt_$age&gt;=25]\ndeaths_   &lt;- lt_$dxd[lt_$age&lt;100 & lt_$age&gt;=25] \nexposure_  &lt;- lt_$lx[lt_$age&lt;100 & lt_$age&gt;=25]\n\nmort_fit_CVDdeleted &lt;- MortalityLaw(\n    x  = ages_,\n    Dx  = deaths_,   # vector with death counts\n    Ex  = exposure_, # vector containing exposures\n    law = \"HP2\",\n    opt.method = \"LF2\")"
-  },
-  {
-    "objectID": "slides/01_mortality.html#section-7",
-    "href": "slides/01_mortality.html#section-7",
-    "title": "1. Dealing with Mortality",
-    "section": "",
-    "text": "params = \n  list(\n    t_names = c(\"natural_history\"),       # Strategy names. \n    n_treatments = 1,                     # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\",\"CVDDeath\",\"Dead\"),\n    n_states = 4,                         # Number of states\n    n_cohort = 100000,                    # Cohort size\n    initial_age = 25,                      # Cohort starting age    \n    n_cycles = 100,                       # Number of cycles in model.  \n    cycle = 1,                            # Cycle length\n    r_H_CVD = 0.1,                        # Healthy -&gt; CVD transition rate\n    u_H = 1,                              # Utility state payoffs\n    u_CVD = 1,\n    u_D = 0,\n    u_DCVD = 0,\n    c_H = 0,                              # Cost state payoffs\n    c_CVD = 0,\n    c_DCVD = 0,\n    c_D = 0, \n    cause_specific_mortality =            # Cause specific morality rate\n      approxfun(lt_$age, lt_$mi,rule = 2),\n    mort_fit = mort_fit_CVDdeleted        # Cause-Deleted Mortality Fit \n  )"
   },
   {
     "objectID": "slides/01_mortality.html#basic-cvd-model",
@@ -1992,21 +1985,21 @@
     "href": "slides/01_mortality.html#age-dependent-transition-matrices-1",
     "title": "1. Dealing with Mortality",
     "section": "Age-Dependent Transition Matrices",
-    "text": "Age-Dependent Transition Matrices\n\nfn_mPt_CVD &lt;- function(t, params) {\n  with(params, {\n    h = cycle # Time step\n    lapply(t, function(tt){\n       # Life table method\n        current_age = initial_age  + (tt)*h - 1\n        \n        r_H_D &lt;- HP(current_age, params$mort_fit$coefficients)$hx\n        r_CVD_D = params$cause_specific_mortality(current_age) \n        \n        R &lt;- array(data = c(\n                      -(r_H_D+params$r_H_CVD),0,0,0, \n                      params$r_H_CVD,-(r_CVD_D+r_H_D),0,0, \n                      0,r_CVD_D,0,0,\n                      r_H_D,r_H_D,0,0),\n                      \n              \n              dim = c(n_states, n_states, n_treatments),\n              dimnames = list(from = s_names,\n                              to = s_names,\n                              t_names)) \n        P = apply(R,3,expm, simplify=FALSE)\n        P\n    })\n  })\n}\nparams$mP &lt;- fn_mPt_CVD(1:params$n_cycles,params)"
+    "text": "Age-Dependent Transition Matrices"
   },
   {
     "objectID": "slides/01_mortality.html#construct-a-markov-trace-2",
     "href": "slides/01_mortality.html#construct-a-markov-trace-2",
     "title": "1. Dealing with Mortality",
     "section": "Construct a Markov Trace",
-    "text": "Construct a Markov Trace\n\nsim_cohort &lt;- function(params) {\n  \n params$t_names %&gt;% map(~({ \n    tr_ &lt;- t(c(params$n_cohort,rep(0,params$n_states - 1)))\n    \n    res &lt;- do.call(rbind,lapply(params$mP, function(tp) {\n        tr_ &lt;&lt;- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_state)\n    }))\n    res &lt;- rbind(c(params$n_cohort,rep(0,params$n_states - 1)),res) \n    dimnames(res) &lt;- list(paste0(c(0:params$n_cycles)), params$s_names)\n    res\n  })) %&gt;% \n    set_names(params$t_names)\n}\n\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
+    "text": "Construct a Markov Trace\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
   },
   {
     "objectID": "slides/01_mortality.html#good-news",
     "href": "slides/01_mortality.html#good-news",
     "title": "1. Dealing with Mortality",
     "section": "Good News",
-    "text": "Good News\n\nModeled CVD and non-CVD mortality closely matches the cause-deleted life table data!\n\n\nlt_compare &lt;- \n    lt_ %&gt;% \n    mutate(dx = dx - dx_i) %&gt;% \n    select(age = age, dead_lt = dx, cvddeath_lt = dx_i) %&gt;% \n    mutate(age = age + 1) %&gt;% \n    filter(age&gt;=params$initial_age) %&gt;% \n    mutate(dead_lt = ifelse(age==25,0,dead_lt),\n           cvddeath_lt = ifelse(age==25,0,cvddeath_lt)) %&gt;% \n    mutate_at(vars(dead_lt,cvddeath_lt), cumsum)\n\n\ntrace[[\"natural_history\"]] %&gt;% \n    data.frame() %&gt;% \n    tibble() %&gt;% \n    set_names(c(\"healthy\",\"cvd\",\"cvddeath\",\"dead\")) %&gt;% \n    mutate(age = params$initial_age  + (row_number())*params$cycle - 1 ) %&gt;% \n    select(age,cvddeath,dead) %&gt;% \n    inner_join(lt_compare, \"age\") %&gt;% \n    gather(state,value,-age) %&gt;% \n    mutate(state = factor(state,levels = c(\"cvddeath\",\"cvddeath_lt\",\"dead\",\"dead_lt\"), \n                          labels = c(\"CVD Deaths\",\n                                     \"CVD Deaths (Life Table)\",\n                                     \"Non-CVD Mortality\",\n                                     \"Non-CVD Mortality (Life Table)\"))) %&gt;% \n    mutate(state1 = ifelse(grepl(\"CVD Deaths\",state),\"CVD Deaths\",\"Non-CVD Mortality\")) %&gt;% \n    mutate(state2 = ifelse(grepl(\"Life Table\",state),\"Life Table\",\"Markov\")) %&gt;% \n    ggplot(aes(x = age, y = value, colour = state2)) + \n    geom_line(aes(lty=state1))  +\n    hrbrthemes::theme_ipsum(base_family = \"Arial\") + \n    scale_colour_aaas(name=\"\") + \n    scale_linetype(guide=\"none\") +\n    geom_dl(method = list(\"last.bumpup\",hjust=1),aes(label=state1),colour = \"black\") +\n    theme(legend.position=\"top\") + \n    labs(x = \"Age\", y = \"Deaths\") + \n    scale_y_continuous(limits = c(0,radix))"
+    "text": "Good News\n\nModeled CVD and non-CVD mortality closely matches the cause-deleted life table data!"
   },
   {
     "objectID": "slides/01_mortality.html#case-study-overview",

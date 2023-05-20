@@ -10,7 +10,7 @@
 <atom:link href="https://graveja0.github.io/SMDM-Europe-2023/blog/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.3.340</generator>
-<lastBuildDate>Sat, 20 May 2023 10:38:46 GMT</lastBuildDate>
+<lastBuildDate>Sat, 20 May 2023 12:53:36 GMT</lastBuildDate>
 <item>
   <title>Basic Markov Modeling in R</title>
   <link>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/green-et-al-replication/green-et-al-replication.html</link>
@@ -1977,7 +1977,7 @@ Krijkamp, Eline M, Fernando Alarid-Escudero, Eva A Enns, Petros Pechlivanoglou, 
 </div>
 </div></section></div> ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/green-et-al-replication/green-et-al-replication.html</guid>
-  <pubDate>Sat, 20 May 2023 10:38:46 GMT</pubDate>
+  <pubDate>Sat, 20 May 2023 12:53:36 GMT</pubDate>
 </item>
 <item>
   <title>Embedding A Transition Probability Matrix for a Discrete Time Markov Model</title>
@@ -10248,7 +10248,7 @@ accHS
 
  ]]></description>
   <guid>https://graveja0.github.io/SMDM-Europe-2023/blog/posts/embedding/embedding-a-transition-probability-matrix.html</guid>
-  <pubDate>Sat, 20 May 2023 10:38:46 GMT</pubDate>
+  <pubDate>Sat, 20 May 2023 12:53:36 GMT</pubDate>
 </item>
 </channel>
 </rss>
