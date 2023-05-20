@@ -13,7 +13,10 @@ lightbox: auto
 bibliography: slides/references.bib
 ---
 
-[Workshop Website](https://startling-gumdrop-7d02c4.netlify.app)
+[Workshop Website:](https://smdm-europe23-what-they-didnt-teach.netlify.app)
+
+#### https://smdm-europe23-what-they-didnt-teach.netlify.app
+
 
 <!-- # To Do -->
 
