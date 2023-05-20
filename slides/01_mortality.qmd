@@ -1718,12 +1718,6 @@ trace[["natural_history"]] %>%
 
 # Your Turn
 
-## Case Study Overview
 
-TK 
-
-## Learning Objectives
-
-TK 
 
 

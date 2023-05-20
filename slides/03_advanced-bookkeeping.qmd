@@ -898,7 +898,5 @@ digraph G {
 
 Source: @green2023health
 
-## Learning Objectives
 
-TK
 

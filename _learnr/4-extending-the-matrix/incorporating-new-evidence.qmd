@@ -33,15 +33,15 @@ The model considers the costs and benefits of two strategies:
 
 The code provided below replicates the original model, but draws on various capabilities within the (now ubiquitous) `tidyverse` universe to both simplify and generalize the execution process.
 
-We will consider model replication through two methods:
+<!-- We will consider model replication through two methods: -->
 
-#### A. Using the supplied transition probabilities as marginal (total) probabilities.
+<!-- #### A. Using the supplied transition probabilities as marginal (total) probabilities. -->
 
-This approach will embed a transition rate matrix after converting the supplied (annual) probabilities into rates.
+<!-- This approach will embed a transition rate matrix after converting the supplied (annual) probabilities into rates. -->
 
-#### B. Using @highamFunctionsMatricesTheory2008
+<!-- #### B. Using @highamFunctionsMatricesTheory2008 -->
 
-This approach will begin from a transition probability matrix as constructed using the supplied transition probabilities. We'll then calculate the principal logarithm of the matrix based on the methods in @highamFunctionsMatricesTheory2008 and use the [resulting intensity (generator) matrix](https://www.maths.manchester.ac.uk/~higham/talks/napier_log14.pdf) as the basis for the final transition probability matrix.
+<!-- This approach will begin from a transition probability matrix as constructed using the supplied transition probabilities. We'll then calculate the principal logarithm of the matrix based on the methods in @highamFunctionsMatricesTheory2008 and use the [resulting intensity (generator) matrix](https://www.maths.manchester.ac.uk/~higham/talks/napier_log14.pdf) as the basis for the final transition probability matrix. -->
 
 # 0. Set Up and Parameterize the Model
 
@@ -128,13 +128,13 @@ params =
 
 # A. Construct the Model Using Rate Conversion
 
-The first approach we will consider will take the supplied transition probabilities (i.e., parameters with the `tp` prefix) and convert them to rates. Note that by doing so, we are making an assumption that there are no competing events operating on the transition probabilities (see [Lecture 2](../slides/02_competing-events.qmd)).
+The first approach we will consider will take the supplied transition probabilities (i.e., parameters with the `tp` prefix) and convert them to rates. Note that by doing so, we are making an assumption that there are no competing events operating on the transition probabilities (see [Lecture 2](https://graveja0.github.io/SMDM-Europe-2023/slides/02_competing-events.html)).
 
 Once we have converted to continuous rates, we will then re-embed the transition probability matrix so that it will capture compound transitions across three or more states in a cycle.
 
 ## A1. Markovian Transition Rate Matrix 
 
-Our first step is to fill out the Markovian rate matrix. This matrix should be square with `n_states`=3 rows and columns.
+Our first step is to fill out the Markovian rate matrix. This matrix should be square with `n_states` = 3 rows and columns.
 
 To run our model, we must construct a separate transition matrix for every cycle. This is because several transition probabilities are a function of age:
 

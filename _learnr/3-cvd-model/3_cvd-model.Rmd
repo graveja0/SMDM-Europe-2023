@@ -452,7 +452,7 @@ Constructing the cause-deleted life table will provide two necessary inputs:
 1.  CVD-Deleted mortality rates (by age)
 2.  CVD-specific mortality rates (by age)
 
-Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. The screenshot below shows
+Our estimates of CVD death by age will be drawn from the [Global Burden of Disease](https://vizhub.healthdata.org/gbd-results/) website. The screenshot below shows where we extracted this information from. 
 
 ![Screenshot of Global Burden of Disease Data](images/gbd-cvd-deaths.png){height="500px"}
 
@@ -570,7 +570,7 @@ tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>%
   geom_point(aes(y = mi), col = "red",size=3) + 
   geom_line(aes(y = pmi),lwd=1) + 
   scale_y_log10() +
-  theme_ipsum() + 
+  theme_ipsum(base_family = "Arial") + 
   labs(x = "Age", y = "ln(CVD Mortality Rate)")
 
 
@@ -610,38 +610,11 @@ params
 
 ### Transition Matrices
 
-#### Using Rate-to-Probability Conversion Formulas
-
-```{r 3e_1, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
-#| exercise.lines: 25
-current_age = 95
-
-# Get background and CVD mortality rates
-r_death = HP2(current_age, params$background_mortality)$hx
-r_death_cvd = params$cause_specific_mortality(current_age) 
-
-# Convert to probabilities using standard conversion formulas. 
-p_death = 1 - exp(-r_death * params$time_step)
-p_cvd_death = 1 - exp(-r_death_cvd * params$time_step)
-p_cvd <- 1 - exp(-params$r_H_CVD * params$time_step)
-
-m_P <- 
-    matrix(c(
-    0, p_cvd , 0, r_death ,
-    0, 0, r_death_cvd , r_death ,
-    0, 0, 0, 0,
-    0, 0, 0, 0),
-    nrow = 4,
-    byrow= TRUE,
-    dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
-)
-diag(m_P) <- 1-rowSums(m_P)
-m_P
-
-        
-```
-
 #### Using Embedding from a Transition Rate Matrix
+
+We will next use the modeled cause-deleted background mortality rate, as well as the cause-specific (CVD) mortality rates, to embed an age-specific transition probability matrix for a discrete-time Markov model. 
+
+Let's show how it is done first for a specific age (95):
 
 ```{r 3e_2, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 20
@@ -666,6 +639,8 @@ m_P <- expm(m_Q*params$time_step)
 m_P
         
 ```
+
+Now let's bundle it up into a funciton that returns the probaiblity matrices for the entire modeled time horizon.
 
 ```{r 3e, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 35
@@ -706,11 +681,9 @@ params$m_P[[71]]
 
 ### CVD Natural History Model
 
-#### Learning Objectives
+We now have the components we need to fully model a natural history CVD scenario and compare our results to the underlying life table data.
 
-1.  Construct a Markov trace for a natural history model of CVD
-2.  Compare life expectancy from the Markov model to the underlying cause-deleted life table data.
-3.  Compare deaths by age between the Markov model and the underlying cause-deleted life table data.
+Let's define the transition probabilities and then construct a Markov trace for the natural history model. 
 
 ```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 25
