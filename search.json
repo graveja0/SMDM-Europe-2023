@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "What They Didn’t Teach You About Decision Modeling",
     "section": "",
-    "text": "Workshop Website\n\nTo Do\n\nWork on Lec 0\n\nmake sure to include a web survey for email addressses to add to posit cloud\n\nLec 3 already is jam packed; lets punt on tunnel states\nNeed learning objectives at top of every lecture and case study\nSolve for PSA parameters given mean and SD\nLook over 1st, 2nd and 3rd case study\n\nAdd in msm based method if possible?\n\nCreate brief Learnr for PSA solver and copula-based sampling\nadd in useful links to website\nget rid of blog\nAdd cycle adjustment (with alt_simp+1) to life expectancy calculations. See the case study for example.\nChange the discount rate in the monthly time step too!\nReceiving bucket for tunnel states that are purely accounting exercises.\n\n\nWorkshop Schedule\n\n\nStart\n9:00am\nEnd\n9:20am\nTopic\nIntroductions and Welcome\nApplied Case Study\n\n\n\n\n\n\n\n\n\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\n\n\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nProgressive Disease Model (Green et al. 2023) model.\n\n\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence"
+    "text": "Workshop Website\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWorkshop Schedule\n\n\nStart\n9:00am\nEnd\n9:20am\nTopic\nIntroductions and Welcome\nApplied Case Study\n\n\n\n\n\n\n\n\n\n\n\n\n9:20am\n10:30 am\nCause-Specific and Cause-Deleted Mortality\n\nMortality modeling in R\n\n\n\n\n\n10:30am\n11:00am\nBREAK\n\n\n\n\n\n11:00am\n12:30pm\nEmbedding and Competing Events\n\nNatural History Cardiovascular Disease Model\n\n\n\n\n\n12:30pm\n2:00pm\nLUNCH BREAK\n\n\n\n\n\n2:00pm\n3:30pm\nAdvanced Bookkeeping: Incorporating Non-Markovian Accumulators and Transition States\n\nProgressive Disease Model (Green et al. 2023) model.\n\n\n\n\n\n3:30pm\n4:00pm\nBREAK\n\n\n\n\n\n4:00pm\n5:30pm\nIncorporating New Evidence"
   },
   {
     "objectID": "blog/posts/green-et-al-replication/green-et-al-replication.html",
@@ -42,62 +42,6 @@
     "text": "Total Cost and QALY Calculation (With Cycle Adjustment)\n\n1alt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48\ncycle_adj &lt;- alt_simp_coef(params$n_cycles-1)\n\n\n1\n\nAlternative Simpson’s method coefficients\n\n\n\n\n\ntot_cost_cadj &lt;- \n    map(cost_unadj, ~(sum(.x * discounting_cost * cycle_adj )/params$n_cohort))  %&gt;% \n    set_names(params$t_names)\ntot_qaly_cadj &lt;- \n    map(qaly_unadj, ~(sum(.x * discounting_outcome * cycle_adj )/params$n_cohort)) %&gt;% \n    set_names(params$t_names)\n\ndiff_cost_cadj &lt;- \n    tot_cost_cadj$with_drug - tot_cost_cadj$without_drug\ndiff_qaly_cadj &lt;- \n    tot_qaly_cadj$with_drug - tot_qaly_cadj$without_drug\n\ncbind.data.frame(cbind(tot_qaly_cadj),cbind(tot_cost_cadj))  %&gt;% \n    set_names(c(\"Eff\",\"Cost\")) %&gt;% \n    data.frame() %&gt;% \n    rbind.data.frame(\"difference\" = data.frame(Eff = round(diff_qaly_cadj,2), Cost = round(diff_cost_cadj,0))) %&gt;% \n    mutate(ICER = c(\"\",\"\",paste0(round(diff_cost / diff_qaly,0)))) %&gt;% \n    kable(digits = c(0,0,0)) %&gt;% \n    kable_styling()\n\n\nR Model Results \n\n\n\nEff\nCost\nICER\n\n\n\n\nwithout_drug\n11.734\n17269\n\n\n\nwith_drug\n13.977\n28167\n\n\n\ndifference\n2.24\n10898\n5074"
   },
   {
-    "objectID": "blog/posts/backwards-conversion/backwards-conversion.html",
-    "href": "blog/posts/backwards-conversion/backwards-conversion.html",
-    "title": "Backwards Conversion",
-    "section": "",
-    "text": "library(tidyverse)\nlibrary(knitr)\nlibrary(kableExtra)\nlibrary(survival)\nlibrary(flexsurv)\nlibrary(haven)\nlibrary(dampack)\nlibrary(Matrix)\nlibrary(here)\nlibrary(glue)\nlibrary(demography)\nlibrary(glue)\nlibrary(MortalityLaws)\nlibrary(demography)\nlibrary(MASS)\nlibrary(directlabels)\nlibrary(markovchain)\nlibrary(expm)\n\noptions(\"scipen\" = 100, \"digits\" = 5)\n\nselect &lt;- dplyr::select\ntheme_set(hrbrthemes::theme_ipsum(base_family = \"Arial\"))\nWhat if a given source of data provides observed transition probabilities and these are exclusionary states, i.e., competing? How could one reverse these probabilities and embed other competing events into the model?\nTo do this, one must solve for the generator matrix of the transition probability matrix using eigenvalue decomposition. Note that this is not always possible, as it is trivial to construct a transition probability matrix that has no generator.\nConsider the following, which builds on the example provided in the main text. We wish to approximate a continuous time process using a discrete-time Markov model with three distinct states: A (healthy), B (sick/intervention), and C (complication from intervention). Moreover, in continuous time, this process proceeds sequentially, i.e., A-&gt;B-&gt;C.\nA (naively) specified model has transitions from A-&gt;B and from B-&gt;C specified as probabilities within the selected time step. As noted in the main text, this model cannot truly approximate continuous time process, as within a given time step there is a non-zero probability of transitioning from healthy to complication (i.e., A-&gt;C, with an implied sojourn through B). That is, during a timestep it is possible to transition from A-&gt;C.\nBy incorrectly specifying all transitions, it makes it impossible to find a proper generator—though eigenvalue decomposition can be used to get as close as possible. If negative rates of transition are found using eigenvalue decomposition, then probabilities inconsistent with continuous rates have been specified.\nIn mathematical terms, the generator matrix is the matrix logarithm of the transition probability matrix. A matrix has a logarithm if and only if if it is invertible.\n\\[ A = \\log T_{prob} \\]\nThe \\(\\log\\) can be found using spectral or eigenvalue decomposition. If \\(V\\) is a matrix where equal column is an eigenvector of \\(T_{prob}\\), then,\n\\[A' = V^{-1} A V\\] \\[\\log T_{prob} = V (\\log A') V^{-1}\\]"
-  },
-  {
-    "objectID": "blog/posts/backwards-conversion/backwards-conversion.html#alternative-approach",
-    "href": "blog/posts/backwards-conversion/backwards-conversion.html#alternative-approach",
-    "title": "Backwards Conversion",
-    "section": "Alternative Approach",
-    "text": "Alternative Approach\nThe theoretical approach requires computation of the eigenvalues of the matrix, and then correction along the way for various numerical errors to derive the generator matrix of rates. The observed statistical error from a stochastic process in general create a situation in which the Q-matrix is not derivable theoretically resulting in negative probabilities. Finding the closest generator matrix can be done using Higham’s 2008 method from `Functions of Matrices: Theory and Computation’ with extra balancing options from Stadelmann’s thesis.\n\nR &lt;- transition2Generator(mP)\nrownames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\ncolnames(R) &lt;- c(\"A\", \"B\", \"C\", \"D\")\nR\n\n         A       B          C         D\nA -0.32712  0.3115  0.0024395  0.013181\nB  0.00000 -0.5430  0.6148890 -0.071884\nC  0.00000  0.0000 -0.2876821  0.287682\nD  0.00000  0.0000  0.0000000  0.000000\n\n\nNote: this is the closest Markov model allowing any transition. There are still transitions from A-&gt;C and A-&gt;D. Notably B-&gt;D occurs at a negative rate. If D were representing an absorbing state, e.g. Death, then this would represent a physical impossibility, as this negative rate represents D -&gt; B."
-  },
-  {
-    "objectID": "blog/posts/backwards-conversion/backwards-conversion.html#demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results.",
-    "href": "blog/posts/backwards-conversion/backwards-conversion.html#demonstrate-that-the-embedded-new-transition-probability-matrix-successfully-recreates-the-original-transition-probability-matrix-and-results.",
-    "title": "Backwards Conversion",
-    "section": "Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.",
-    "text": "Demonstrate that the embedded (new) transition probability matrix successfully recreates the original transition probability matrix and results.\nLet’s double check it recapitulates the original rates.\n\nround(expm(R),3)\n\n      A     B     C     D\nA 0.721 0.202 0.067 0.010\nB 0.000 0.581 0.407 0.012\nC 0.000 0.000 0.750 0.250\nD 0.000 0.000 0.000 1.000"
-  },
-  {
-    "objectID": "blog/posts/backwards-conversion/backwards-conversion.html#an-assumed-model",
-    "href": "blog/posts/backwards-conversion/backwards-conversion.html#an-assumed-model",
-    "title": "Backwards Conversion",
-    "section": "An assumed model",
-    "text": "An assumed model\nIf one were to assume that all transitions were forward , i.e. A-&gt;B-&gt;C-&gt;D the best approach would be to fit the generator matrix directly from raw data (there are many statistical Markov and ordinal data fitting models). Without the raw data available, an ad-hoc method to minimize squared error against the original under the 3 rate constraint does a decent job of recapitulating the original transition probabilities.\n\ninit  &lt;- c(1/3, 1/3, 1/3, 0)\nstep1 &lt;- init %*% mP\nm_3r &lt;- function(r)\n    matrix(c(-(r[1]+r[4]+r[5]),  r[1],      r[4],    r[5],\n                 0, -(r[2]+r[6]),   r[2],    r[6],\n                 0,     0,  -r[3], r[3],\n                 0,     0,      0,   0), nrow=4, byrow=TRUE)\nr.est &lt;- optim((-diag(R))[1:3],\n      lower=c(0.1, 0.1, 0.1),\n      method=\"L-BFGS-B\",\n      function(r) {\n      sum( ((init %*% expm(m_3r(r))) - step1)^2 )\n})$par\nm_3r(r.est)\nround(expm(m_3r(r.est)),3)\n\n\nmP_ &lt;- mP\ndiag(mP_) = 0\nmR_ &lt;- apply(mP_,c(1,2),function(x)-log(1-x))\ndiag(mR_) &lt;- -rowSums(mR_)\nexpm(mR_)\n\nlist(\"eigen\" = R,\n     \"m_3r\" = m_3r(r.est),\n     \"form\" = mR_)"
-  },
-  {
-    "objectID": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html",
-    "href": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html",
-    "title": "Extending the Transition Matrix",
-    "section": "",
-    "text": "Hosted on Sketchviz"
-  },
-  {
-    "objectID": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#define-payoffs",
-    "href": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#define-payoffs",
-    "title": "Extending the Transition Matrix",
-    "section": "Define Payoffs",
-    "text": "Define Payoffs\n\nu_payoff &lt;- with(params,{\n    array(c(\"Asympt\" = uAsymp, \"Progressive\" = uProg, \"DeadCause\" = 0 , \"Dead\" = 0, \"accProgressive\" = 0,\"trProgressive\" = 0, \"trDeadCause\" = 0,\n            \"Asympt\" = uAsymp, \"Progressive\" = uProg, \"DeadCause\" = 0 , \"Dead\" = 0, \"accProgressive\" = 0,\"trProgressive\" = 0,\"trDeadCause\" = 0),\n          dim = c(1, n_states+length(a_names)+length(tunnel_names), n_treatments),\n          dimnames = list(from = \"cost\",\n                          to = c(s_names,a_names,tunnel_names),\n                          t_names))\n    \n}) %&gt;% \n   apply(.,3,function(x) t(x), simplify = FALSE)\nu_payoff\n\n$without_drug\n                from\nto               cost\n  Asympt         0.95\n  Progressive    0.75\n  DeadCause      0.00\n  Dead           0.00\n  accProgressive 0.00\n  trProgressive  0.00\n  trDeadCause    0.00\n\n$with_drug\n                from\nto               cost\n  Asympt         0.95\n  Progressive    0.75\n  DeadCause      0.00\n  Dead           0.00\n  accProgressive 0.00\n  trProgressive  0.00\n  trDeadCause    0.00\n\nc_payoff &lt;- with(params,{\n    array(c(\"Asympt\" = cAsymp, \"Progressive\" = cProg, \"DeadCause\" = 0 , \"Dead\" = 0, \"accProgressive\" = 0,\"trProgressive\" = 0, \"trDeadCause\" = cDeath,\n            \"Asympt\" = cAsymp+cDrug, \"Progressive\" = cProg, \"DeadCause\" = 0 , \"Dead\" = 0, \"accProgressive\" = 0,\"trProgressive\" = 0, \"trDeadCause\" = cDeath),\n          dim = c(1, n_states+length(a_names)+length(tunnel_names), n_treatments),\n          dimnames = list(from = \"cost\",\n                          to = c(s_names,a_names,tunnel_names),\n                          t_names))\n    \n    }) %&gt;% \n        apply(.,3,function(x) t(x), simplify = FALSE)\nc_payoff\n\n$without_drug\n                from\nto               cost\n  Asympt          500\n  Progressive    3000\n  DeadCause         0\n  Dead              0\n  accProgressive    0\n  trProgressive     0\n  trDeadCause    1000\n\n$with_drug\n                from\nto               cost\n  Asympt         1500\n  Progressive    3000\n  DeadCause         0\n  Dead              0\n  accProgressive    0\n  trProgressive     0\n  trDeadCause    1000\n\n\n\nqaly_unadj &lt;- # .x[-1,] because we don't count the cycle with the full cohort in asymptomatic\n    map2(markov_result$trace, u_payoff,  ~ ({\n        .x[-1,] %*% .y\n    })) %&gt;% \n    set_names(params$t_names)\n\ncost_unadj &lt;- \n    map2(markov_result$trace, c_payoff, ~({\n        .x[-1,] %*% .y\n    })) %&gt;% \n    set_names(params$t_names)"
-  },
-  {
-    "objectID": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#discounting",
-    "href": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#discounting",
-    "title": "Extending the Transition Matrix",
-    "section": "Discounting",
-    "text": "Discounting\n\ndiscounting_cost &lt;- \n    1/(1+params$cDr)^(0:(params$n_cycles-2))\ndiscounting_outcome &lt;- \n    1/(1+params$oDr)^(0:(params$n_cycles-2))"
-  },
-  {
-    "objectID": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#total-cost-and-qaly-calculation-with-cycle-adjustment",
-    "href": "blog/posts/extending-the-matrix/extending-the-transition-matrix.html#total-cost-and-qaly-calculation-with-cycle-adjustment",
-    "title": "Extending the Transition Matrix",
-    "section": "Total Cost and QALY Calculation (With Cycle Adjustment)",
-    "text": "Total Cost and QALY Calculation (With Cycle Adjustment)\n\n1alt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8), 49, 43, 59, 17) / 48\ncycle_adj &lt;- alt_simp_coef(params$n_cycles-1)\n\n\n1\n\nAlternative Simpson’s method coefficients\n\n\n\n\n\ntot_cost &lt;- \n    map(cost_unadj, ~(sum(.x * discounting_cost * cycle_adj )/params$n_cohort))  %&gt;% \n    set_names(params$t_names)\ntot_qaly &lt;- \n    map(qaly_unadj, ~(sum(.x * discounting_outcome * cycle_adj )/params$n_cohort)) %&gt;% \n    set_names(params$t_names)\n\ndiff_cost &lt;- \n    tot_cost$with_drug - tot_cost$without_drug\ndiff_qaly &lt;- \n    tot_qaly$with_drug - tot_qaly$without_drug\n\ncbind.data.frame(cbind(tot_qaly),cbind(tot_cost))  %&gt;% \n    set_names(c(\"Eff\",\"Cost\")) %&gt;% \n    data.frame() %&gt;% \n    rbind.data.frame(\"difference\" = data.frame(Eff = round(diff_qaly,2), Cost = round(diff_cost,0))) %&gt;% \n    mutate(ICER = c(\"\",\"\",paste0(round(diff_cost / diff_qaly,0)))) %&gt;% \n    kable(digits = c(0,0,0)) %&gt;% \n    kable_styling()\n\n\nR Model Results \n\n\n\nEff\nCost\nICER\n\n\n\n\nwithout_drug\n11.659\n16629\n\n\n\nwith_drug\n13.971\n27813\n\n\n\ndifference\n2.31\n11184\n4838"
-  },
-  {
     "objectID": "blog/posts/embedding/embedding-a-transition-probability-matrix.html",
     "href": "blog/posts/embedding/embedding-a-transition-probability-matrix.html",
     "title": "Embedding A Transition Probability Matrix for a Discrete Time Markov Model",
@@ -126,46 +70,11 @@
     "text": "2. Include Non-Markovian Accumulators to Record Event Transitions\nWe now have the correct transition probabilities to model the underlying continuous-time process, but how do we account for these compound transitions in our aggregation of model outputs?\nFundamentally, what we have now is a model that will correctly records the “true” number of deaths at the end of the cycle, because all the compound Healthy  Sick  Dead transitions are included in the Healthy  Dead transition probability.\nTo track the total number of transitions to Sick, we must augment our transition probability matrix with non-Markovian accumulators. This accumulator shows up as a purple edge in our model diagram below:\n\n\n\n\n\n\n\nG\n\n  \n\nHealthy\n\n Healthy   \n\nHealthy-&gt;Healthy\n\n    \n\nSick\n\n Sick   \n\nHealthy-&gt;Sick\n\n    \n\nDead\n\n Dead   \n\nHealthy-&gt;Dead\n\n    \n\nSick-&gt;Sick\n\n    \n\nSick-&gt;Dead\n\n    \n\nDead-&gt;Dead\n\n   \n\n\n\n\n\nFortunately, accumulators are easy to build in. We simply add the relevant transition rate in a new column in the transition rate matrix Q, while leaving everything else the same.\nSuppose we want to count up all the Healthy  Sick transitions in the model. To do this we simply add the appropriate transition rate (\\(r_{HS}\\)) in as an accumulator column:\n\n\n\n\n\n\n\n\n\n\n\nHealthy\nSick\nDead\naccHS\n\n\n\n\nHealthy\n-(\\(r_{HS}\\) + \\(r_{HD}\\))\n\\(r_{HS}\\)\n\\(r_{HD}\\)\n\\(r_{HS}\\)\n\n\nSick\n0\n-(\\(hr_{S} \\cdot r_{HD}\\))\n\\(hr_{S} \\cdot r_{HD}\\)\n0\n\n\nDead\n0\n0\n0\n0\n\n\naccHS\n0\n0\n0\n0\n\n\n\nNote the following:\n\nAn extra row of 0’s was added so that we balance the matrix, and ensure that we do not lose (or create!) anyone who becomes Sick.\nWe did not update the diagonal elements (i.e., the negative sum of transition rates); these stay the same as before.\nIf we wanted to add additional accumulators, we can just expand the matrix with more columns and rows as needed.\n\nHere is the augmented transition rate matrix for our example:\n\n\nCode\nQ_ &lt;- data.frame(Q)\nQ_[\"Healthy\",\"accHS\"] &lt;- params$r_HS\nQ_[\"accHS\",\"accHS\"] &lt;- 0\nQ_[is.na(Q_)] &lt;- 0\nQ_ &lt;- as.matrix(Q_)\nQ_ \n\n\n        Healthy  Sick  Dead accHS\nHealthy  -0.156  0.15 0.006  0.15\nSick      0.000 -0.06 0.060  0.00\nDead      0.000  0.00 0.000  0.00\naccHS     0.000  0.00 0.000  0.00\n\n\nWe next embed the transition probability matrix, as before:Notice that the accumulator (accHS) value is identical to the Healthy  Sick transition probability we obtained using the alternative rate-to-probability conversion formula that accounted for competing risks (e.g., see Figure 10).\n\nP_ &lt;- expm(Q_)\nP_\n\n          Healthy      Sick        Dead     accHS\nHealthy 0.8555592 0.1346958 0.009744961 0.1388854\nSick    0.0000000 0.9417645 0.058235466 0.0000000\nDead    0.0000000 0.0000000 1.000000000 0.0000000\naccHS   0.0000000 0.0000000 0.000000000 1.0000000\n\n\nUsing the accumulator we can accurately count up how many individuals transition to the Sick state over our time horizon:\n\nm_trace &lt;- \n  0:(horizon/cycle) %&gt;% \n  map_df(~(c(1000,0,0,0) %*% (P_%^%.x) %&gt;% data.frame()))\n\n\n\nCode\nm_trace[3,] %&gt;% \n  round(.,2) %&gt;% \n  rownames_to_column(var=\"cycle\") %&gt;% \n  select(-cycle) %&gt;% \n  kable() %&gt;% \n  kableExtra::kable_styling()\n\n\n\n\n\n\n\n\nHealthy\n\n\nSick\n\n\nDead\n\n\naccHS\n\n\n\n\n\n\n731.98\n\n\n242.09\n\n\n25.93\n\n\n257.71\n\n\n\n\n\nFigure 17: State Occupancy after Two Years\n\n\n\nWe see in Figure 17 that after 2 years, 257.7 people (out of 1,000) have become sick, which is slightly less than the 259 who became sick after 2 years in our world without death as a competing risk. Moreover, we see that state occupancy in the Sick category is lower, at 242.1. This lower value reflects the fact some people had a compound transition through Sick and ended up dead in the same cycle. The difference (15.6) amounts to the total number of individual deaths we “hid” in the model when we used the incorrect rate-to-probability conversion formulas.This, of course, makes sense, since there are a small number of people who die before they could become ill once we add background mortality to the model"
   },
   {
-    "objectID": "blog/posts/signs-of-trouble/signs-of-trouble.html",
-    "href": "blog/posts/signs-of-trouble/signs-of-trouble.html",
-    "title": "Signs of Trouble",
-    "section": "",
-    "text": "The objective of this blog post is to demonstrate how state occupancy will differ over different cycle lengths when using standard conversion formulas in the presence of competing risks. In the embedded version, however, changing the cycle length does not affect state occupancy estimates."
-  },
-  {
-    "objectID": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-conversion-formulas",
-    "href": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-conversion-formulas",
-    "title": "Signs of Trouble",
-    "section": "1. Using Conversion Formulas",
-    "text": "1. Using Conversion Formulas\n\nConvert each annual transition probability to a rate using \\(r = -ln(1 - p)\\).\nConvert the rate to the model timestep using \\(1 - exp(-rt)\\), where \\(t\\) is the timestep (e.g., \\(t = \\frac{1}{12}\\) for a monthly cycle)\nConstruct the transition probability matrix using the converted probabilities.\n\n\n\nCode\nmPt &lt;- function(t, params) {\n    lapply(t, function(tt){\n        \n        current_age &lt;- params$Initial_age  +  (tt)*params$cycle - 1 \n\n        tpDn_lookup &lt;-\n            c(\"(34,44]\" = 0.0017,\n              \"(44,54]\" = 0.0044,\n              \"(54,64]\" = 0.0138,\n              \"(64,74]\" = 0.0379,\n              \"(74,84]\" = 0.0912,\n              \"(84,100]\" = 0.1958)\n        \n        age_grp &lt;- cut(current_age, \n                       breaks = c(34,44,54,64,74,84,100))\n        \n        tpDn &lt;- tpDn_lookup[age_grp]\n        tpProg_ &lt;- params$tpProg * (tt * params$cycle )\n        tpDcm_ &lt;- params$tpDcm \n        \n        rDn &lt;- -log(1 - tpDn)\n        rProg_ &lt;- -log(1 - tpProg_)\n        rDcm_ &lt;- -log(1 - tpDcm_)\n        \n        tpDn &lt;- 1 - exp(-rDn * params$cycle)\n        tpProg_ &lt;- 1 - exp(-rProg_ * params$cycle)\n        tpDcm_ &lt;- 1 - exp(-rDcm_ * params$cycle)\n        \n        effect_ &lt;- params$effect\n        n_states_ &lt;- params$n_states\n        s_names_ &lt;- params$s_names\n        t_names_ &lt;- params$t_names\n        n_treatments_ &lt;- params$n_treatments\n        \n        mP_ &lt;- \n            array(data = c(0, 0, 0,0,\n                           tpProg_, 0, 0,0,\n                           0,tpDcm_,0,0,\n                           tpDn , tpDn, 0,0,\n                           \n                           0, 0, 0,0,\n                           tpProg_*(1-effect_), 0, 0,0,\n                           0,tpDcm_,0,0,\n                           tpDn, tpDn,0, 0),\n                  dim = c(n_states_, n_states_, n_treatments_),\n                  dimnames = list(from = s_names_,\n                                  to = s_names_,\n                                  t_names_))\n        diag(mP_[,,1]) &lt;-  # Diagonal of transition probability matrix is 1 minus off-diagonal sum\n            1 - rowSums(mP_[,,1])\n        diag(mP_[,,2]) &lt;- \n            1 - rowSums(mP_[,,2])\n        \n        mP &lt;- # This turns the named array into a simpler list object\n            apply(mP_,3,function(x) x, simplify = FALSE)\n\n        return(mP)\n    })\n}"
-  },
-  {
-    "objectID": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-transition-rate-matrix-embedding",
-    "href": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-transition-rate-matrix-embedding",
-    "title": "Signs of Trouble",
-    "section": "2. Using Transition Rate Matrix Embedding",
-    "text": "2. Using Transition Rate Matrix Embedding\n\nConvert each annual transition probability to a rate using \\(r = -ln(1 - p)\\).\nUse these rates to fill out the Markovian transition rate matrix mR\n\nDiagonal of mR is the negative row sum of off-diagonal elements.\n\nAugment the transition rate matrix with non-Markovian accumulators and transition/tunnel states.\nEmbed the transition rate matrix into the time step using \\(mP = exp(mR*t)\\), where \\(t\\) is the timestep (e.g., \\(t = \\frac{1}{12}\\) for a monthly cycle).\n\n\n\nCode\nmPt_embedded &lt;- function(t,params) {\n    lapply(t, function(tt){\n        \n        current_age &lt;- params$Initial_age  + (tt)*params$cycle - 1\n        cycle = tt\n        cycle_years &lt;- ceiling(tt * params$cycle)\n            \n        tpDn_lookup &lt;-\n            c(\"(34,44]\" = 0.0017,\n              \"(44,54]\" = 0.0044,\n              \"(54,64]\" = 0.0138,\n              \"(64,74]\" = 0.0379,\n              \"(74,84]\" = 0.0912,\n              \"(84,100]\" = 0.1958)\n        \n        age_grp &lt;- cut(current_age, \n                       breaks = c(34,44,54,64,74,84,100))\n        tpDn &lt;- tpDn_lookup[age_grp]\n        \n        tpProg_ &lt;- params$tpProg * (cycle_years)\n        tpDcm_ &lt;- params$tpDcm \n        effect_ &lt;- params$effect\n        n_states_ &lt;- params$n_states\n        s_names_ &lt;- params$s_names\n        t_names_ &lt;- params$t_names\n        n_treatments_ &lt;- params$n_treatments\n        \n        mR_ &lt;- \n            array(data = c(0, 0, 0,0,\n                                   -log(1-tpProg_), 0, 0,0,\n                                   0,-log(1-tpDcm_),0,0,\n                           -log(1 - tpDn),  -log(1 - tpDn), 0,0,\n                           \n                                   0, 0, 0,0,\n                                   -log(1-(tpProg_*(1-effect_))), 0, 0,0,\n                                   0,-log(1-tpDcm_),0,0,\n                           -log(1 - tpDn),  -log(1 - tpDn),0, 0),\n                          dim = c(n_states_, n_states_, n_treatments_),\n                          dimnames = list(from = s_names_,\n                                          to = s_names_,\n                                          t_names_))\n\n        mR_ &lt;- apply(mR_,3,function(x){\n            diag(x) &lt;- -rowSums(x)\n            x\n        },simplify=FALSE)\n        \n        ###############################\n        # Add Non-Markovian Components\n        ###############################\n        \n        mR &lt;- lapply(mR_,function(x){\n            r_ &lt;- nrow(x)\n            add_ &lt;- length(params$a_names)   + length(params$tunnel_names) + 1\n            \n            new_row_names &lt;- c(rownames(x), params$a_names,params$tunnel_names,\"XX\")\n            new_col_names &lt;- c(colnames(x), params$a_names,params$tunnel_names,\"XX\")\n            # Expand matrix\n            x &lt;- cbind(x,  matrix(rep(0, r_ * add_), nrow=r_))\n            x  &lt;- rbind(x, matrix(rep(0, add_ * (r_+add_)), nrow=add_))\n            \n            rownames(x) &lt;- new_row_names\n            colnames(x) &lt;- new_col_names\n            \n            x[\"Asympt\",\"accProgressive\"] = x[\"Asympt\",\"Progressive\"]\n            x[\"Asympt\",\"trProgressive\"] = x[\"Asympt\",\"Progressive\"]\n            x[\"Progressive\",\"trDeadCause\"] = x[\"Progressive\",\"DeadCause\"] \n            x\n        })\n        \n        mP_ &lt;- # Embed the transition probability matrix\n            lapply(mR,function(x) expm(x * params$cycle))\n                \n        mP &lt;- lapply(mP_,function(x){\n            # Don't allow the transition columns to remain...\n            x[\"trDeadCause\",\"trDeadCause\"] = 0\n            x[\"trProgressive\",\"trProgressive\"] = 0\n            # The receiving bucket was required for embedding, but is no longer needed\n            x[-which(rownames(x)==\"XX\"),-which(colnames(x)==\"XX\")]    \n        }) \n        \n        \n    })\n}"
-  },
-  {
-    "objectID": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-conversion-formulas-1",
-    "href": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-conversion-formulas-1",
-    "title": "Signs of Trouble",
-    "section": "1. Using Conversion Formulas",
-    "text": "1. Using Conversion Formulas\n\n\nCode\nsim_cohort &lt;- function(params) {\n    \n    mP &lt;- mPt(1:(params$n_cycles-1),params)\n    \n    tr &lt;-\n        mP %&gt;% transpose() %&gt;% \n        map(~({\n            tr_ &lt;- t(c(\"Asympt\" = params$n_cohort, \"Progressive\" = 0, \"DeadCause\" = 0, \"Dead\" = 0))\n            do.call(rbind,lapply(.x, function(tp) {\n                tr_ &lt;&lt;- tr_ %*% tp\n            }))\n        }))\n    tr &lt;-  \n        tr %&gt;% \n        map(~({\n            .x &lt;- rbind(t(c(params$n_cohort,0,0,0)),.x)\n        }))\n    \n    arr &lt;-\n        mP %&gt;% transpose() %&gt;% \n        map(~({\n            tr_ &lt;- t(c(\"Asymptomatic_disease\" = params$n_cohort, \"Progressive_disease\" = 0, \"DeadCause\" = 0, \"Dead\" = 0))\n            arr_ &lt;- diag(as.vector(tr_))\n            do.call(rbind,lapply(.x, function(tp) {\n                tr_ &lt;&lt;- tr_ %*% tp\n                arr_ &lt;&lt;- diag(as.vector(tr_)) %*% tp\n                arr_\n            }))\n        }))\n    arr &lt;- \n        arr %&gt;% \n        map(~({\n            .x &lt;- rbind(diag(c(params$n_cohort,0,0,0)),.x)\n        }))\n    \n    arr &lt;- arr %&gt;% map(~({\n        .x %&gt;% data.frame() %&gt;% \n            mutate(cycle = sort(rep(1:params$n_cycles,params$n_states))) %&gt;% \n            group_by(cycle) %&gt;% \n            nest()\n    }))\n    \n    return(list(trace = tr, array = arr))\n}\n\nmarkov_result &lt;-\n    sim_cohort(params)\nmarkov_result12 &lt;- \n    sim_cohort(params12)\nmarkov_result365 &lt;- \n    sim_cohort(params365)\n\nmarkov_result$trace %&gt;% \n    map(~(.x %&gt;% data.frame() %&gt;% \n              mutate(cycle = (row_number()-1)))) %&gt;% \n    bind_rows(.id = \"strategy\") %&gt;% \n    mutate(cycle = cycle * params$cycle) %&gt;% \n    mutate(cycle_length = paste0(params$cycle))  %&gt;% \n    bind_rows(\n        markov_result12$trace %&gt;% \n        map(~(.x %&gt;% data.frame() %&gt;% \n                  mutate(cycle = (row_number()-1)))) %&gt;% \n        bind_rows(.id = \"strategy\") %&gt;% \n        mutate(cycle = cycle * params12$cycle) %&gt;% \n        mutate(cycle_length = paste0(params12$cycle))\n    ) %&gt;% \n     bind_rows(\n        markov_result365$trace %&gt;% \n        map(~(.x %&gt;% data.frame() %&gt;% \n                  mutate(cycle = (row_number()-1)))) %&gt;% \n        bind_rows(.id = \"strategy\") %&gt;% \n        mutate(cycle = cycle * params365$cycle) %&gt;% \n        mutate(cycle_length = paste0(params365$cycle))\n    ) %&gt;%\n    mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c(\"Day\",\"Month\",\"Year\"))) %&gt;% \n    gather(state,value,-strategy,-cycle,-cycle_length) %&gt;% \n    ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + \n    geom_line() +\n    facet_grid(~strategy) +\n    hrbrthemes::theme_ipsum(base_family = \"Arial\") + \n    ggsci::scale_color_aaas(name=\"\") + \n    theme(legend.position = \"top\") +\n    geom_dl(method = list(\"last.bumpup\",hjust=1,vjust=-1),aes(label = state)) +\n    geom_dl(method = list(\"first.bumpup\",hjust=0,vjust=-1),aes(label = state))\n\n\n\n\n\n\n\n\n\nAs the figure shows, state occupancy differs across the various cycle lengths."
-  },
-  {
-    "objectID": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-embedding",
-    "href": "blog/posts/signs-of-trouble/signs-of-trouble.html#using-embedding",
-    "title": "Signs of Trouble",
-    "section": "2. Using Embedding",
-    "text": "2. Using Embedding\n\n\nCode\nsim_cohort_emb &lt;- function(params) {\n    \n    mP &lt;- mPt_embedded(1:(params$n_cycles-1),params)\n    \n    tr &lt;-\n        mP %&gt;% transpose() %&gt;% \n        map(~({\n            tr_ &lt;- t(c(\"Asymptomatic_disease\" = params$n_cohort, \"Progressive_disease\" = 0, \"DeadCause\" = 0, \"Dead\" = 0,\n                       \"accProgressive\" = 0, \"trProgressive\" = 0, \"trDeadCause\" = 0))\n            do.call(rbind,lapply(.x, function(tp) {\n                tr_ &lt;&lt;- tr_ %*% tp\n            }))\n        }))\n    tr &lt;-  \n        tr %&gt;% \n        map(~({\n            .x &lt;- rbind(t(c(params$n_cohort,0,0,0,rep(0,length(c(params$a_names,params$t_names))))),.x)\n        }))\n    \n    arr &lt;-\n        mP %&gt;% transpose() %&gt;% \n        map(~({\n            tr_ &lt;- t(c(\"Asymptomatic_disease\" = params$n_cohort, \"Progressive_disease\" = 0, \"DeadCause\" = 0, \"Dead\" = 0, \n                       \"accProgressive\" = 0, \"trProgressive\" = 0, \"trDeadCause\" = 0))\n            arr_ &lt;- diag(as.vector(tr_))\n            do.call(rbind,lapply(.x, function(tp) {\n                tr_ &lt;&lt;- tr_ %*% tp\n                arr_ &lt;&lt;- diag(as.vector(tr_)) %*% tp\n                arr_\n            }))\n        }))\n    arr &lt;- \n        arr %&gt;% \n        map(~({\n            .x &lt;- rbind(diag(c(params$n_cohort,0,0,0,rep(0,length(c(params$a_names,params$t_names))))),.x)\n        }))\n    \n   \n    arr &lt;- arr %&gt;% map(~({\n        .x %&gt;% data.frame() %&gt;% \n            mutate(cycle = sort(rep(1:params$n_cycles,params$n_states+length(c(params$a_names,params$t_names))))) %&gt;% \n            group_by(cycle) %&gt;% \n            nest()\n    }))\n    \n    return(list(trace = tr, array = arr))\n}\n\nmarkov_result_emb &lt;-\n    sim_cohort_emb(params)\nmarkov_result_emb12 &lt;-\n    sim_cohort_emb(params12)\nmarkov_result_emb365 &lt;-\n    sim_cohort_emb(params365)\n\nmarkov_result_emb$trace %&gt;% \n    map(~(.x %&gt;% data.frame() %&gt;% \n              mutate(cycle = (row_number()-1)))) %&gt;% \n    bind_rows(.id = \"strategy\") %&gt;% \n    mutate(cycle = cycle * params$cycle) %&gt;% \n    mutate(cycle_length = paste0(params$cycle))  %&gt;% \n    bind_rows(\n        markov_result_emb12$trace %&gt;% \n        map(~(.x %&gt;% data.frame() %&gt;% \n                  mutate(cycle = (row_number()-1)))) %&gt;% \n        bind_rows(.id = \"strategy\") %&gt;% \n        mutate(cycle = cycle * params12$cycle) %&gt;% \n        mutate(cycle_length = paste0(params12$cycle))\n    ) %&gt;% \n    bind_rows(\n        markov_result_emb365$trace %&gt;% \n        map(~(.x %&gt;% data.frame() %&gt;% \n                  mutate(cycle = (row_number()-1)))) %&gt;% \n        bind_rows(.id = \"strategy\") %&gt;% \n        mutate(cycle = cycle * params365$cycle) %&gt;% \n        mutate(cycle_length = paste0(params365$cycle))\n    ) %&gt;%   \n    select(-starts_with(\"tr\"),-starts_with(\"acc\")) %&gt;% \n    mutate(cycle_length = factor(round(as.numeric(paste0(cycle_length)),2), labels = c(\"Day\",\"Month\",\"Year\"))) %&gt;% \n    gather(state,value,-strategy,-cycle,-cycle_length) %&gt;% \n    ggplot(aes(x = cycle, y = value, colour = state ,lty=cycle_length)) + \n    geom_line() +\n    facet_grid(~strategy) +\n    hrbrthemes::theme_ipsum(base_family = \"Arial\") + \n    ggsci::scale_color_aaas(name=\"\") + \n    theme(legend.position = \"top\") +\n    geom_dl(method = list(\"last.bumpup\",hjust=1,vjust=-1),aes(label = state)) +\n    geom_dl(method = list(\"first.bumpup\",hjust=0,vjust=-1),aes(label = state))\n\n\n\n\n\n\n\n\n\nThe figure clearly shows that changing the cycle length does not affect the state occupancy estimates."
-  },
-  {
     "objectID": "blog/index.html",
     "href": "blog/index.html",
     "title": "Health Economics Workshop Blog",
     "section": "",
-    "text": "Basic Markov Modeling in R\n\n\nReplication of Green et al (2023) Results\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nBackwards Conversion\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nExtending the Transition Matrix\n\n\nIncluding Non-Markovian Accumulators and Transition States\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nEmbedding A Transition Probability Matrix for a Discrete Time Markov Model\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nSigns of Trouble\n\n\nChanging Cycle Lengths\n\n\n\n\n\n\n\n \n\n\n\n\nNo matching items"
+    "text": "Basic Markov Modeling in R\n\n\nReplication of Green et al (2023) Results\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nEmbedding A Transition Probability Matrix for a Discrete Time Markov Model\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\nNo matching items"
   },
   {
     "objectID": "slides/00_welcome-and-intros.html#welcome-to-berlin",
@@ -179,7 +88,49 @@
     "href": "slides/00_welcome-and-intros.html#learning-objectives",
     "title": "Welcome and Introductions",
     "section": "Learning Objectives",
-    "text": "Learning Objectives\n\nUnderlying robust property of decision modeling.\nUnderstand options for modeling background mortality based on life tables and parametric mortality models.\nConstruct a cause-deleted life table to model cause-specific and non-cause-specific death."
+    "text": "Learning Objectives\n\nFit a parametric mortality model to life table data to:\n\nAccurately simulate death times in a discrete event model.\nSummarize background mortality for a discrete time Markov model in a few parameters.\n\nConstruct a cause-deleted life table to parse out and model cause-specific death factors from background mortality."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#learning-objectives-1",
+    "href": "slides/00_welcome-and-intros.html#learning-objectives-1",
+    "title": "Welcome and Introductions",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nAccurately embed a transition probability matrix so that it accounts for “compound” (i.e., &gt;1) transitions in a cycle."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#learning-objectives-2",
+    "href": "slides/00_welcome-and-intros.html#learning-objectives-2",
+    "title": "Welcome and Introductions",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nInclude non-markovian elements to capture:\n\nTotal counts of events (all cycles) or transitions (single cycle) to/from certain states.\nTunnel states to capture transitory health and/or cost dynamics."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#learning-objectives-3",
+    "href": "slides/00_welcome-and-intros.html#learning-objectives-3",
+    "title": "Welcome and Introductions",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nBackwards-convert an existing Markov model defined on the probability scale to accommodate new evidence, strategies, additional health states, different cycle lengths, etc."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#learning-objectives-4",
+    "href": "slides/00_welcome-and-intros.html#learning-objectives-4",
+    "title": "Welcome and Introductions",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\n\nSolve for PSA distribution parameters given sparse information from the literature (e.g., IQR of costs of $300-$750).\nImprove the efficiency of PSA analyses by sampling correlated PSA distributions using copulas."
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#this-workshop-is-packed",
+    "href": "slides/00_welcome-and-intros.html#this-workshop-is-packed",
+    "title": "Welcome and Introductions",
+    "section": "This Workshop is Packed",
+    "text": "This Workshop is Packed\n\nOur primary aim is to provide you with intuition for why we use these methods.\nWe also aim to provide you with code.\nWe’ll move fast; don’t worry if everything doesn’t immediately resonate!"
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#what-they-taught-you-is-technically-wrong",
+    "href": "slides/00_welcome-and-intros.html#what-they-taught-you-is-technically-wrong",
+    "title": "Welcome and Introductions",
+    "section": "What They Taught You is (Technically) Wrong",
+    "text": "What They Taught You is (Technically) Wrong\n\nA lot of the common methods taught for CEA are shortcuts, or may be technically correct for narrow cases—but are not generally.\nThis doesn’t mean everything published is totally wrong, however.\nBecause we often make comparisons across strategies, a lot of errors will (approximately) cancel out."
   },
   {
     "objectID": "slides/00_welcome-and-intros.html#the-big-picture",
@@ -193,7 +144,21 @@
     "href": "slides/00_welcome-and-intros.html#the-hopeful-big-picture",
     "title": "Welcome and Introductions",
     "section": "The Hopeful Big Picture",
-    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!\nWe will explore this periodically today.\n\n\n\nBack to Website"
+    "text": "The Hopeful Big Picture\n\\[\\text{ICER} = \\frac{f_{cost}(\\theta_{target}) - \\epsilon_{ct} - f_{cost}(\\theta_{ref}) + \\epsilon_{cr}}{f_{qaly}(\\theta_{target}) - \\epsilon_{qt} - f_{qaly}(\\theta_{ref}) + \\epsilon_{qr}}\\]\n\nIf \\(\\epsilon_{ct} \\sim \\epsilon_{cr}\\) and \\(\\epsilon_{qt} \\sim \\epsilon_{qr}\\) then the model errors cancel and this approaches the true model.\nThe decision threshold is robust in this case even when model run results are biased!"
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#the-hopeful-big-picure",
+    "href": "slides/00_welcome-and-intros.html#the-hopeful-big-picure",
+    "title": "Welcome and Introductions",
+    "section": "The Hopeful Big Picure",
+    "text": "The Hopeful Big Picure\n\nA similar theme will occur periodically today.\nWe’ll aim to highlight when these issues may be decision-relevant (i.e., errors may not cancel)"
+  },
+  {
+    "objectID": "slides/00_welcome-and-intros.html#questions",
+    "href": "slides/00_welcome-and-intros.html#questions",
+    "title": "Welcome and Introductions",
+    "section": "Questions?",
+    "text": "Questions?\n\n\nBack to Website"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#learning-objectives",
@@ -270,7 +235,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#working-example-hiv-model",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Working Example: HIV Model",
-    "text": "Working Example: HIV Model\nTransition probability matrix:\n\n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000\n\n\n\n\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
+    "text": "Working Example: HIV Model\nTransition probability matrix:\n\nmP = matrix(c(0.721, 0.202, 0.067, 0.010,\n                0.000, 0.581, 0.407, 0.012,\n                0.000, 0.000, 0.750, 0.250,\n                0.000, 0.000, 0.000, 1.000), \n              nrow=4, byrow=TRUE,\n              dimnames=list(c(\"Healthy\", \"LowCD4\", \"AIDS\", \"Death\"),\n                            c(\"Healthy\", \"LowCD4\", \"AIDS\", \"Death\")))\nmP  \n\n        Healthy LowCD4  AIDS Death\nHealthy   0.721  0.202 0.067 0.010\nLowCD4    0.000  0.581 0.407 0.012\nAIDS      0.000  0.000 0.750 0.250\nDeath     0.000  0.000 0.000 1.000\n\n\n\n\nFrom ‘Decision Modelling for Health Economic Evaluation’ by Briggs, Claxton, Sculpher."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#three-methods-to-solve-for-the-generator",
@@ -333,14 +298,14 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-7",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nNote there is a negative rate from LowCD4  Death!\nThis is a transition from Death  LowCD4 and should be moved to the other side of the matrix."
+    "text": "A. Matrix Logarithm of P\n\nRexp &lt;-\n  R %&gt;%\n  round(., 3) %&gt;%\n  data.frame() %&gt;% \n  rownames_to_column() %&gt;% \n  mutate_all(as.character) %&gt;% \n  mutate(Death = cell_spec(Death,\"html\",color = ifelse(rowname==\"LowCD4\",\"red\",\"black\"))) \n\nRexp %&gt;% \n  kable(col.names = c(\"\",\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"),escape = FALSE) %&gt;% \n  kable_styling(\"hover\", \"striped\", full_width = F)  %&gt;% \n  kable_paper()\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nNote there is a negative rate from LowCD4  Death!\nThis is a transition from Death  LowCD4 and should be moved to the other side of the matrix."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-8",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nThe negative rate implies an identifiability issue.\nNote rates from HealthyAIDS, HealthyDeath are relatively small, implying these are from statistical noise in observation."
+    "text": "A. Matrix Logarithm of P\n\nRexp %&gt;% \n  kable(col.names = c(\"\",\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"),escape = FALSE) %&gt;% \n  kable_styling(\"hover\", \"striped\", full_width = F)  %&gt;% \n  kable_paper()\n\n\n\n\n\nHealthy\nLowCD4\nAIDS\nDeath\n\n\n\n\nHealthy\n-0.327\n0.311\n0.002\n0.013\n\n\nLowCD4\n0\n-0.543\n0.615\n-0.072\n\n\nAIDS\n0\n0\n-0.288\n0.288\n\n\nDeath\n0\n0\n0\n0\n\n\n\n\n\n\n\n\nThe negative rate implies an identifiability issue.\nNote rates from HealthyAIDS, HealthyDeath are relatively small, implying these are from statistical noise in observation."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-9",
@@ -354,7 +319,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#a.-matrix-logarithm-of-p-10",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "A. Matrix Logarithm of P",
-    "text": "A. Matrix Logarithm of P\n\n\nHigham (2008) method returns same as eigenvalue method. - expm::logm()\nTweaking rates to get a proper model is ad-hoc and difficult.\n\n\n\nR = expm::logm(mP)\n\n\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
+    "text": "A. Matrix Logarithm of P\n\n\nHigham (2008) method returns same as eigenvalue method. - expm::logm()\nTweaking rates to get a proper model is ad-hoc and difficult.\n\n\n\nR = expm::logm(mP)\n\n\nR &lt;- logm(mP)\ndimnames(R) = dimnames(mP)\nround(R,3)\n\n        Healthy LowCD4   AIDS  Death\nHealthy  -0.327  0.311  0.002  0.013\nLowCD4    0.000 -0.543  0.615 -0.072\nAIDS      0.000  0.000 -0.288  0.288\nDeath     0.000  0.000  0.000  0.000"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#b.-multi-state-model-based-approach",
@@ -389,7 +354,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#construct-psuedo-data-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "2. Construct psuedo-data",
-    "text": "2. Construct psuedo-data\n\n\n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    gather(state,count,-cycle) %&gt;% \n    mutate(count = round(count,0)) %&gt;% \n    arrange(cycle) %&gt;% \n    lapply(.,rep,.$count) %&gt;% \n    cbind.data.frame() %&gt;% \n    as_tibble() %&gt;% \n    mutate(state = factor(state,\n      levels = c(\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"))) %&gt;% \n    arrange(cycle,state) %&gt;% \n    mutate(ptnum = rep(1:1000,2)) %&gt;% \n    select(-count) %&gt;% \n    arrange(ptnum,cycle) %&gt;% \n    mutate(state = as.numeric(state)) %&gt;% \n    select(ptnum,cycle,state)\n\n\n\n\n# A tibble: 2,000 × 3\n   ptnum cycle state\n   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1     1     0     1\n 2     1     1     1\n 3     2     0     1\n 4     2     1     1\n 5     3     0     1\n 6     3     1     1\n 7     4     0     1\n 8     4     1     1\n 9     5     0     1\n10     5     1     1\n# ℹ 1,990 more rows"
+    "text": "2. Construct psuedo-data\n\n\n\ntr &lt;- \n    rbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    gather(state,count,-cycle) %&gt;% \n    mutate(count = round(count,0)) %&gt;% \n    arrange(cycle) %&gt;% \n    lapply(.,rep,.$count) %&gt;% \n    cbind.data.frame() %&gt;% \n    as_tibble() %&gt;% \n    mutate(state = factor(state,\n      levels = c(\"Healthy\",\"LowCD4\",\"AIDS\",\"Death\"))) %&gt;% \n    arrange(cycle,state) %&gt;% \n    mutate(ptnum = rep(1:1000,2)) %&gt;% \n    select(-count) %&gt;% \n    arrange(ptnum,cycle) %&gt;% \n    mutate(state = as.numeric(state)) %&gt;% \n    select(ptnum,cycle,state)\n\n\n\ntr \n\n# A tibble: 2,000 × 3\n   ptnum cycle state\n   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1     1     0     1\n 2     1     1     1\n 3     2     0     1\n 4     2     1     1\n 5     3     0     1\n 6     3     1     1\n 7     4     0     1\n 8     4     1     1\n 9     5     0     1\n10     5     1     1\n# ℹ 1,990 more rows"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model",
@@ -403,14 +368,14 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "3. Fit Multistate Model",
-    "text": "3. Fit Multistate Model\n\n\nDefine the state table for the multistate model\n\n\n\nlibrary(msm)\nstatetable.msm(state, ptnum, data=tr)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\n\n\n\nCheck that cell transition counts match the trace.\n\n\n\n# Markov trace\nrbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    select(cycle,everything())\n\n  cycle Healthy LowCD4 AIDS Death\n1     0    1000      0    0     0\n2     1     721    202   67    10"
+    "text": "3. Fit Multistate Model\n\n\nDefine the state table for the multistate model\n\n\n\nlibrary(msm)\n\n\nAttaching package: 'msm'\n\n\nThe following object is masked from 'package:flexsurv':\n\n    qgeneric\n\nstatetable.msm(state, ptnum, data=tr)\n\n    to\nfrom   1   2   3   4\n   1 721 202  67  10\n\n\n\n\nCheck that cell transition counts match the trace.\n\n\n\n# Markov trace\nrbind.data.frame(tr0, tr1) %&gt;%\n    mutate(cycle = c(0, 1)) %&gt;% \n    select(cycle,everything())\n\n  cycle Healthy LowCD4 AIDS Death\n1     0    1000      0    0     0\n2     1     721    202   67    10"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-2",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "3. Fit Multistate Model",
-    "text": "3. Fit Multistate Model\n\n\nInitial rate guesses are based on the eigenvalue method, i.e., result of expm(mP).\n\n\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0,   .0001),    \n                      c(0, 0,   0.6, 0.01),    \n                      c(0, 0,   0,   0.3),  \n                      c(0, 0,   0,   0)))\ndimnames(Q.init) = dimnames(mP)\n\n\n\nFit the model\n\n\n\nhiv.msm &lt;- \n  msm(state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)"
+    "text": "3. Fit Multistate Model\n\n\nInitial rate guesses are based on the eigenvalue method, i.e., result of logm(mP).\n\n\n\nQ.init &lt;- rbind(rbind(c(0, 0.3, 0,   .0001),    \n                      c(0, 0,   0.6, 0.01),    \n                      c(0, 0,   0,   0.3),  \n                      c(0, 0,   0,   0)))\ndimnames(Q.init) = dimnames(mP)\n\n\n\nFit the model\n\n\n\nhiv.msm &lt;- \n  msm(state ~ cycle, subject = ptnum, data = tr, qmatrix = Q.init)"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#fit-multistate-model-3",
@@ -536,7 +501,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-uniform-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Uniform PSA",
-    "text": "Analytic Solution: Uniform PSA\n\nqunif(0.25, min = 75, max = 975)\n\n[1] 300\n\nqunif(0.75, min = 75, max = 975)\n\n[1] 750"
+    "text": "Analytic Solution: Uniform PSA\n\nqunif(0.25, min = 75, max = 975)\n\n[1] 300\n\nqunif(0.75, min = 75, max = 975)\n\n[1] 750\n\n\n\nplot(density(runif(n = 1e5, min = a, max = b)),main = \"\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-normal-psa",
@@ -557,7 +522,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-normal-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Normal PSA",
-    "text": "Analytic Solution: Normal PSA\n\nqnorm(0.25, mean = 525, sd = 333.59)\n\n[1] 300\n\nqnorm(0.75, mean = 525, sd = 333.59)\n\n[1] 750"
+    "text": "Analytic Solution: Normal PSA\n\nqnorm(0.25, mean = 525, sd = 333.59)\n\n[1] 300\n\nqnorm(0.75, mean = 525, sd = 333.59)\n\n[1] 750\n\n\n\nplot(density(rnorm(n = 1e5,  mean = mu, sd = sigma)),main = \"\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-lognormal-psa",
@@ -578,7 +543,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-lognormal-psa-2",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Lognormal PSA",
-    "text": "Analytic Solution: Lognormal PSA\n\nqlnorm(0.25, mean = 6.1619, sd = 0.67925)\n\n[1] 299.99\n\nqlnorm(0.75, mean = 6.1619, sd = 0.67925)\n\n[1] 749.98"
+    "text": "Analytic Solution: Lognormal PSA\n\nqlnorm(0.25, mean = 6.1619, sd = 0.67925)\n\n[1] 299.99\n\nqlnorm(0.75, mean = 6.1619, sd = 0.67925)\n\n[1] 749.98\n\n\n\nplot(density(rlnorm(n = 1e5,  mean = mu, sd = sigma)),main = \"\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-gamma-psa",
@@ -620,7 +585,7 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#analytic-solution-gamma-psa-5",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Analytic Solution: Gamma PSA",
-    "text": "Analytic Solution: Gamma PSA\n\nqgamma(0.25,shape = 2.4558, scale = 230.16)\n\n[1] 300\n\nqgamma(0.75,shape = 2.4558, scale = 230.16)\n\n[1] 750"
+    "text": "Analytic Solution: Gamma PSA\n\nqgamma(0.25,shape = 2.4558, scale = 230.16)\n\n[1] 300\n\nqgamma(0.75,shape = 2.4558, scale = 230.16)\n\n[1] 750\n\n\n\nplot(density(rgamma(n = 1e4, shape = alpha_, scale = beta_)),main = \"\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#alternative-optimization",
@@ -634,14 +599,21 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#alternative-optimization-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Alternative: Optimization",
-    "text": "Alternative: Optimization\n\n\nRequires cumulative distribution function (CDF), \\(F\\).\nSee Borchers’ great slides for tips on optimization in R."
+    "text": "Alternative: Optimization\n\nRequires cumulative distribution function (CDF), \\(F\\).\nSee Hans W Borchers’ great slides for tips on optimization in R."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#some-advice",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#some-advice",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Some Advice",
-    "text": "Some Advice\n\nWe have found that while analytically correct, this optimization formula is not numerically stable.\nTransfinite scaling stabilizes optimization.\n\n\\[\\min_{\\vec{\\theta} \\in R}\\,\\, (F(x_1|\\vec{\\theta})-p_1)^2+(F(x_2|\\vec{\\theta})-p_2)^2\\]"
+    "text": "Some Advice\n\nWe have found that while analytically correct, this optimization formula is not numerically stable.\nTransfinite scaling of the probabilities from CDFs \\(F(.)\\) stabilizes optimization."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#some-advice-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#some-advice-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Some Advice",
+    "text": "Some Advice\n\n\nWe have found that while analytically correct, this optimization formula is not numerically stable.\nTransfinite scaling of the probabilities from CDFs \\(F(.)\\) stabilizes optimization.\n\\(g(F(.))\\) vs. \\(F(.)\\)\n\n\n\\[\\min_{\\vec{\\theta} \\in R}\\,\\, (g(F(x_1|\\vec{\\theta}))-p_1)^2+(g(F(x_2|\\vec{\\theta}))-p_2)^2\\]"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#stable-optimization",
@@ -658,15 +630,22 @@
     "text": "Stable Optimization\n\n\nFor probabilities, this is the \\(\\text{logit}(p)=\\log \\frac{p}{1-p}=\\log p - \\log (1-p)\\).\nTweaking parameters to converge can still happen.\nExample of theory versus practice.\n\n\n\\[\\min_{\\vec{\\theta} \\in R} \\sum_{i \\in 1,2}\\,\\, (\\text{logit} (F(x_i|\\vec{\\theta}))-\\text{logit} (p_i))^2\\]"
   },
   {
-    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example",
-    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example",
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-part-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-part-1",
     "title": "Incorporating New Evidence and Uncertainty",
-    "section": "Transfinite Example",
-    "text": "Transfinite Example\n\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)\n\nnorm &lt;- function(x1, p1, x2, p2, shape,rate)\n    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +\n    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2\n\nfn &lt;- function(x) norm(x1, p1, x2, p2, x[1], x[2])\n\ngamma_optim &lt;- \n  optim(c(0.5, 0.1), # initial parameter guesses\n    fn,\n    gr = function(x) pracma::grad(fn, x),\n    lower=c(-Inf, 1e-5),\n    method = \"L-BFGS-B\",\n    control=list(factr=1e-10, maxit=100))$par"
+    "section": "Transfinite Example, Part 1",
+    "text": "Transfinite Example, Part 1\n\n# Transfinite scaling\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)\n\n# Function to minimize\nnorm &lt;- function(x1, p1, x2, p2, shape,rate)\n    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +\n    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2\n\n# Bundle it all together into a single function.\nfn &lt;- function(x) norm(x1, p1, x2, p2, x[1], x[2])"
   },
   {
-    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-1",
-    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-1",
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-part-2",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example-part-2",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Transfinite Example, Part 2",
+    "text": "Transfinite Example, Part 2\n\n# Run general-purpose optimization on the function.\ngamma_optim &lt;- \n  optim(c(0.5, 0.1), # initial parameter guesses\n    fn,\n    gr = function(x) pracma::grad(fn, x),\n    lower=c(-Inf, 1e-5),\n    method = \"L-BFGS-B\",\n    control=list(factr=1e-10, maxit=100))$par\n\n# Note: gamma_optim$par[2] is 1/beta\ngamma_optim\n\n[1] 2.4558556 0.0043449"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#transfinite-example",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Transfinite Example",
     "text": "Transfinite Example\n\n\nOptimization returns \\(\\alpha\\) and \\(1/\\beta\\) for the gamma distribution example.\n\n\n\n# Analytic formula\nalpha_\n\n[1] 2.4558\n\n# Optimization\ngamma_optim[[1]]\n\n[1] 2.4559\n\n\n\n# Analytic formula\nbeta_\n\n[1] 230.16\n\n# Optimization\n1/gamma_optim[[2]]\n\n[1] 230.16"
@@ -676,7 +655,21 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#optimization-for-other-distributions",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Optimization for Other Distributions",
-    "text": "Optimization for Other Distributions\n\n\nJust swap in the distribution function for the distribution you want to match to (e.g., pbeta rather than pgamma).\n\n\n\nAlso make sure the supplied parameter names match the distribution you’re aiming for.\n\n\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)"
+    "text": "Optimization for Other Distributions\n\nJust swap in the distribution function for the distribution you want to match to (e.g., pbeta rather than pgamma).\nAlso make sure the supplied parameter names match the distribution you’re aiming for."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#optimization-for-other-distributions-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#optimization-for-other-distributions-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Optimization for Other Distributions",
+    "text": "Optimization for Other Distributions\n\n\nJust swap in the distribution function for the distribution you want to match to (e.g., pbeta rather than pgamma).\nAlso make sure the supplied parameter names match the distribution you’re aiming for.\n\n\n\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#optimization-for-other-distributions-2",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#optimization-for-other-distributions-2",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Optimization for Other Distributions",
+    "text": "Optimization for Other Distributions\n\n\nJust swap in the distribution function for the distribution you want to match to (e.g., pbeta rather than pgamma).\nAlso make sure the supplied parameter names match the distribution you’re aiming for.\n\n\n\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#summary-on-distribution-fitting",
@@ -718,35 +711,35 @@
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-you-were-taught",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What You Were Taught",
-    "text": "What You Were Taught\n\nNearly all PSA exercises draw from independent distributions.\nTo fully explore the space of correlated parametersl, you need a lot of PSA draws."
+    "text": "What You Were Taught\n\nNearly all PSA exercises draw from independent distributions.\nTo fully explore the space of correlated parameters, you need a lot of PSA draws!"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-you-were-taught-1",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-you-were-taught-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What You Were Taught",
-    "text": "What You Were Taught\n\nPSA draws of two model parameters\n\n\\(c_{direct} \\sim \\text{gamma}(2.5, 1/230)\\)\n\\(c_{community} \\sim \\text{gamma}(1.5, 1/150)\\)"
+    "text": "What You Were Taught\n\nIndependent PSA draws of two model parameters\n\n\\(c_{direct} \\sim \\text{gamma}(2.5, 1/230)\\)\n\\(c_{community} \\sim \\text{gamma}(1.5, 1/150)\\)\n\n\n\nx1 &lt;- rgamma(n = 1e3, shape = 2.5, rate  = 1/230.16)\nx2 &lt;- rgamma(n = 1e3, shape = 1.5, rate = 1/150)\n\ntibble(x1 = x1, x2 = x2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point(colour = \"red\") + \n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What We’ll Teach You",
-    "text": "What We’ll Teach You\n\n\\(\\text{cor}(c_{direct},c_{community}) = 0.8\\)"
+    "text": "What We’ll Teach You\n\n\\(\\text{cor}(c_{direct},c_{community}) = 0.8\\)\n\n\n# 1. Define the correlation matrix\n  rho &lt;- 0.8\n  sigma &lt;- matrix(c(1,rho,rho,1),nrow = 2, byrow=TRUE)\n\n# 2. Perform a cholesky decomposition\n  A = chol(sigma)\n\n# 3. Generate iid standard normal pseudo random variables\n  tildeY0 &lt;- rnorm(n = 1e3, mean = 0, sd = 1)\n  tildeY1 &lt;- rnorm(n = 1e3, mean = 0, sd = 1)\n  tildeY &lt;- cbind(tildeY0,tildeY1)\n\n  # Collect them \n  tildeY &lt;- tildeY %*% A\n\n# Use the standard normal disribution function to return the quantiles\n  U &lt;- pnorm(tildeY)\n\n# Use the inverse distribution function to return the values\n  Y &lt;- U \n  cx1 &lt;- qgamma(U[,1],shape = 2.5, rate  = 1/230.16)\n  cx2 &lt;- qgamma(U[,2],shape = 1.5, rate = 1/150)\n\ntibble(x1 = cx1, x2 = cx2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point() + \n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you-1",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#what-well-teach-you-1",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "What We’ll Teach You",
-    "text": "What We’ll Teach You"
+    "text": "What We’ll Teach You\n\nRed points: independent PSA draws\nBlack points: correlated PSA draws\n\n\ntibble(x1 = x1, x2 = x2) %&gt;% \n  ggplot(aes(x = x2, y = x1)) +\n  geom_point(alpha = 0.5, colour = \"red\") + \n  geom_point(data = tibble(x1 = cx1, x2 = cx2) , aes(x = cx2, y = cx1),alpha = 0.25) +\n  hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n  labs(x = \"Direct Medical Costs\", y = \"Community Costs\")  + \n  stat_ellipse(\n    data = MASS::mvrnorm(n=1e3, mu = c(1500,750),Sigma = matrix(c(40000,0,0,20000),byrow=TRUE,nrow=2)) %&gt;% \n      data.frame() %&gt;% \n      set_names(c(\"x1\",\"x2\")) , \n    lty = 3, colour = \"black\"\n  ) + \n  annotate(\"text\", x = 750, y = 1500, label = \"Traditional PSA draws (red points)\\n very sparse in this region.\",fontface =2, color = \"red\")"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-psa-sampling",
     "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-psa-sampling",
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Copula-Based PSA Sampling",
-    "text": "Copula-Based PSA Sampling\n\nWe can easily draw correlated PSA samples via copulas.\nCopulas allow us to sample from the joint distribution of correlated parameters\n\n\\[\nF(x_1,...,x_d) = C \\big ( F_1(x_1), ..., F_d(x_d) \\big )\n\\]"
+    "text": "Copula-Based PSA Sampling\n\nWe can easily draw correlated PSA samples via copulas.\nCopulas allow us to sample from the joint distribution of correlated parameters."
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copulas",
@@ -754,6 +747,118 @@
     "title": "Incorporating New Evidence and Uncertainty",
     "section": "Copulas",
     "text": "Copulas\n\nCopula: a multivariate cumulative distribution function with uniform marginals.\nIntuition: the binding “glue” between random variables."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#sklar-1959",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#sklar-1959",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Sklar (1959)",
+    "text": "Sklar (1959)\n\nSklar (1959) demonstrates that the joint distribution of two random variables can be represented as"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#sklar-1959-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#sklar-1959-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Sklar (1959)",
+    "text": "Sklar (1959)\n\n\nSklar (1959) demonstrates that the joint distribution of two random variables can be represented as\n\n\n\\[\n\\mathrm{F}_{X_{1}, X_{0}}\\left(x_1, x_0\\right)=C_{X_{1}, X_{0}}\\left(\\mathrm{~F}_{X_{1} }\\left(x_1\\right), \\mathrm{F}_{X_{0} }\\left(x_0\\right)\\right)\n\\]"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-psa-draws",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-psa-draws",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Copula-Based PSA Draws",
+    "text": "Copula-Based PSA Draws\n\nWe’ll draw on copulas so we can sample our PSA as the joint distribution of uncertain parameters.\nYou can always just set the correlations to zero if you want independent draws!\n\n\\[\nF(x_1,...,x_d) = C \\big ( F_1(x_1), ..., F_d(x_d) \\big )\n\\]"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-sample",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-sample",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "How Do We Sample?",
+    "text": "How Do We Sample?\n\nRecall that the copula specifies multivariate CDF with uniform marginals.\nWhat if our PSA distributions are not uniform (e.g., costs \\(\\sim\\) gamma, lognormal, etc.)?\nEasy! Use the inverse transform method.\nIdea: randomly sample from quantiles in the PSA distribution."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-draw-psa-values",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#how-do-we-draw-psa-values",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "How Do We Draw PSA Values",
+    "text": "How Do We Draw PSA Values\n\n\nRequires drawing a random number between 0 and 1 (the quantile)\nRequires an inverse cumulative distribution function \\(F^{-1}(.)\\)\nYou can do this easily in R or Excel!"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-pdf-to-cdf",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-pdf-to-cdf",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Normal Distribution: PDF to CDF",
+    "text": "Normal Distribution: PDF to CDF\n\n\n\n\n\n\nlibrary(tidyverse)\nlibrary(data.table)\nlibrary(gganimate)\nset.seed(12)\ndf_norm &lt;- tibble(x=rnorm(10000,mean = 10, sd=3))\ndf_lnorm &lt;- tibble(x = rlnorm(10000,mean=log(3),sd=0.01)); plot(density(df_lnorm$x))\ndf_gamma &lt;- tibble(x = rgamma(10000,shape = 44.4, scale=22.5)); plot(density(df_gamma$x))\ndf_unif &lt;- tibble(x = runif(1e6,min = 0.3,max=0.4)); plot(density(df_unif$x))\n\nanimate_pdf_to_cdf &lt;- function(df, scene_to_show = NULL, q_ = c(0.01,  0.25, 0.5, 0.75,  0.99), breaks_to_show = NULL ) {\n  pdf &lt;-\n    {df %&gt;% ggplot(aes(x = x)) + geom_density()} %&gt;%\n    ggplot_build() %&gt;% pluck(\"data\") %&gt;% pluck(1) %&gt;%\n    as_tibble() %&gt;%\n    select(x,y) %&gt;%\n    data.table(key = \"x\")\n  cdf &lt;-\n    {df %&gt;% ggplot(aes(x = x)) + stat_ecdf()} %&gt;%\n    ggplot_build() %&gt;% pluck(\"data\") %&gt;% pluck(1) %&gt;%\n    as_tibble() %&gt;%\n    select(x,y) %&gt;%\n    data.table(key = \"y\")\n\n  \n  q &lt;- q_ %&gt;%\n    map_dbl(~{\n      quantile(df$x,.x)\n    }) %&gt;%\n    set_names(q_) %&gt;%\n    data.frame() %&gt;%\n    set_names(\"x_\") %&gt;%\n    rownames_to_column(var = \"quantile\") %&gt;%\n    as.data.table(key = \"x_\")\n\n  scene2 &lt;-\n    pdf[q,roll=\"nearest\"] %&gt;%\n    as_tibble() %&gt;%\n    select(y,quantile) %&gt;%\n    right_join(pdf,c(\"y\")) %&gt;%\n    arrange(x,y) %&gt;%\n    mutate(scene = 2) %&gt;%\n    mutate(quantile = glue::glue(\"{as.numeric(quantile)}\"))\n\n  q2 &lt;-\n    q %&gt;%\n    as_tibble() %&gt;%\n    mutate(quantile = as.numeric(quantile)) %&gt;%\n    data.table(key=\"quantile\")\n\n  scene3 &lt;-\n    cdf[q2,roll=\"nearest\"] %&gt;%\n    as_tibble() %&gt;%\n    set_names(c(\"x\",\"quantile\",\"x_\")) %&gt;%\n    select(-x_) %&gt;%\n    right_join(cdf,\"x\") %&gt;%\n    arrange(x,y)  %&gt;%\n    mutate(scene = 3) %&gt;%\n    mutate(quantile = glue::glue(\"{as.numeric(quantile)}\")) %&gt;%\n    ungroup() %&gt;%\n    filter(!is.na(as.numeric(quantile)) | row_number() %in% sample(1:nrow(.),1000)); dim(scene2)\n\n  p_df &lt;-\n    scene2 %&gt;%\n    mutate(scene = 1) %&gt;%\n    bind_rows(scene2) %&gt;%\n    bind_rows(scene3) %&gt;%\n    bind_rows(scene3 %&gt;% mutate(scene=4)) %&gt;%\n    #bind_rows(scene3 %&gt;% mutate(scene=5)) %&gt;%\n    #bind_rows(scene3 %&gt;% mutate(scene=6)) %&gt;%\n    mutate(quantile = ifelse(quantile==\"NA\",NA, quantile))\n\n  p_df_label =\n    p_df %&gt;% filter(!is.na(quantile)) %&gt;%\n    mutate(y = ifelse(scene==1,0,y)) %&gt;%\n    mutate(x = ifelse(scene==4,min(scene3$x),x)) %&gt;%\n    mutate(y = ifelse(scene==6,0,y)) %&gt;%\n    mutate(quantile = glue::glue(\" q{quantile}\"))\n\n  if (!is.null(scene_to_show)) {\n    p_df &lt;- \n      p_df %&gt;% filter(scene==scene_to_show)\n    p_df_label &lt;- \n      p_df_label %&gt;% filter(scene==scene_to_show)\n    p &lt;-\n      p_df %&gt;% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile),size=3)+\n      scale_y_continuous(breaks = breaks_to_show) +\n      scale_x_continuous(breaks = q$x_, labels = round(q$x_,2),guide = guide_axis(n.dodge=3)) +\n      ggthemes::theme_clean(base_size=15) +\n      labs(x = \"Parameter Value\", y = \"\") \n  } else {\n      p &lt;-\n        p_df %&gt;% ggplot(aes(x = x, y = y))+ geom_line() + geom_text(data = p_df_label , aes(label = quantile, group= quantile))+\n        scale_y_continuous(breaks = seq(0,1,0.1)) +\n        scale_x_continuous(breaks = q$x_, labels = round(q$x_,2)) +\n        ggthemes::theme_clean() +\n        labs(x = \"Parameter Value\", y = \"\") + #facet_wrap(~scene, scales=\"free\"); p\n        gganimate::transition_states(scene) + gganimate::view_follow()\n  }\n\n  return(p)\n\n}\n\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-norm.png\"),height=4, width=5)\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 3,seq(0,1,0.1)) \nggsave(here::here(\"slides/images/pdf-to-cdf-norm4.png\"),height=4, width=5)\nset.seed(23)\ndf_norm %&gt;% animate_pdf_to_cdf(scene = 3, q = round(runif(5, min = 0, max = 1),3))\nggsave(here::here(\"slides/images/pdf-to-cdf-norm_random1.png\"),height=4, width=5)\nanim_norm &lt;- df_norm %&gt;% animate_pdf_to_cdf(breaks_to_show = seq(0,1,0.1))\nanim_save(here::here(\"slides/images/pdf-to-cdf-norm.gif\"), anim_norm)\n\nanim_gamma1 &lt;- df_gamma %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-gamma.png\"),height=5, width=5)\nanim_gamma3 &lt;- df_gamma %&gt;% animate_pdf_to_cdf(scene = 4)\nggsave(here::here(\"slides/images/pdf-to-cdf-gamma4.png\"),height=5, width=5)\nanim_gamma &lt;- df_gamma %&gt;% animate_pdf_to_cdf()\nanim_save(here::here(\"slides/images/pdf-to-cdf-gamma.gif\"), anim_gamma)\n\nanim_lnorm1 &lt;- df_lnorm %&gt;% animate_pdf_to_cdf(scene = 2)\nggsave(here::here(\"slides/images/pdf-to-cdf-lnorm.png\"),height=5, width=5)\nanim_lnorm3 &lt;- df_lnorm %&gt;% animate_pdf_to_cdf(scene = 4)\nggsave(here::here(\"slides/images/pdf-to-cdf-lnorm4.png\"),height=5, width=5)\nanim_lnorm &lt;- df_lnorm %&gt;% animate_pdf_to_cdf()\nanim_save(here::here(\"slides/images/pdf-to-cdf-lnorm.gif\"), anim_lnorm)\n\nset.seed(123)\nr_HS =  tibble(x = rgamma(1e4,shape = 30,rate = 200),param=\"r_HS\")\nr_HD    = tibble(x = rgamma(1e4,shape = 60, rate = 10000),param = \"r_HD\")\nhr_S =  tibble(x = rlnorm(1e4,log(3), sdlog = 0.01),param = \"hr_S\")\nhr_HS_trtB  = tibble(x=rlnorm(1e4,log(0.96), sdlog = 0.02),param = \"hr_HS_trtB\")\nhr_HS_trtC  = tibble(x=rlnorm(1e4,log(0.9), sdlog = 0.02),param = \"hr_HS_trtC\")\nhr_HS_trtD =    tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02),param = \"hr_HS_trtD\")\nhr_HS_trtE =    tibble(x=rlnorm(1e4,log(0.92), sdlog = 0.02), param = \"hr_HS_trtE\")\nu_H = tibble(x=rbeta(1e4,shape1 = 200, shape2 = 3), param = \"u_H\")\nu_S = tibble(x=rbeta(1e4,shape1 = 130, shape2 = 45), param = \"u_S\")\nc_S  = tibble(x=rgamma(1e4,shape = 44.4, scale = 22.5), param = \"c_S\")\nc_trtA  =tibble(x= rgamma(1e4,shape = 12.5, scale = 2), param = \"c_trtA\")\nc_trtB  =tibble(x= rgamma(1e4,shape = 12, scale = 83.3), param = \"c_trtB\")\nc_trtC  =tibble(x= rgamma(1e4,shape = 36.144, scale = 83), param = \"c_trtC\")\nc_trtD  =tibble(x= rgamma(1e4,shape = 14.458, scale = 83), param = \"c_trtD\")\nc_trtE  =tibble(x= rgamma(1e4,shape = 60.24, scale = 83), param = \"c_trtE\")\n\n\nparams_lut &lt;- c(\"r_HS = gamma(shape = 30,rate = 200)\", \"r_HD = gamma(shape = 60, rate = 10000)\", \"hr_S = lognormal(meanlog = log(3), sdlog = 0.01)\", \"hr_HS_trtB = lognormal(meanlog = log(0.96), sdlog = 0.02)\", \"hr_HS_trtC = lognormal(meanlog = log(0.88), sdlog = 0.02)\", \"hr_HS_trtD = lognormal(meanlog = log(0.92), sdlog = 0.02)\", \"hr_HS_trtE = lognormal(meanlog = log(0.92), sdlog = 0.02)\",\n               \"u_H = beta(shape1 = 200, shape2 = 3)\",\"u_S = beta(shape1 = 130, shape2 = 45)\",\"c_S = gamma(shape = 44.4, scale = 22.5)\", \"c_trtA = gamma(shape = 12.5, scale = 2)\",\"c_trtB = gamma(shape = 12, scale = 83.3)\",\"c_trtC = gamma(shape = 36.144, scale = 83)\",\"c_trtD = gamma(shape = 18.67, scale = 83)\",\"c_trtE = gamma(shape = 60.24, scale = 83)\")\n\n\nparams &lt;- list(r_HS, r_HD, hr_S, hr_HS_trtB, hr_HS_trtC, hr_HS_trtD, hr_HS_trtE,\n               u_H,u_S,c_S, c_trtA,c_trtB,c_trtC,c_trtD,c_trtE)\n\npdf_params &lt;- \n  params %&gt;% \n  map2(.,params_lut,~({\n    .x %&gt;% animate_pdf_to_cdf(scene = 1) + ggtitle(.y)\n    ggsave(here::here(glue::glue(\"slides/images/{.x$param[1]}.png\")),height=4, width=5)\n  })) %&gt;% \n  set_names(c(\"r_HS:gamma(shape = 30,rate = 200)\", \"r_HD=gamma(shape = 60, rate = 10000)\", \"hr_S=lognormal(meanlog = log(3), sdlog = 0.01)\", \"hr_HS_trtB=lognormal(meanlog = log(0.96), sdlog = 0.02)\", \"hr_HS_trtC=lognormal(meanlog = log(0.88), sdlog = 0.02)\", \"hr_HS_trtD=lognormal(meanlog = log(0.92), sdlog = 0.02)\", \"hr_HS_trtE=lognormal(meanlog = log(0.92), sdlog = 0.02)\",\n               \"u_H=beta(shape1 = 200, shape2 = 3)\",\"u_S=beta(shape1 = 130, shape2 = 45)\",\"c_S=gamma(shape = 44.4, scale = 22.5)\", \"c_trtA=gamma(shape = 12.5, scale = 2)\",\"c_trtB=gamma(shape = 12, scale = 83.3)\",\"c_trtC=gamma(shape = 36.144, scale = 83)\",\"c_trtD=gamma(shape = 18.67, scale = 83)\",\"c_trtE=gamma(shape = 60.24, scale = 83)\"))\n\ncdf_params &lt;- \n  params %&gt;% \n  map2(.,params_lut,~({\n    set.seed(23)\n    .x %&gt;% animate_pdf_to_cdf(scene = 3,q_ = round(runif(5, min = 0, max = 1),3),breaks_to_show = seq(0,1,0.1)) + ggtitle(.y)\n    ggsave(here::here(glue::glue(\"slides/images/cdf{.x$param[1]}.png\")),height=4, width=5)\n  })) %&gt;% \n  set_names(c(\"r_HS\", \"r_HD\", \"hr_S\", \"hr_HS_trtB\", \"hr_HS_trtC\", \"hr_HS_trtD\", \"hr_HS_trtE\",\n               \"u_H\",\"u_S\",\"c_S\", \"c_trtA\",\"c_trtB\",\"c_trtC\",\"c_trtD\",\"c_trtE\"))\n\n\nanim_norm"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-cdf",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#normal-distribution-cdf",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Normal Distribution: CDF",
+    "text": "Normal Distribution: CDF"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#drawing-from-an-arbitrary-psa-distribution",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#drawing-from-an-arbitrary-psa-distribution",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Drawing from an Arbitrary PSA Distribution",
+    "text": "Drawing from an Arbitrary PSA Distribution\n\nDefine PSA distribution parameters (e.g., \\(\\mu,\\sigma\\) if normal, etc.)\nDraw a uniform random number between 0 and 1.\nFeed this number through the quantile function for the specified distribution (e.g., qnorm(), qgamma(), etc.). This returns the value that maps to the randomly drawn quantile.\nDo this for as many PSA samples as you need!"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-sampling",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-sampling",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Copula-Based Sampling",
+    "text": "Copula-Based Sampling\n\nSampling from a copula adds one more step to this process.\nWe must also define a correlation matrix Sigma (\\(\\Sigma\\)).\nWe then draw uniform random numbers from a multivariate uniform distribution.\nOnce drawn, we can feed each PSA variable back through its repective inverse CDF to obtain the final PSA sample."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-sampling-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#copula-based-sampling-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Copula-Based Sampling",
+    "text": "Copula-Based Sampling\n\nDefine PSA distributions for each of \\(n\\) uncertain parameters.\nDefine an \\(n \\times n\\) correlation matrix \\(\\Sigma\\) for the joint distribution of the PSA parameters.\nDraw an \\(n\\)-column multivariate uniform sample.\nApply the inverse transform method (as necessary) to each column.\nDo this for as many PSA samples as you need!"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#putting-it-all-together",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#putting-it-all-together",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "Putting it All Together",
+    "text": "Putting it All Together\n\nIQR Community Care Costs: 750 to 1250\n\ncost_cc \\(\\sim\\) lognormal(mu_cc, sigma_cc).\n\nIQR Direct Medical Care Costs: 1,000 - 3,000\n\ncost_dc \\(\\sim\\) gamma(shape_dc, rate_dc)\n\nCOV(Community cost, Direct cost) = 0.8"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-psa-distributions",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-psa-distributions",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Define PSA distributions",
+    "text": "1. Define PSA distributions\n\n\nIQR Community Care Costs: 750 to 1250\n\ncost_cc \\(\\sim\\) lognormal(mu_cc, sigma_cc).\n\n\n\n\nmu_cc = (qnorm(0.75)*log(750) - qnorm(0.25)*log(1250)) / (qnorm(0.75)-qnorm(.25)); mu_cc\n\n[1] 6.8755\n\nsigma_cc = (log(1250) - log(750)) / (qnorm(.75) - qnorm(.25)); sigma_cc\n\n[1] 0.37868"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-psa-distributions-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-psa-distributions-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "1. Define PSA distributions",
+    "text": "1. Define PSA distributions\n\n\nIQR Direct Medical Care Costs: 1,000 - 3,000\n\ncost_dc \\(\\sim\\) gamma(shape_dc, rate_dc)\n\n\n\n\nx1 = 1000\nx2 = 3000\np1 = 0.25\np2 = 0.75\n\n# Transfinite scaling\nTf &lt;- function(x, shape, rate)\n    pgamma(x,shape,rate,log=TRUE) - \n    pgamma(x,shape,rate,log=TRUE, lower.tail = FALSE)\n\n# Function to minimize\nnorm &lt;- function(x1, p1, x2, p2, shape,rate)\n    (Tf(x1, shape, rate)-(log(p1)-log(1-p1)) )^2 +\n    (Tf(x2, shape, rate)-(log(p2)-log(1-p2)) )^2\n\n# Bundle it all together into a single function.\nfn &lt;- function(x) norm(x1, p1, x2, p2, x[1], x[2])\n\n\n# Run general-purpose optimization on the function.\ngamma_optim &lt;- \n  optim(c(0.5, 0.1), # initial parameter guesses\n    fn,\n    gr = function(x) pracma::grad(fn, x),\n    lower=c(-Inf, 1e-5),\n    method = \"L-BFGS-B\",\n    control=list(factr=1e-10, maxit=100))$par\n\nshape_dc = gamma_optim[[1]]; shape_dc\n\n[1] 1.7904\n\nrate_dc = gamma_optim[[2]]; rate_dc\n\n[1] 0.00080927"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-correlation-matrix-sigma",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#define-correlation-matrix-sigma",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "2. Define correlation matrix \\(\\Sigma\\)",
+    "text": "2. Define correlation matrix \\(\\Sigma\\)\n\nrho_cc_dc = 0.8\nsigma &lt;- matrix(c(1,rho_cc_dc,rho_cc_dc,1),nrow = 2, byrow=TRUE,\n                dimnames=list(c(\"cost_cc\",\"cost_dc\"),c(\"cost_cc\",\"cost_dc\")))\nsigma\n\n        cost_cc cost_dc\ncost_cc     1.0     0.8\ncost_dc     0.8     1.0"
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#draw-multivariate-uniform-sample.",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#draw-multivariate-uniform-sample.",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "3. Draw multivariate uniform sample.",
+    "text": "3. Draw multivariate uniform sample.\n\nTo get multivariate uniform, first draw from multivariate normal (MASS::mvrnorm()).\nThen, apply the values to the normal CDF (pnorm()) to get the quantiles."
+  },
+  {
+    "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#draw-multivariate-uniform-sample.-1",
+    "href": "slides/04_incorporating-new-evidence-and-uncertainty.html#draw-multivariate-uniform-sample.-1",
+    "title": "Incorporating New Evidence and Uncertainty",
+    "section": "3. Draw multivariate uniform sample.",
+    "text": "3. Draw multivariate uniform sample.\n\n\nTo get multivariate uniform, first draw from multivariate normal (MASS::mvrnorm()).\nThen, apply the values to the normal CDF (pnorm()) to get the quantiles.\n\n\n\n# Define PSA Sample Size\nPSA_sample_size = 1e6\nU &lt;- pnorm(MASS::mvrnorm(n = PSA_sample_size, Sigma = sigma, mu = c(0,0)))\n\n\n# Alternative Version: Cholesky decomposition\n\n#  Perform a cholesky decomposition\n  A = chol(sigma)\n\n#  Generate iid standard normal pseudo random variables\n  tildeY0 &lt;- rnorm(n = PSA_sample_size, mean = 0, sd = 1)\n  tildeY1 &lt;- rnorm(n = PSA_sample_size, mean = 0, sd = 1)\n  tildeY &lt;- cbind(tildeY0,tildeY1)\n\n  # Collect them \n  tildeY &lt;- tildeY %*% A\n\n# Use the standard normal disribution function to return the quantiles\n  U &lt;- pnorm(tildeY)"
   },
   {
     "objectID": "slides/04_incorporating-new-evidence-and-uncertainty.html#references",
@@ -1194,28 +1299,28 @@
     "href": "slides/01_mortality.html#approaches-to-modeling-mortality",
     "title": "1. Dealing with Mortality",
     "section": "Approaches to Modeling Mortality",
-    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nlx is the total number living in a hypothetical cohort (of 100,000).\ndx is the number of deaths in the age interval."
+    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling()\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nlx is the total number living in a hypothetical cohort (of 100,000).\ndx is the number of deaths in the age interval."
   },
   {
     "objectID": "slides/01_mortality.html#approaches-to-modeling-mortality-1",
     "href": "slides/01_mortality.html#approaches-to-modeling-mortality-1",
     "title": "1. Dealing with Mortality",
     "section": "Approaches to Modeling Mortality",
-    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nmx is the death rate within the interval.\nqx is the probability of death within an interval."
+    "text": "Approaches to Modeling Mortality\n\n\nStandard approach is to draw from life table data:\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling()\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023\n\n\n\n\n\n\n\n\nmx is the death rate within the interval.\nqx is the probability of death within an interval."
   },
   {
     "objectID": "slides/01_mortality.html#life-table-data",
     "href": "slides/01_mortality.html#life-table-data",
     "title": "1. Dealing with Mortality",
     "section": "Life Table Data",
-    "text": "Life Table Data\n\n\nDeath probabilities are useful for discrete time Markov models.\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
+    "text": "Life Table Data\n\n\nDeath probabilities are useful for discrete time Markov models.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(5, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
   },
   {
     "objectID": "slides/01_mortality.html#life-table-data-1",
     "href": "slides/01_mortality.html#life-table-data-1",
     "title": "1. Dealing with Mortality",
     "section": "Life Table Data",
-    "text": "Life Table Data\n\n\nDeath rates are useful for discrete event simulation (DES) models.\n\n\n\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
+    "text": "Life Table Data\n\n\nDeath rates are useful for discrete event simulation (DES) models.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(-x) %&gt;% \n    select(age,lx,dx,mx,qx) %&gt;% \n    head(n=3) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#e8c6f5\")\n\n\n\n\nage\nlx\ndx\nmx\nqx\n\n\n\n\n0\n100000\n553.22\n0.00556\n0.00553\n\n\n1\n99447\n38.18\n0.00038\n0.00038\n\n\n2\n99409\n23.16\n0.00023\n0.00023"
   },
   {
     "objectID": "slides/01_mortality.html#life-table-based-mortality",
@@ -1271,21 +1376,21 @@
     "href": "slides/01_mortality.html#processing-life-table-data-3",
     "title": "1. Dealing with Mortality",
     "section": "Processing Life Table Data",
-    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n    hmd_usa %&gt;% \n    demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n    as_tibble() %&gt;% \n    rename(age = x) %&gt;% \n    mutate_at(vars(lx,dx), function(x) x * radix)"
+    "text": "Processing Life Table Data\n\n\nCode below processes HMD data and constructs a (2019) life table from it.\nRadix (cohort size) is 100,000 individuals.\n\n\n\nhmd_usa &lt;- \n    readRDS(url(\"https://github.com/graveja0/SMDM-Europe-2023/raw/main/_learnr/smdm-europe-2023-cvd-model/www/usa-life-table.rds\"))\n\n\nmortality_year = 2019 \nradix = 100000\n\nlt = \n    hmd_usa %&gt;% \n    demography::lifetable(.,series = \"total\", years = mortality_year) %&gt;% \n    as_tibble() %&gt;% \n    rename(age = x) %&gt;% \n    mutate_at(vars(lx,dx), function(x) x * radix)"
   },
   {
     "objectID": "slides/01_mortality.html#us-life-table-2019",
     "href": "slides/01_mortality.html#us-life-table-2019",
     "title": "1. Dealing with Mortality",
     "section": "US Life Table (2019)",
-    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
+    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\nlt %&gt;% \n    select(age, lx, dx, ex, qx, mx) %&gt;% \n    head(n=4) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018"
   },
   {
     "objectID": "slides/01_mortality.html#us-life-table-2019-1",
     "href": "slides/01_mortality.html#us-life-table-2019-1",
     "title": "1. Dealing with Mortality",
     "section": "US Life Table (2019)",
-    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018\n\n\n\n\n\n\n\n(We’ll try to replicate these numbers with a discrete time Markov model in a bit.)"
+    "text": "US Life Table (2019)\nHighlighted column: Remaining life expectancy at exact age x.\n\nlt %&gt;% \n    select(age, lx, dx, ex, qx, mx) %&gt;% \n    head(n=4) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(4, background = \"#c6e6f5\")\n\n\n\n\nage\nlx\ndx\nex\nqx\nmx\n\n\n\n\n0\n100000\n553.221\n78.963\n0.00553\n0.00556\n\n\n1\n99447\n38.180\n78.402\n0.00038\n0.00038\n\n\n2\n99409\n23.160\n77.432\n0.00023\n0.00023\n\n\n3\n99385\n17.689\n76.450\n0.00018\n0.00018\n\n\n\n\n\n\n\n(We’ll try to replicate these numbers with a discrete time Markov model in a bit.)"
   },
   {
     "objectID": "slides/01_mortality.html#alive-dead-model-1",
@@ -1334,7 +1439,7 @@
     "href": "slides/01_mortality.html#age-dependent-transition-matrix-1",
     "title": "1. Dealing with Mortality",
     "section": "Age-Dependent Transition Matrix",
-    "text": "Age-Dependent Transition Matrix\n\n\nLife Table:\n\nlt[1,c(\"age\",\"qx\")]\n\n# A tibble: 1 × 2\n    age      qx\n  &lt;dbl&gt;   &lt;dbl&gt;\n1     0 0.00553\n\n\n\nTransition Matrix:"
+    "text": "Age-Dependent Transition Matrix\n\nparams$mP &lt;- \n  fn_mPt(1:params$n_cycles, params)\n\n\n\nLife Table:\n\nlt[1,c(\"age\",\"qx\")]\n\n# A tibble: 1 × 2\n    age      qx\n  &lt;dbl&gt;   &lt;dbl&gt;\n1     0 0.00553\n\n\n\nTransition Matrix:"
   },
   {
     "objectID": "slides/01_mortality.html#age-dependent-transition-matrix-2",
@@ -1383,56 +1488,56 @@
     "href": "slides/01_mortality.html#life-expectancy-1",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\n\n\n\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
+    "text": "Life Expectancy\n\n\nWe have a model with 110 annual cycles for a cohort of 100,000 0 year olds.\nAccording to the underlying life table data, life expectancy at birth is 78.96315 years.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,qx,ex) %&gt;% \n    head(n=1) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-2",
     "href": "slides/01_mortality.html#life-expectancy-2",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nLet’s verify we can replicate this with our Markov model.\n\n\n\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
+    "text": "Life Expectancy\n\n\nLet’s verify we can replicate this with our Markov model.\n\n\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,qx,ex) %&gt;% \n    head(n=1) %&gt;% \n    kable() %&gt;% \n    kable_styling() %&gt;% \n    column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nqx\nex\n\n\n\n\n0\n0.00553\n78.963"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-3",
     "href": "slides/01_mortality.html#life-expectancy-3",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nDefine the payoff for life expectancy (1 if alive, 0 otherwise)\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)"
+    "text": "Life Expectancy\n\n\nDefine the payoff for life expectancy (1 if alive, 0 otherwise)\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Integration via alternative Simpson's method (cycle correction)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-4",
     "href": "slides/01_mortality.html#life-expectancy-4",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nCalculate life years in each cycle.1\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)\n\nNote that we divide by the initial cohort size (100000) to normalize the results to a single individual for life expectancy calculations."
+    "text": "Life Expectancy\n\n\nCalculate life years in each cycle.1\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Integration via alternative Simpson's method (cycle correction)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)\n\nNote that we divide by the initial cohort size (100000) to normalize the results to a single individual for life expectancy calculations."
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-5",
     "href": "slides/01_mortality.html#life-expectancy-5",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nDefine a function for cycle adjustment.1\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)\n\nWe use the alternative Simpson’s method here for higher accuracy. The half-cycle correction is Newton’s trapezoid method. See: Elbasha, Chhatwal, 2016 MDM."
+    "text": "Life Expectancy\n\n\nDefine a function for cycle adjustment.1\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Integration via alternative Simpson's method (cycle correction)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)\n\nWe use the alternative Simpson’s method here for higher accuracy. The half-cycle correction is Newton’s trapezoid method. See: Elbasha, Chhatwal, 2016 MDM."
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-6",
     "href": "slides/01_mortality.html#life-expectancy-6",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\nSum of values (with cycle adjustment applied) is total life expectancy.\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)"
+    "text": "Life Expectancy\n\n\nSum of values (with cycle adjustment applied) is total life expectancy.\n\n\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = (trace[[1]] * (1 / params$n_cohort)) %*% payoff_life_exp\n\n# Integration via alternative Simpson's method (cycle correction)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = cycle_adj(life_exp_cycle)"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-7",
     "href": "slides/01_mortality.html#life-expectancy-7",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy\n\n\n\n\n\nAge\nLife Expectancy (Life Table data)\nLife Expectancy (Markov-Life Table)\n\n\n\n\n0\n78.963\n78.924\n\n\n\n\n\n\n\n\nWe can repeat this exercise for different cohort starting ages and verify things line up."
+    "text": "Life Expectancy\n\nlt %&gt;% \n    ungroup() %&gt;% \n    select(age,ex) %&gt;% \n    mutate(ex_markov = total_life_exp) %&gt;% \n    head(n=1) %&gt;% \n    kable(col.names = c(\"Age\",\"Life Expectancy (Life Table data)\",\n                        \"Life Expectancy (Markov-Life Table)\")) %&gt;% \n    kable_styling() \n\n\n\n\nAge\nLife Expectancy (Life Table data)\nLife Expectancy (Markov-Life Table)\n\n\n\n\n0\n78.963\n78.924\n\n\n\n\n\n\n\n\nWe can repeat this exercise for different cohort starting ages and verify things line up."
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-8",
     "href": "slides/01_mortality.html#life-expectancy-8",
     "title": "1. Dealing with Mortality",
     "section": "Life Expectancy",
-    "text": "Life Expectancy"
+    "text": "Life Expectancy\n\nle_res &lt;- lt %&gt;% select(age,ex)\n\nages &lt;- lt$age\n\nle_res$ex_lt_markov = \n    ages %&gt;% map_dbl(~({\n        paramsX &lt;- modifyList(params, list(initial_age=.x))\n        paramsX$mP &lt;- \n            fn_mPt(1:paramsX$n_cycles, paramsX)\n        traceX &lt;- \n            sim_cohort(paramsX)\n        life_expX_cycle = (traceX[[1]] * (1 / paramsX$n_cohort)) %*% payoff_life_exp\n        total_life_expX = cycle_adj(life_expX_cycle)\n        total_life_expX\n    }))\n\nle_res %&gt;% \n    gather(method,value,-age) %&gt;% \n    mutate(method = factor(method, labels = c(\"Life Table\",\"Markov (Life Table qx)\"))) %&gt;% \n    ggplot(aes(x = age, y = value, colour = method)) + \n    geom_point() + \n    hrbrthemes::theme_ipsum_pub(base_family = \"Arial\") + \n    scale_colour_aaas(name = \"\") + \n    theme(legend.position = \"top\")"
   },
   {
     "objectID": "slides/01_mortality.html#mortality-modeling-1",
@@ -1446,28 +1551,28 @@
     "href": "slides/01_mortality.html#mortality-modeling-2",
     "title": "1. Dealing with Mortality",
     "section": "Mortality Modeling",
-    "text": "Mortality Modeling\n\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nInfant mortality\n\n\n\n\nOpperman\n\n\n\\(\\mu[x] = A/\\sqrt{x} - B + C\\sqrt{x}\\)\n\n\nopperman\n\n\n\n\nWeibull\n\n\n\\(\\mu[x] = 1/\\sigma * (x/M)^{(M/\\sigma - 1)}\\)\n\n\nweibull\n\n\n\n\nAccident hump\n\n\n\n\nInverse-Gompertz\n\n\n\\(\\mu[x] = [1-\\exp((M-x)/\\sigma)]/[\\exp((M-x)/\\sigma)-1]\\)\n\n\ninvgompertz\n\n\n\n\nInverse-Weibull\n\n\n\\(\\mu[x] = 1/\\sigma * (x/M)^{[-M/\\sigma - 1]} / [\\exp((x/M)^{(-M/\\sigma)}) - 1]\\)\n\n\ninvweibull"
+    "text": "Mortality Modeling\n\ntype_lut &lt;- c(\n    \"1\"  =  \"Infant mortality\" ,             \n    \"2\"  =  \"Accident hump\"      ,           \n    \"3\"  =  \"Adult mortality\"   ,           \n    \"4\"  =  \"Adult and/or old-age mortality\",\n    \"5\"  =  \"Old-age mortality\"       ,      \n    \"6\"  =  \"Full age range\" \n)\n\nlaws &lt;- \n    availableLaws()$table %&gt;% \n    as_tibble() %&gt;% \n    arrange(TYPE) %&gt;% \n    mutate(TYPE = type_lut[paste0(TYPE)]) %&gt;% \n    #filter(CODE==\"HP2\") %&gt;% \n    #mutate(MODEL = gsub(\"\\\\^\",\"||\",MODEL))\n    mutate(MODEL = paste0(\"$\",MODEL,\"$\")) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"weibull\",\"$\\\\mu[x] = 1/\\\\sigma (x/M)^{(M/\\\\sigma - 1)}$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"invweibull\",\"$\\\\mu[x] = 1/\\\\sigma (x/M)^{[-M/\\\\sigma - 1]} / [e^{(x/M)^{(-M/\\\\sigma)}} - 1]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"perks\",\"$\\\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"wittstein\",\"$q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP\",\"$q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\\\log(x/F)^2} + G H^x$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP2\",\"$q[x] = A^{[(x + B)^C]} + D e^{-E \\\\log(x/F)^2} + GH^x / [1 + GH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP3\",\"$q[x] = A^{[(x + B)^C]} + D \\\\exp[-E \\\\log(x/F)^2] + GH^x / [1 + KGH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"HP3\",\"$q[x] = A^{[(x + B)^C]} + D \\\\exp[-E \\\\log(x/F)^2] + GH^x / [1 + KGH^x]$\",MODEL)) %&gt;% \n    mutate(MODEL = ifelse(CODE == \"kostaki\",\"$q[x]/p[x] = A^{[(x+B)^C]} + D \\\\exp[-(E_i \\\\log(x/F_))^2] + G H^x$\",MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"opperman\",\"$\\\\mu[x] = A/\\\\sqrt{x} - B + C\\\\sqrt{x}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"invgompertz\",\"$\\\\mu[x] = [1-e^{(M-x)/\\\\sigma}]/[e^{(M-x)/\\\\sigma}-1]$\",MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"gompertz\", \"$\\\\mu[x] = A e^{Bx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"gompertz0\", \"$\\\\mu[x] = 1/\\\\sigma e^{(x-M)/\\\\sigma}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"makeham\", \"$\\\\mu[x] = A e^{Bx} + C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"makeham0\", \"$\\\\mu[x] = 1/\\\\sigma e^{(x-M)/\\\\sigma} + C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"strehler_mildvan\", \"$\\\\mu[x] = K e^{-V_0 (1-Bx)/D}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"vandermaen\", \"$\\\\mu[x] = A+Bx+Cx^2 + I/[N-x]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"beard\", \"$\\\\mu[x] = e^{Bx}/[1+KA e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"beard_makeham\", \"$\\\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"ggompertz\", \"$\\\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"vandermaen2\", \"$\\\\mu[x] = A + Bx + I/[N-x]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"quadratic\", \"$\\\\mu[x] = A + Bx + Cx^2$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"kannisto\", \"$\\\\mu[x] = A e^{Bx}/[1+A e^{Bx}]$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"kannisto_makeham\", \"$\\\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"thiele\", \"$\\\\mu[a] = A e^{-Bx} + C e^{-\\\\frac{1}{2} D(x-E)^2}+F e^{Gx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"martinelle\", \"$\\\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}$\", MODEL)) %&gt;%\n    mutate(MODEL = ifelse(CODE == \"rogersplanck\", \"$q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}$\", MODEL))\n\nlaws1 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[1:2])\n\nlaws1 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws1$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nInfant mortality\n\n\n\n\nOpperman\n\n\n\\(\\mu[x] = A/\\sqrt{x} - B + C\\sqrt{x}\\)\n\n\nopperman\n\n\n\n\nWeibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{(M/\\sigma - 1)}\\)\n\n\nweibull\n\n\n\n\nAccident hump\n\n\n\n\nInverse-Gompertz\n\n\n\\(\\mu[x] = [1-e^{(M-x)/\\sigma}]/[e^{(M-x)/\\sigma}-1]\\)\n\n\ninvgompertz\n\n\n\n\nInverse-Weibull\n\n\n\\(\\mu[x] = 1/\\sigma (x/M)^{[-M/\\sigma - 1]} / [e^{(x/M)^{(-M/\\sigma)}} - 1]\\)\n\n\ninvweibull"
   },
   {
     "objectID": "slides/01_mortality.html#section",
     "href": "slides/01_mortality.html#section",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nAdult mortality\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = A \\exp[Bx]\\)\n\n\ngompertz\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = 1/\\sigma \\exp[(x-M)/\\sigma]\\)\n\n\ngompertz0\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = A \\exp[Bx] + C\\)\n\n\nmakeham\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = 1/\\sigma \\exp[(x-M)/\\sigma)] + C\\)\n\n\nmakeham0\n\n\n\n\nPerks\n\n\n\\(\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]\\)\n\n\nperks\n\n\n\n\nStrehler-Mildvan\n\n\n\\(\\mu[x] = K \\exp[-V_0 (1-Bx)/D]\\)\n\n\nstrehler_mildvan\n\n\n\n\nAdult and/or old-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A+Bx+Cx^2 + I/[N-x]\\)\n\n\nvandermaen\n\n\n\n\nBeard\n\n\n\\(\\mu[x] = \\exp(Bx)/[1+KA \\exp(Bx)]\\)\n\n\nbeard\n\n\n\n\nBeard-Makeham\n\n\n\\(\\mu[x] = A \\exp(Bx)/[1 + KA \\exp(Bx)]\\)\n\n\nbeard_makeham\n\n\n\n\nGamma-Gompertz\n\n\n\\(\\mu[x] = A \\exp(Bx)/(1+AG/B[\\exp(Bx)-1])\\)\n\n\nggompertz"
+    "text": "laws2 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[3:4])\n\nlaws2 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws2$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nAdult mortality\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = A e^{Bx}\\)\n\n\ngompertz\n\n\n\n\nGompertz\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma}\\)\n\n\ngompertz0\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = A e^{Bx} + C\\)\n\n\nmakeham\n\n\n\n\nMakeham\n\n\n\\(\\mu[x] = 1/\\sigma e^{(x-M)/\\sigma} + C\\)\n\n\nmakeham0\n\n\n\n\nPerks\n\n\n\\(\\mu[x] = [A + BC^x] / [BC^{-x} + 1 + DC^x]\\)\n\n\nperks\n\n\n\n\nStrehler-Mildvan\n\n\n\\(\\mu[x] = K e^{-V_0 (1-Bx)/D}\\)\n\n\nstrehler_mildvan\n\n\n\n\nAdult and/or old-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A+Bx+Cx^2 + I/[N-x]\\)\n\n\nvandermaen\n\n\n\n\nBeard\n\n\n\\(\\mu[x] = e^{Bx}/[1+KA e^{Bx}]\\)\n\n\nbeard\n\n\n\n\nBeard-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1 + KA e^{Bx}]\\)\n\n\nbeard_makeham\n\n\n\n\nGamma-Gompertz\n\n\n\\(\\mu[x] = A e^{Bx}/(1+AG/B[e^{Bx}-1])\\)\n\n\nggompertz"
   },
   {
     "objectID": "slides/01_mortality.html#section-1",
     "href": "slides/01_mortality.html#section-1",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nOld-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A + Bx + I/[N-x]\\)\n\n\nvandermaen2\n\n\n\n\nQuadratic\n\n\n$= A + Bx + Cx^2%\n\n\nquadratic\n\n\n\n\nKannisto\n\n\n\\(\\mu[x] = A \\exp(Bx)/[1+A\\exp(Bx)]\\)\n\n\nkannisto\n\n\n\n\nKannisto-Makeham\n\n\n\\(\\mu[x] = A \\exp(Bx)/[1+A\\exp(Bx)]+C\\)\n\n\nkannisto_makeham"
+    "text": "laws3 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[5])\n\nlaws3 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws3$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nOld-age mortality\n\n\n\n\nVan der Maen\n\n\n\\(\\mu[x] = A + Bx + I/[N-x]\\)\n\n\nvandermaen2\n\n\n\n\nQuadratic\n\n\n\\(\\mu[x] = A + Bx + Cx^2\\)\n\n\nquadratic\n\n\n\n\nKannisto\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]\\)\n\n\nkannisto\n\n\n\n\nKannisto-Makeham\n\n\n\\(\\mu[x] = A e^{Bx}/[1+A e^{Bx}]+C\\)\n\n\nkannisto_makeham"
   },
   {
     "objectID": "slides/01_mortality.html#section-2",
     "href": "slides/01_mortality.html#section-2",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "Name\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nFull age range\n\n\n\n\nThiele\n\n\n\\(\\mu[a] = A e^{-Bx} + C e^{-\\frac{1}{2} D(x-E)^2}+F e^{Gx}\\)\n\n\nthiele\n\n\n\n\nWittstein\n\n\n\\(q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}\\)\n\n\nwittstein\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x\\)\n\n\nHP\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + GH^x / [1 + GH^x]\\)\n\n\nHP2\n\n\n\n\nRogers-Planck\n\n\n\\(q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}\\)\n\n\nrogersplanck\n\n\n\n\nMartinelle\n\n\n\\(\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}\\)\n\n\nmartinelle\n\n\n\n\nCarriere\n\n\n\\(l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)\\)\n\n\ncarriere1\n\n\n\n\nKostaki\n\n\n\\(q[x]/p[x] = A^{[(x+B)^C]} + D \\exp[-(E_i \\log(x/F_))^2] + G H^x\\)\n\n\nkostaki"
+    "text": "laws4 &lt;- laws %&gt;% \n    filter(TYPE %in% type_lut[6]) %&gt;% \n    filter(!(CODE %in% c(\"HP3\",\"HP4\",\"carriere2\",\"siler\")))\n\nlaws4 %&gt;% \n    select(-YEAR,-TYPE,-FIT,-SCALE_X) %&gt;% \n    kable(col.names = c(\"Name\",\"Model\",\"Code\")) %&gt;% \n    pack_rows(index = table(fct_inorder(laws4$TYPE))) %&gt;%\n    cat\n\n\n\n\n\nName\n\n\nModel\n\n\nCode\n\n\n\n\n\n\nFull age range\n\n\n\n\nThiele\n\n\n\\(\\mu[a] = A e^{-Bx} + C e^{-\\frac{1}{2} D(x-E)^2}+F e^{Gx}\\)\n\n\nthiele\n\n\n\n\nWittstein\n\n\n\\(q[x] = (1/B) A^{-[(Bx)^N]} + A^{-[(M-x)^N]}\\)\n\n\nwittstein\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x]/p[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + G H^x\\)\n\n\nHP\n\n\n\n\nHeligman-Pollard\n\n\n\\(q[x] = A^{[(x + B)^C]} + D e^{-E \\log(x/F)^2} + GH^x / [1 + GH^x]\\)\n\n\nHP2\n\n\n\n\nRogers-Planck\n\n\n\\(q[x] = A_0 + A_1 e^{-Ax} + A_2 e^{B(x-u)-e^{-C(x-u)}}+A_3 e^{Dx}\\)\n\n\nrogersplanck\n\n\n\n\nMartinelle\n\n\n\\(\\mu[x] = [A e^{Bx} + C]/[1+D e^{Bx}]+K e^{Bx}\\)\n\n\nmartinelle\n\n\n\n\nCarriere\n\n\n\\(l[x] = P1 l[x](weibull) + P2 l[x](invweibull) + P3 l[x](gompertz)\\)\n\n\ncarriere1\n\n\n\n\nKostaki\n\n\n\\(q[x]/p[x] = A^{[(x+B)^C]} + D \\exp[-(E_i \\log(x/F_))^2] + G H^x\\)\n\n\nkostaki"
   },
   {
     "objectID": "slides/01_mortality.html#mortality-modeling-3",
@@ -1663,7 +1768,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-4",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467\n\n\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
+    "text": "1. Sampling Death Dates for DES\n\n\nLet’s verify this gets us close to what we see in the life table data.\n\n\n\nu = 0.25\nqgompertz(p = u, shape = gom_fit$coefficients[\"B\"], rate = gom_fit$coefficients[\"A\"])\n\n[1] 70.467\n\n\n\nlt %&gt;% mutate(Sx = exp(-cumsum(mx))) %&gt;% \n  filter(age&gt;=70 & age&lt;=72) %&gt;% \n  select(age,mx,Sx) %&gt;% \n  kable() %&gt;% \n  kable_styling() %&gt;% \n  column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-dates-for-des-5",
@@ -1677,7 +1782,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-6",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\n\nThere is no inverse quantile function for Heligman-Pollard, but we can create one!\nApproxfun returns a function that provides a value of y for a given value of x.\n\n\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))"
+    "text": "1. Sampling Death Dates for DES\n\n\nThere is no inverse quantile function for Heligman-Pollard, but we can create one!\nApproxfun returns a function that provides a value of y for a given value of x.\n\n\n\nqHP &lt;- \n  approxfun(\n    y = 0:115,\n    x = 1 - exp(-cumsum(HP(x = 0:115,\n                           par = hp_fit$coefficients)$hx)))"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-dates-for-des-7",
@@ -1691,7 +1796,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-8",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(0.25)\n\n[1] 71.069\n\n\nSurvival in life table:\n\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
+    "text": "1. Sampling Death Dates for DES\n\nqHP &lt;- \n  approxfun(y = 0:115,\n            x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(0.25)\n\n[1] 71.069\n\n\nSurvival in life table:\n\nlt %&gt;% mutate(Sx = exp(-cumsum(mx))) %&gt;% \n  #filter(age&gt;=82 & age&lt;=83) %&gt;% \n  filter(age&gt;=70 & age&lt;=72) %&gt;% \n  select(age,mx,Sx) %&gt;% \n  kable() %&gt;% \n  kable_styling() %&gt;% \n  column_spec(3, background = \"#c6e6f5\")\n\n\n\n\nage\nmx\nSx\n\n\n\n\n70\n0.01827\n0.76590\n\n\n71\n0.01995\n0.75077\n\n\n72\n0.02162\n0.73472"
   },
   {
     "objectID": "slides/01_mortality.html#sampling-death-dates-for-des-9",
@@ -1705,7 +1810,7 @@
     "href": "slides/01_mortality.html#sampling-death-dates-for-des-10",
     "title": "1. Dealing with Mortality",
     "section": "1. Sampling Death Dates for DES",
-    "text": "1. Sampling Death Dates for DES\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1]  82.080  54.165  84.253  77.285  51.792  79.713  85.439  82.139 102.487\n[10]  75.405"
+    "text": "1. Sampling Death Dates for DES\n\n\nWe now have the tools we need to sample death times that closely match underlying mortality data!\nFor a given simulated patient, sample a uniform (0,1) and feed this number into the inverse quantile function.\n\n\n\n# Sample death times for 10 individuals\nu &lt;- runif(10, min = 0, max = 1)\nqHP &lt;- \n  approxfun(y = 0:115,\n  x = 1 - exp(-cumsum(HP(x = 0:115, par = hp_fit$coefficients)$hx)))\nqHP(u)\n\n [1] 85.358 81.844 65.418 83.869 83.884 95.825 99.221 81.527 81.715 41.024"
   },
   {
     "objectID": "slides/01_mortality.html#modeled-mortality-markov",
@@ -1747,7 +1852,7 @@
     "href": "slides/01_mortality.html#calculate-life-expectancy",
     "title": "1. Dealing with Mortality",
     "section": "Calculate Life Expectancy",
-    "text": "Calculate Life Expectancy\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = lapply(trace, function(tr) (tr * (1 / params$n_cohort)) %*% payoff_life_exp)\n\n# Function for cycle correction (alternative Simpson's method)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = lapply(life_exp_cycle,cycle_adj)"
+    "text": "Calculate Life Expectancy\n\n# Define the payoff for life expectancy\npayoff_life_exp = c(\"Alive\" = 1, \"Dead\" = 0)\n\n# Calculate alive years in each cycle\nlife_exp_cycle = lapply(trace, function(tr) (tr*(1 / params$n_cohort)) %*%\n                 payoff_life_exp)\n\n# Integration via alternative Simpson's method (cycle correction)\nalt_simp_coef &lt;- function(i) c(17, 59, 43, 49, rep(48, i-8),\n                               49, 43, 59, 17) / 48\ncycle_adj     &lt;- function(x) sum(alt_simp_coef(length(x)) * x)\n\ntotal_life_exp = lapply(life_exp_cycle,cycle_adj)"
   },
   {
     "objectID": "slides/01_mortality.html#life-expectancy-alive-dead-model",
@@ -1810,7 +1915,7 @@
     "href": "slides/01_mortality.html#section-4",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:\n\n\n\n\n\nage\nage_ihme\npct_cvd\ndx\ndx_i\n\n\n\n\n0\n[0,1)\n0.01675\n553.221\n9\n\n\n10\n[10,15)\n0.04440\n11.518\n1\n\n\n25\n[25,30)\n0.05308\n103.706\n6\n\n\n50\n[50,55)\n0.24371\n365.721\n89\n\n\n75\n[75,80)\n0.31064\n1997.766\n621\n\n\n98\n[95,105)\n0.49531\n1262.593\n625"
+    "text": "Merge these percentages into the underlying life table data and use them to calculate the total number of CVD deaths by age:\n\nlt_ &lt;-  # \n    lt %&gt;% \n    mutate(age_ihme = cut(age,unique(c(0,1,seq(0,95,5),105)),right=FALSE)) %&gt;% \n    left_join(ihme_cvd,\"age_ihme\") %&gt;%\n    mutate(dx_i = round(dx * pct_cvd)) %&gt;% \n    select(age,\n           age_ihme,\n           pct_cvd,\n           dx,  # Deaths\n           dx_i, # Cause-specific deaths\n           lx) %&gt;% # Living\n    mutate(a = ifelse(age==0, 0.152, 0.5)) %&gt;% # time lived by deaths in age group\n    mutate(age_interval = c(diff(age), NA)) %&gt;% \n    select(age,age_ihme,pct_cvd, lx,dx,dx_i,a,age_interval) %&gt;% \n    # Probability of death in interval =  deaths / total living at beginning of interval. \n    mutate(q = replace_na(1 - lead(lx) / lx, 1))  %&gt;% \n      # Convert probability to rate. Note that we could also use q/(age_interval - q * (age_interval - a))\n    mutate(m = -log(1-q)/age_interval) \n  \n\nlt_ %&gt;% \n  select(age,age_ihme,pct_cvd,dx,dx_i) %&gt;% \n  filter(age %in% c(0,10,25,50,75,98))  %&gt;% \n  kable() %&gt;% \n  kable_styling()\n\n\n\n\nage\nage_ihme\npct_cvd\ndx\ndx_i\n\n\n\n\n0\n[0,1)\n0.01675\n553.221\n9\n\n\n10\n[10,15)\n0.04440\n11.518\n1\n\n\n25\n[25,30)\n0.05308\n103.706\n6\n\n\n50\n[50,55)\n0.24371\n365.721\n89\n\n\n75\n[75,80)\n0.31064\n1997.766\n621\n\n\n98\n[95,105)\n0.49531\n1262.593\n625"
   },
   {
     "objectID": "slides/01_mortality.html#section-5",
@@ -1838,7 +1943,7 @@
     "href": "slides/01_mortality.html#section-6",
     "title": "1. Dealing with Mortality",
     "section": "",
-    "text": "age\ndx\ndxd\ndx_i\nq\nqi\nmd\nmi\n\n\n\n\n0\n553.221\n544.221\n9\n0.00553\n0.00009\n0.00546\n0.00009\n\n\n1\n38.180\n37.180\n1\n0.00038\n0.00001\n0.00037\n0.00001\n\n\n2\n23.160\n22.160\n1\n0.00023\n0.00001\n0.00022\n0.00001\n\n\n3\n17.689\n16.689\n1\n0.00018\n0.00001\n0.00017\n0.00001\n\n\n4\n14.209\n13.209\n1\n0.00014\n0.00001\n0.00013\n0.00001\n\n\n5\n13.213\n12.213\n1\n0.00013\n0.00001\n0.00012\n0.00001"
+    "text": "lt_ %&gt;% \n  select(age, dx, dxd, dx_i, q, qi, md, mi) %&gt;% \n  head() %&gt;% \n  kable() %&gt;% \n  kable_styling()\n\n\n\n\nage\ndx\ndxd\ndx_i\nq\nqi\nmd\nmi\n\n\n\n\n0\n553.221\n544.221\n9\n0.00553\n0.00009\n0.00546\n0.00009\n\n\n1\n38.180\n37.180\n1\n0.00038\n0.00001\n0.00037\n0.00001\n\n\n2\n23.160\n22.160\n1\n0.00023\n0.00001\n0.00022\n0.00001\n\n\n3\n17.689\n16.689\n1\n0.00018\n0.00001\n0.00017\n0.00001\n\n\n4\n14.209\n13.209\n1\n0.00014\n0.00001\n0.00013\n0.00001\n\n\n5\n13.213\n12.213\n1\n0.00013\n0.00001\n0.00012\n0.00001"
   },
   {
     "objectID": "slides/01_mortality.html#modeling-cvd-deleted-mortality",
@@ -1846,6 +1951,13 @@
     "title": "1. Dealing with Mortality",
     "section": "Modeling CVD-Deleted Mortality",
     "text": "Modeling CVD-Deleted Mortality\n\nWe can also apply the methods covered earlier to the cause-deleted life table data!\n\n\nages_     &lt;- lt_$age[lt_$age&lt;100 & lt_$age&gt;=25]\ndeaths_   &lt;- lt_$dxd[lt_$age&lt;100 & lt_$age&gt;=25] \nexposure_  &lt;- lt_$lx[lt_$age&lt;100 & lt_$age&gt;=25]\n\nmort_fit_CVDdeleted &lt;- MortalityLaw(\n    x  = ages_,\n    Dx  = deaths_,   # vector with death counts\n    Ex  = exposure_, # vector containing exposures\n    law = \"HP2\",\n    opt.method = \"LF2\")"
+  },
+  {
+    "objectID": "slides/01_mortality.html#section-7",
+    "href": "slides/01_mortality.html#section-7",
+    "title": "1. Dealing with Mortality",
+    "section": "",
+    "text": "params = \n  list(\n    t_names = c(\"natural_history\"),       # Strategy names. \n    n_treatments = 1,                     # Number of treatments\n    s_names  = c(\"Healthy\", \"CVD\",\"CVDDeath\",\"Dead\"),\n    n_states = 4,                         # Number of states\n    n_cohort = 100000,                    # Cohort size\n    initial_age = 25,                      # Cohort starting age    \n    n_cycles = 100,                       # Number of cycles in model.  \n    cycle = 1,                            # Cycle length\n    r_H_CVD = 0.1,                        # Healthy -&gt; CVD transition rate\n    u_H = 1,                              # Utility state payoffs\n    u_CVD = 1,\n    u_D = 0,\n    u_DCVD = 0,\n    c_H = 0,                              # Cost state payoffs\n    c_CVD = 0,\n    c_DCVD = 0,\n    c_D = 0, \n    cause_specific_mortality =            # Cause specific morality rate\n      approxfun(lt_$age, lt_$mi,rule = 2),\n    mort_fit = mort_fit_CVDdeleted        # Cause-Deleted Mortality Fit \n  )"
   },
   {
     "objectID": "slides/01_mortality.html#basic-cvd-model",
@@ -1880,21 +1992,21 @@
     "href": "slides/01_mortality.html#age-dependent-transition-matrices-1",
     "title": "1. Dealing with Mortality",
     "section": "Age-Dependent Transition Matrices",
-    "text": "Age-Dependent Transition Matrices"
+    "text": "Age-Dependent Transition Matrices\n\nfn_mPt_CVD &lt;- function(t, params) {\n  with(params, {\n    h = cycle # Time step\n    lapply(t, function(tt){\n       # Life table method\n        current_age = initial_age  + (tt)*h - 1\n        \n        r_H_D &lt;- HP(current_age, params$mort_fit$coefficients)$hx\n        r_CVD_D = params$cause_specific_mortality(current_age) \n        \n        R &lt;- array(data = c(\n                      -(r_H_D+params$r_H_CVD),0,0,0, \n                      params$r_H_CVD,-(r_CVD_D+r_H_D),0,0, \n                      0,r_CVD_D,0,0,\n                      r_H_D,r_H_D,0,0),\n                      \n              \n              dim = c(n_states, n_states, n_treatments),\n              dimnames = list(from = s_names,\n                              to = s_names,\n                              t_names)) \n        P = apply(R,3,expm, simplify=FALSE)\n        P\n    })\n  })\n}\nparams$mP &lt;- fn_mPt_CVD(1:params$n_cycles,params)"
   },
   {
     "objectID": "slides/01_mortality.html#construct-a-markov-trace-2",
     "href": "slides/01_mortality.html#construct-a-markov-trace-2",
     "title": "1. Dealing with Mortality",
     "section": "Construct a Markov Trace",
-    "text": "Construct a Markov Trace\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
+    "text": "Construct a Markov Trace\n\nsim_cohort &lt;- function(params) {\n  \n params$t_names %&gt;% map(~({ \n    tr_ &lt;- t(c(params$n_cohort,rep(0,params$n_states - 1)))\n    \n    res &lt;- do.call(rbind,lapply(params$mP, function(tp) {\n        tr_ &lt;&lt;- tr_ %*% matrix(unlist(tp[[.x]]),nrow=params$n_state)\n    }))\n    res &lt;- rbind(c(params$n_cohort,rep(0,params$n_states - 1)),res) \n    dimnames(res) &lt;- list(paste0(c(0:params$n_cycles)), params$s_names)\n    res\n  })) %&gt;% \n    set_names(params$t_names)\n}\n\n\ntrace &lt;- \n  sim_cohort(params)\ntrace[[\"natural_history\"]][1:10,]\n\n  Healthy     CVD CVDDeath    Dead\n0  100000     0.0   0.0000    0.00\n1   90391  9506.2   0.2945  103.00\n2   81702 18088.0   1.1404  208.58\n3   73847 25833.6   2.4853  316.88\n4   66745 32822.6   4.2817  428.11\n5   60324 39126.6   6.8544  542.45\n6   54519 44809.4  11.5751  660.14\n7   49270 49930.7  17.3944  781.42\n8   44526 54544.1  23.8195  906.57\n9   40236 58697.0  31.3741 1035.87"
   },
   {
     "objectID": "slides/01_mortality.html#good-news",
     "href": "slides/01_mortality.html#good-news",
     "title": "1. Dealing with Mortality",
     "section": "Good News",
-    "text": "Good News\n\nModeled CVD and non-CVD mortality closely matches the cause-deleted life table data!"
+    "text": "Good News\n\nModeled CVD and non-CVD mortality closely matches the cause-deleted life table data!\n\n\nlt_compare &lt;- \n    lt_ %&gt;% \n    mutate(dx = dx - dx_i) %&gt;% \n    select(age = age, dead_lt = dx, cvddeath_lt = dx_i) %&gt;% \n    mutate(age = age + 1) %&gt;% \n    filter(age&gt;=params$initial_age) %&gt;% \n    mutate(dead_lt = ifelse(age==25,0,dead_lt),\n           cvddeath_lt = ifelse(age==25,0,cvddeath_lt)) %&gt;% \n    mutate_at(vars(dead_lt,cvddeath_lt), cumsum)\n\n\ntrace[[\"natural_history\"]] %&gt;% \n    data.frame() %&gt;% \n    tibble() %&gt;% \n    set_names(c(\"healthy\",\"cvd\",\"cvddeath\",\"dead\")) %&gt;% \n    mutate(age = params$initial_age  + (row_number())*params$cycle - 1 ) %&gt;% \n    select(age,cvddeath,dead) %&gt;% \n    inner_join(lt_compare, \"age\") %&gt;% \n    gather(state,value,-age) %&gt;% \n    mutate(state = factor(state,levels = c(\"cvddeath\",\"cvddeath_lt\",\"dead\",\"dead_lt\"), \n                          labels = c(\"CVD Deaths\",\n                                     \"CVD Deaths (Life Table)\",\n                                     \"Non-CVD Mortality\",\n                                     \"Non-CVD Mortality (Life Table)\"))) %&gt;% \n    mutate(state1 = ifelse(grepl(\"CVD Deaths\",state),\"CVD Deaths\",\"Non-CVD Mortality\")) %&gt;% \n    mutate(state2 = ifelse(grepl(\"Life Table\",state),\"Life Table\",\"Markov\")) %&gt;% \n    ggplot(aes(x = age, y = value, colour = state2)) + \n    geom_line(aes(lty=state1))  +\n    hrbrthemes::theme_ipsum(base_family = \"Arial\") + \n    scale_colour_aaas(name=\"\") + \n    scale_linetype(guide=\"none\") +\n    geom_dl(method = list(\"last.bumpup\",hjust=1),aes(label=state1),colour = \"black\") +\n    theme(legend.position=\"top\") + \n    labs(x = \"Age\", y = \"Deaths\") + \n    scale_y_continuous(limits = c(0,radix))"
   },
   {
     "objectID": "slides/01_mortality.html#case-study-overview",
