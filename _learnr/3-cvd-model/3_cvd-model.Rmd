@@ -436,6 +436,18 @@ lt_markov <-
     gather(source,value,-age) %>% 
     mutate(source = factor(source,levels = c("q","qx"), labels = c("Markov","Life Table")))
 
+sim_cvd <- function(params) {
+    tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
+    tr <- 
+        do.call(rbind,lapply(params$m_P, function(tp) {
+            tr_ <<- tr_ %*% tp
+        }))
+    tr <- rbind(t(c(1,0,0,0)),tr)
+    return(tr)
+}
+
+tr_cvd <-  # Markov Trace
+    sim_cvd(params)
 
 ```
 
@@ -559,12 +571,18 @@ plot(mort_fit_CVDdeleted)
 
 ### Cause-Specific Death Rates
 
-With our cause-deleted life table, we can use `approxfun()` to construct a flexible function that returns the cause-specific death rate:
+With our cause-deleted life table, we can use `approxfun()` to construct a flexible function that returns the cause-specific death rate at any age:
 
 ```{r 3c, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
-#| exercise.lines: 12
+#| exercise.lines: 18
+
+# Approxfun creates a function linking x to y. 
+# In this case, x is the supplied age, and y is the cause-specific
+# mortality rate from the cause-deleted mortality table. 
+
 cause_specific_mortality = approxfun(lt_$age, lt_$mi,rule = 2)
 
+# Let's plot the cause-specific mortality rate by age: 
 tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>% 
   ggplot(aes(x = x)) + 
   geom_point(aes(y = mi), col = "red",size=3) + 
@@ -581,7 +599,13 @@ tibble(x = lt_$age, mi = lt_$mi, pmi = cause_specific_mortality(lt_$age)) %>%
 Next, we parameterize a discrete time Markov model.
 
 ```{r 3d, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
-#| exercise.lines: 25
+#| exercise.lines: 29
+
+# params defines a list object with all possible parameters to be
+# used in the model. Note that for our purposes here, many of these
+# are not needed (e.g., costs), as we are not modelling a specific
+# strategy. We include these parameters for completeness, however.
+
 params <-
     list(
         cohort_starting_age = 25,
@@ -617,7 +641,7 @@ We will next use the modeled cause-deleted background mortality rate, as well as
 Let's show how it is done first for a specific age (95):
 
 ```{r 3e_2, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
-#| exercise.lines: 20
+#| exercise.lines: 22
 current_age = 95
 
 # Get background and CVD mortality rates
@@ -634,16 +658,25 @@ m_Q <-
       byrow= TRUE,
       dimnames = list(names(params$payoff_qaly),names(params$payoff_qaly))
   )
+# The diagonal of the rate marix is the negative sum of off-diagonal 
 diag(m_Q) <- -rowSums(m_Q)
+# Embed the transition probability matrix using matrix exponentiation.
 m_P <- expm(m_Q*params$time_step)
 m_P
         
 ```
 
-Now let's bundle it up into a funciton that returns the probaiblity matrices for the entire modeled time horizon.
+Now let's bundle everything up into a funciton that returns the probaiblity matrices for the entire modeled time horizon.
 
 ```{r 3e, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
-#| exercise.lines: 35
+#| exercise.lines: 40
+
+# Define a function that takes as its input a time vector for the model
+# e.g., t = 1:n_cycles as well as a cycle length (h = time_step).
+# The function then calculates the cohort age at that cycle in the model,
+# and returns the appropriate (embedded) transition probability matrix. 
+# This code essentially generalizes the code for the 95 year-old directly
+# above. 
 
 m_Qt_markov <- function(t, h = params$time_step)
 {
@@ -688,7 +721,13 @@ Let's define the transition probabilities and then construct a Markov trace for 
 ```{r 3f, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 #| exercise.lines: 25
 
+# Include the age-specific transition probability matrices in the
+# params object. 
 params$m_P <- m_Pt(1:params$n_cycles)
+
+# Define a simulation function that loops over each cycle in the model.
+# at each step, the Markov trace is updated with state occupancy 
+# at that cycle in the model. 
 
 sim_cvd <- function(params) {
     tr_ <- t(c("healthy" = 1, "cvd"  = 0,   "cvddeath"   = 0,   "dead"   = 0))
@@ -702,7 +741,12 @@ sim_cvd <- function(params) {
 
 tr_cvd <-  # Markov Trace
     sim_cvd(params)
+tr_cvd[1:10,]
+```
 
+With the Markov trace constructed, we calculate life expectancy using a "payoff" of 1.0 if alive, and 0 otherwise. We apply a cycle adjustment to ensure accurate sums. In this example, there is no discounting, so we do not apply a discount rate. 
+
+```{r 3g, echo = TRUE, warning = FALSE, message= FALSE,exercise = TRUE, exercise.eval = FALSE,exercise.setup = "setup3"}
 life_exp <- # Life expectancy from Markov trace
     cycle_adj(tr_cvd[,c("healthy","cvd","cvddeath","dead")] %*% c(1,1,0,0), 1)
 
@@ -711,6 +755,9 @@ life_exp_lifetable <-  # Life expectancy from life table data.
 
 c("Markov" = life_exp, "Life Table" = life_exp_lifetable)
 ```
+
+
+The figure below uses the cause-deleted life table Markov trace to compare background (non-CVD) mortality and CVD mortality in the life tables vs. in the simple Markov model we just created. As can be seen in the figure, our Markov model has successfully replicated the underlying mortality dynamics!
 
 ```{r}
 #| fig.height: 7
