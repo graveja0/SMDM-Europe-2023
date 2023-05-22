@@ -13,6 +13,8 @@ lightbox: auto
 bibliography: slides/references.bib
 ---
 
+### PLEASE SEND AN EMAIL TO john.graves@vanderbilt.edu SO WE CAN SET YOU UP WITH RSTUDIO CLOUD!
+
 [Workshop Website:](https://smdm-europe23-what-they-didnt-teach.netlify.app)
 
 #### https://smdm-europe23-what-they-didnt-teach.netlify.app

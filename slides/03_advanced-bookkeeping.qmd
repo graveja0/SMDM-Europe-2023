@@ -670,10 +670,10 @@ total_costs
 - If we built them into the rate matrix, then embedded that into a transition probability matrix, we'd have compound transitions through the tunnel!
 - We therefore must define tunnel states in the probability space, not the rate space. 
 
-## Tunnel States
+<!-- ## Tunnel States -->
 
--   We'll do this by including a temporary "receiving bucket" in the rate matrix.
--   The receiving bucket is used for embedding, but can be discarded for the final transition probability matrix.
+<!-- -   We'll do this by including a temporary "receiving bucket" in the rate matrix. -->
+<!-- -   The receiving bucket is used for embedding, but can be discarded for the final transition probability matrix. -->
 
 ## Tunnel States
 
@@ -713,8 +713,8 @@ R_
 ## Tunnel State
 
 -   Next, we will add columns *and* rows for the tunnel states.
--   Given that our model has an annual cycle, and the tunnel lasts two years, we need to add two columns and two rows **PLUS** a receiving bucket. So three new rows and columns.
--   If we had a monthly time cycle, we'd need to add 25 ...
+-   Given that our model has an annual cycle, and the tunnel lasts two years, we need to add two columns and two rows. 
+-   If we had a monthly time cycle, we'd need to add 24 ...
 
 ## Tunnel States
 
@@ -724,8 +724,8 @@ R_
 
 ```{r, echo = TRUE}
 R <- 
-    cbind(R_,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0),"NULL" = c(0,0,0)) %>% 
-    rbind(.,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0), "NULL" = c(0,0,0,0,0,0))  
+    cbind(R_,"tunCVDy1" = c(0,0,0), "tunCVDy2" = c(0,0,0)) %>% 
+    rbind(.,"tunCVDy1" = c(0,0,0,0,0,0), "tunCVDy2" = c(0,0,0,0,0,0))  
 R
 ```
 
