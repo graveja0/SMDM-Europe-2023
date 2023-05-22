@@ -1,0 +1,13 @@
+name: 2_alive-dead
+title:
+username:
+account: graves-vanderbilt
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9012969
+bundleId: 7243517
+url: https://graves-vanderbilt.shinyapps.io/2_alive-dead/
+when: 1684647430.63153
+lastSyncTime: 1684647430.63154
+asMultiple: FALSE
+asStatic: FALSE

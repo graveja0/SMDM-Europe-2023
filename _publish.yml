@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: c706dd90-ebff-42ba-9584-89461c5b67c9
+      url: 'https://smdm-europe23-what-they-didnt-teach.netlify.app'
